@@ -19,6 +19,11 @@ public class LookControl : MonoBehaviour
 
     void Update()
     {
+        if (GameManager.Instance.IsMovementPaused)
+        {
+            return;
+        }
+
         // Update Mouse position to player position
         position = Player.transform.position;
         position.y += cameraY;
