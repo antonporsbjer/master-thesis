@@ -9,6 +9,7 @@ public class ChangeExposure : MonoBehaviour
 {
     public Slider exposureSlider;
     private ColorAdjustments colorAdjustments;
+    public Slider slider;
 
     void Start ()
     {
@@ -22,5 +23,9 @@ public class ChangeExposure : MonoBehaviour
     public void HandleSliderValueChanged (float value)
     {
         colorAdjustments.postExposure.value = value;
+        if (slider != null)
+        {
+            slider.value = 0;
+        }
     }
 }
