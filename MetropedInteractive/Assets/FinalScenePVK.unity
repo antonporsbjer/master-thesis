@@ -11127,7 +11127,7 @@ GameObject:
   - component: {fileID: 242913876}
   - component: {fileID: 242913877}
   m_Layer: 5
-  m_Name: Rating
+  m_Name: RatingSlider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -59266,6 +59266,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameDataManager: {fileID: 1198493019}
+  ratingSlider: {fileID: 242913877}
 --- !u!4 &1198493018
 Transform:
   m_ObjectHideFlags: 0
