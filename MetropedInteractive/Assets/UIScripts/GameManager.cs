@@ -46,7 +46,7 @@ public class GameManager : MonoBehaviour
 
     public void SaveGame()
     {
-        int playerId = 442387; // Example player ID
+        int playerId = 0; // Example player ID
         int rating = (int)ratingSlider.value; // Get the rating from the slider
         bool glassWallsValue = (bool)glassWalls.isOn;
         bool wallsValue = (bool)walls.isOn;
