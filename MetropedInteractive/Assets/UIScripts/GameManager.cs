@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour
 
     public GameDataManager gameDataManager;
     public Slider ratingSlider; // Reference to the slider UI component
+    public Slider exposureSlider;
     public Toggle glassWalls;
     public Toggle walls;
     public Toggle advertisements;
@@ -48,6 +49,7 @@ public class GameManager : MonoBehaviour
     {
         string playerId = "00000"; // Example player ID
         int rating = (int)ratingSlider.value; // Get the rating from the slider
+        float exposure = (float)exposureSlider.value;
         bool glassWallsValue = (bool)glassWalls.isOn;
         bool wallsValue = (bool)walls.isOn;
         bool advertisementsValue = (bool)advertisements.isOn;
@@ -72,6 +74,7 @@ public class GameManager : MonoBehaviour
             signsValue, 
             benchesValue, 
             fireboxesValue,
+            exposure,
             rating
             );
 
