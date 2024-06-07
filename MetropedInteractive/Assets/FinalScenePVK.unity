@@ -1254,9 +1254,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: PanelOpener, Assembly-CSharp
-        m_MethodName: OpenPanel
+      - m_Target: {fileID: 1198493017}
+        m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
+        m_MethodName: SaveGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -59294,9 +59294,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   saveFile: 
-  gameData:
-    playerId: 0
-    rating: 0
+  gameDataList: []
 --- !u!1 &1199878610
 GameObject:
   m_ObjectHideFlags: 0

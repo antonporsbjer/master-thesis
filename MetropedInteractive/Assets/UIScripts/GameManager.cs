@@ -13,11 +13,6 @@ public class GameManager : MonoBehaviour
         gameDataManager = GetComponent<GameDataManager>();
 
         gameDataManager.readFile();
-
-        gameDataManager.gameData.playerId = 49238;
-        gameDataManager.gameData.rating = 3;
-
-        gameDataManager.writeFile();
     }
 
     private void Awake()
@@ -36,6 +31,12 @@ public class GameManager : MonoBehaviour
     public void SetMovementPause(bool pause)
     {
         IsMovementPaused = pause;
+    }
+
+    public void SaveGame()
+    {
+        GameData newGameData = new GameData(442387, 4);
+        gameDataManager.SaveGameData(newGameData);
     }
 }
 

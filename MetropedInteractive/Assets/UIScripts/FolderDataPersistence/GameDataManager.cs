@@ -7,7 +7,7 @@ public class GameDataManager : MonoBehaviour
 {
 
     public string saveFile;
-    public GameData gameData = new GameData();
+    public List<GameData> gameDataList = new List<GameData>();
 
     void Awake()
     {
@@ -20,7 +20,7 @@ public class GameDataManager : MonoBehaviour
         {
             string fileContents = File.ReadAllText(saveFile);
 
-            gameData = JsonUtility.FromJson<GameData>(fileContents);
+            gameDataList = JsonUtility.FromJson<GameDataList>(fileContents)?.gameDataList ?? new List<GameData>();
         }
         else
         {
@@ -30,15 +30,24 @@ public class GameDataManager : MonoBehaviour
 
     public void writeFile()
     {
-        string jsonString = JsonUtility.ToJson(gameData, true);
+        GameDataList gameDataListWrapper = new GameDataList { gameDataList = this.gameDataList };
+        string jsonString = JsonUtility.ToJson(gameDataListWrapper, true);
         
         File.WriteAllText(saveFile, jsonString);
         Debug.Log("Data written to " + saveFile);
     }
 
+    public void SaveGameData(GameData newGameData)
+    {
+        gameDataList.Add(newGameData);
+        writeFile();
+    }
 
-
-
+    [System.Serializable]
+    public class GameDataList
+    {
+        public List<GameData> gameDataList;
+    }
 
 
 }
