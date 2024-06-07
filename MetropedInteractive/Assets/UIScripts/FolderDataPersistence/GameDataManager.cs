@@ -45,7 +45,7 @@ public class GameDataManager : MonoBehaviour
 
     private void saveLastPlayerId()
     {
-        File.WriteAllText(idFile, currentPlayerId.ToString());
+        File.WriteAllText(idFile, currentPlayerId.ToString("D5"));
     }
 
     public void readFile()
@@ -73,7 +73,7 @@ public class GameDataManager : MonoBehaviour
 
     public void SaveGameData(GameData newGameData)
     {
-        newGameData.playerId = currentPlayerId;
+        newGameData.playerId = currentPlayerId.ToString("D5");
         gameDataList.Add(newGameData);
         writeFile();
     }

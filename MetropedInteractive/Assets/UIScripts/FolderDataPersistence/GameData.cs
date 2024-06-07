@@ -5,7 +5,7 @@ using UnityEngine;
 [System.Serializable]
 public class GameData
 {
-    public int playerId;
+    public string playerId;
     public bool walls;
     public bool glassWalls;
     public bool advertisements;
@@ -21,7 +21,7 @@ public class GameData
 
     public GameData
         (
-        int playerId, 
+        string playerId, 
         bool walls, 
         bool glassWalls, 
         bool advertisements, 
