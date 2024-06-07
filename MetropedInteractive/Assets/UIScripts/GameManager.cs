@@ -9,6 +9,16 @@ public class GameManager : MonoBehaviour
 
     public GameDataManager gameDataManager;
     public Slider ratingSlider; // Reference to the slider UI component
+    public Toggle glassWalls;
+    public Toggle walls;
+    public Toggle advertisements;
+    public Toggle crowd;
+    public Toggle trains;
+    public Toggle pillars;
+    public Toggle vendingMachines;
+    public Toggle signs;
+    public Toggle benches;
+    public Toggle fireboxes;
 
     void Start()
     {
@@ -38,7 +48,33 @@ public class GameManager : MonoBehaviour
     {
         int playerId = 442387; // Example player ID
         int rating = (int)ratingSlider.value; // Get the rating from the slider
-        GameData newGameData = new GameData(playerId, rating);
+        bool glassWallsValue = (bool)glassWalls.isOn;
+        bool wallsValue = (bool)walls.isOn;
+        bool advertisementsValue = (bool)advertisements.isOn;
+        bool crowdValue = (bool)crowd.isOn;
+        bool trainsValue = (bool)trains.isOn;
+        bool pillarsValue = (bool)pillars.isOn;
+        bool vendingMachinesValue = (bool)vendingMachines.isOn;
+        bool signsValue = (bool)signs.isOn;
+        bool benchesValue = (bool)benches.isOn;
+        bool fireboxesValue = (bool)fireboxes.isOn;
+
+        GameData newGameData = new GameData
+            (
+            playerId, 
+            wallsValue, 
+            glassWallsValue, 
+            advertisementsValue, 
+            crowdValue, 
+            trainsValue,
+            pillarsValue,
+            vendingMachinesValue, 
+            signsValue, 
+            benchesValue, 
+            fireboxesValue,
+            rating
+            );
+
         gameDataManager.SaveGameData(newGameData);
     }
 }
