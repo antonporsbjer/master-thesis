@@ -25,6 +25,13 @@ There are also moving trains and a virtual crowd that move through the scene.
 - Open the project with the 2022.3.18f1 editor
 - In the project window navigate to "Assets" and doubleclick "FinalScenePVK" to open the scene
 
+# Running a basic version of the project
+- Press on the play button in the Editor
+- Navigate to the ribbon at the top of the Game View window and make sure Display 4 is selected to try the WASD implementation.
+- Navigate to the ribbon at the top of the Game View window and make sure that the resolution is set to "4K UHD (3840x2160) and move the scale slider all the way back until you see the Menu button (The UI is designed for a 4K screen, but can be used with other screens too as long as the previous steps are followed).
+
+(Keep in mind that any eventual build will default to Display 1, so you will need to switch that if you want to run the project using an executable in the future)
+
 
 # Issues with the Crowd
 Currently the project isn't buildable (we can't create an executable/application out of it) due to the Crowd giving certain errors (The project is buildable without the Crowd assets).
