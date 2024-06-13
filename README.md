@@ -4,7 +4,7 @@ The reconstruction of the subway station is based of Rådmansgatans subway stati
 
 <img width="615" alt="image" src="https://github.com/JulianLey/MetropedInteractive/assets/146943186/eaa12f23-9702-435f-8f7c-b9900cec77d7">
 
-A menu has also been added so that various elements (such as the Glass Walls lining the Rails) can be removed and added for comparison. In the same menu the user also has the possibility to rate the current setup:
+A menu has also been added so that various elements (such as the glass walls lining the rails) can be removed and added for comparison. In the same menu the user also has the possibility to rate the current setup:
 
 ![image](https://github.com/JulianLey/MetropedInteractive/assets/146943186/d078cfb4-b84c-4bf1-a09f-6e94f1f2a1de)
 
@@ -18,7 +18,7 @@ There are also moving trains and a virtual crowd that move through the scene.
 ![image](https://github.com/JulianLey/MetropedInteractive/assets/146943186/760bb78e-7ad5-4149-836d-aaea4105e30f)
 
 # Installation Instructions
-- Install Unity hub on your computer.
+- Install Unity Hub on your computer.
 - Install editor version 2022.3.18f1
 - Clone the repository to your local computer
 - Open the cloned project folder (MetropedInteractive) in Unity Hub using the "Add from disk" button
@@ -48,7 +48,7 @@ As you can see these errors all are related to the Custom Editor.
 
 There are also many warnings that appear that are related to the Crowd files when you try to build the application. Since there are several different warnings, I will not display them all here. To find them go to [File --> BuildSettings --> Build ] and choose a destination folder for the build. The warnings will appear in the console window of Unity.
 
-However There are also Warnings that appear when you run the project:
+However there are also warnings that appear when you run the project:
   - "The referenced script (Unknown) on this Behaviour is missing!
 UnityEngine.Resources:LoadAll (string)
 Spawner:init (UnityEngine.GameObject&,UnityEngine.GameObject&,Agent&,MapGen/map&,System.Collections.Generic.List`1<Agent>&,UnityEngine.Vector2,UnityEngine.Vector2,single,bool,bool,single,single,single,single) (at Assets/Scripts/Spawner.cs:60)
