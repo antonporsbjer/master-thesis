@@ -8,7 +8,7 @@ A menu has also been added so that various elements (such as the glass walls lin
 
 ![image](https://github.com/JulianLey/MetropedInteractive/assets/146943186/d078cfb4-b84c-4bf1-a09f-6e94f1f2a1de)
 
-The results are then saved locally to a JSON file. This will look something like this:
+The results are then saved locally to a JSON file (The adress of this file is written out in the console when you rate and save a setup. See console for the path if you have trouble finding this file). This will look something like this:
 
 ![image](https://github.com/JulianLey/MetropedInteractive/assets/146943186/3c9208cd-8a74-423c-bc98-7a52dda075b2)
 
