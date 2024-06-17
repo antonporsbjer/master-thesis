@@ -14,7 +14,7 @@ public class LookControl : MonoBehaviour
     void Start()
     {
         cameraY = transform.position.y - Player.transform.position.y;
-        //Cursor.lockState = CursorLockMode.Locked;
+        Cursor.lockState = CursorLockMode.Confined;
     }
 
     void Update()
