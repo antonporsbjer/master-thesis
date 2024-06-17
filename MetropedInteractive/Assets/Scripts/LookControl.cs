@@ -4,8 +4,8 @@ using UnityEngine.InputSystem;
 public class LookControl : MonoBehaviour
 {
     public GameObject Player;
-    float xRotation;
-    float yRotation;
+    float xRotation = 0f;
+    float yRotation = 90f;
     Vector2 mouseMovement;
     float cameraY;
     Vector3 position;
