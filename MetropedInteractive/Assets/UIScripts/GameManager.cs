@@ -47,7 +47,7 @@ public class GameManager : MonoBehaviour
 
     public void SaveGame()
     {
-        string playerId = "00000"; // Example player ID
+        string participantId = "00000"; // Example participant ID
         int rating = (int)ratingSlider.value; // Get the rating from the slider
         float exposure = (float)exposureSlider.value;
         bool glassWallsValue = (bool)glassWalls.isOn;
@@ -63,7 +63,7 @@ public class GameManager : MonoBehaviour
 
         GameData newGameData = new GameData
             (
-            playerId, 
+            participantId, 
             wallsValue, 
             glassWallsValue, 
             advertisementsValue, 

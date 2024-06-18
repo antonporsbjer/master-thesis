@@ -9,43 +9,43 @@ public class GameDataManager : MonoBehaviour
     public string saveFile;
     public string idFile;
     public List<GameData> gameDataList = new List<GameData>();
-    private int currentPlayerId;
+    private int currentParticipantId;
 
     void Awake()
     {
         saveFile = Path.Combine(Application.persistentDataPath + "gamedata.json");
-        idFile = Path.Combine(Application.persistentDataPath + "lastPlayerId.txt");
+        idFile = Path.Combine(Application.persistentDataPath + "lastParticipantId.txt");
 
         readFile();
-        assignNewPlayerId();
+        assignNewParticipantId();
     }
 
-    private void assignNewPlayerId()
+    private void assignNewParticipantId()
     {
         if (File.Exists(idFile))
         {
             string idString = File.ReadAllText(idFile);
             if (int.TryParse(idString, out int lastId))
             {
-                currentPlayerId = lastId + 1;
+                currentParticipantId = lastId + 1;
             }
             else
             {
-                Debug.LogWarning("Invalid lastPlayerId format, starting from new id: 1" + idString);
-                currentPlayerId = 1;
+                Debug.LogWarning("Invalid lastParticipantId format, starting from new id: 1" + idString);
+                currentParticipantId = 1;
             }
         }
         else{
-            currentPlayerId = 1;
+            currentParticipantId = 1;
         }
-        saveLastPlayerId();
-        Debug.Log("PlayerId written to " + idFile);
+        saveLastParticipantId();
+        Debug.Log("ParticipantId written to " + idFile);
 
     }
 
-    private void saveLastPlayerId()
+    private void saveLastParticipantId()
     {
-        File.WriteAllText(idFile, currentPlayerId.ToString("D5"));
+        File.WriteAllText(idFile, currentParticipantId.ToString("D5"));
     }
 
     public void readFile()
@@ -73,7 +73,7 @@ public class GameDataManager : MonoBehaviour
 
     public void SaveGameData(GameData newGameData)
     {
-        newGameData.playerId = currentPlayerId.ToString("D5");
+        newGameData.participantId = currentParticipantId.ToString("D5");
         gameDataList.Add(newGameData);
         writeFile();
     }
