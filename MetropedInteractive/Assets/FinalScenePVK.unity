@@ -1100,6 +1100,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 593840561}
+        m_TargetAssemblyTypeName: ScenarioPicker, Assembly-CSharp
+        m_MethodName: pickRandScenario
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 2
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &17385110
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -30369,6 +30381,60 @@ Light:
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0.32
   m_ShadowAngle: 0
+--- !u!1 &593840560
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 593840562}
+  - component: {fileID: 593840561}
+  m_Layer: 0
+  m_Name: ScenarioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &593840561
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 593840560}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5783d08184bbc024ab1e1b12aa3be8c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ExposureSlider: {fileID: 0}
+  Pillars: {fileID: 2064469322}
+  Walls: {fileID: 1778497177}
+  GlassWalls: {fileID: 1955037750}
+  Ads: {fileID: 1578379823}
+  Benches: {fileID: 225447811}
+  Bins: {fileID: 123095369}
+  VendingMachines: {fileID: 868894654}
+  Crowd: {fileID: 480294938}
+  Trains: {fileID: 651647151}
+--- !u!4 &593840562
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 593840560}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1920, y: 1080, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &596091462
 GameObject:
   m_ObjectHideFlags: 0
@@ -108895,3 +108961,4 @@ SceneRoots:
   - {fileID: 1724909318}
   - {fileID: 334701935}
   - {fileID: 1198493018}
+  - {fileID: 593840562}
