@@ -6,7 +6,8 @@ using UnityEngine.UI;
 public class PauseMovementOnStart : MonoBehaviour
 {
     public GameObject Panel;
-    public GameObject objects;
+    public GameObject FreeMenu;
+    public GameObject RatingMenu;
 
 
     void Start ()
@@ -16,11 +17,14 @@ public class PauseMovementOnStart : MonoBehaviour
             Panel.SetActive(true);
             GameManager.Instance.SetMovementPause(true);
         }
-        if (objects != null)
+        if (FreeMenu != null)
         {
-            objects.SetActive(false);
+            FreeMenu.SetActive(false);
         }
-
+        if (RatingMenu != null)
+        {
+            RatingMenu.SetActive(false);
+        }
         
     }
 }

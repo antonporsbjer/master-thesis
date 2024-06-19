@@ -5,6 +5,7 @@ using GLTFast.Addons;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
+using System.Threading;
 
 public class ScenarioPicker : MonoBehaviour
 {
@@ -21,6 +22,8 @@ public class ScenarioPicker : MonoBehaviour
     private bool[] scenariosPicked = new bool[10];
     System.Random random = new System.Random();
     private GameObject[] scenarioObjects;
+    public GameObject RatingMenu;
+    public GameObject FreeMenu;
 
     /*
     The preset scenarios are saved in the map below. 
@@ -60,7 +63,7 @@ public class ScenarioPicker : MonoBehaviour
             Pillars, Walls, GlassWalls, Ads, Benches, Bins, VendingMachines, Crowd, Trains
         };
     }
-    public void pickRandScenario()
+    public bool pickRandScenario()
     {
         int[] falseIndices = scenariosPicked.Select((value, index) => new { value, index })
                                             .Where(x => !x.value)
@@ -70,17 +73,22 @@ public class ScenarioPicker : MonoBehaviour
         if(falseIndices.Length == 0)
         {
             Debug.Log("All Scenarios have been picked.");
-            return;
+            if (FreeMenu != null)
+            {
+                FreeMenu.SetActive(true);
+            }
+            return false;
         }
         int randomFalseIdx = falseIndices[random.Next(falseIndices.Length)];
         Debug.Log("Random False Index: " + randomFalseIdx);
         scenariosPicked[randomFalseIdx] = true;
         pickSpecificScenario(randomFalseIdx + 1);
+        return true;
     }
 
-    public void pickSpecificScenario(int scenarioIdx)
+    public void pickSpecificScenario(int scenarioId)
     {
-        scenarioIdx -= 1;
+        int scenarioIdx = scenarioId - 1;
         if (scenarioIdx < 0 || scenarioIdx >= scenariosPicked.Length)
         {
             Debug.LogError("Invalid scenario index " + scenarioIdx);
@@ -92,7 +100,7 @@ public class ScenarioPicker : MonoBehaviour
             int state = presetScenarios[scenarioIdx, i + 2]; //ignores the ScenarioId and the Lighting
             ToggleObject(scenarioObjects[i], state);
         }
-        Debug.Log("Set Scenario with Index: " + scenarioIdx);
+        Debug.Log("Set Scenario Id: " + scenarioId);
     }
 
     private void ToggleObject(GameObject obj, int state)
@@ -103,9 +111,27 @@ public class ScenarioPicker : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
-    void Update()
+    public void startScenario()
     {
+        if (FreeMenu != null)
+        {
+            FreeMenu.SetActive(false);
+        }
+        if(!pickRandScenario())
+        {
+            return;
+        }
+        StartCoroutine(TimerCoroutine());
         
+    }
+
+    private IEnumerator TimerCoroutine()
+    {
+        yield return new WaitForSeconds(10);
+        if (RatingMenu != null)
+        {
+            RatingMenu.SetActive(true);
+            GameManager.Instance.SetMovementPause(true);
+        }
     }
 }
