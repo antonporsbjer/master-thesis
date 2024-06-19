@@ -119,6 +119,7 @@ public class ScenarioPicker : MonoBehaviour
         }
         if(!pickRandScenario())
         {
+            pickSpecificScenario(1);
             return;
         }
         StartCoroutine(TimerCoroutine());
