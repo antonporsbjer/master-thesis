@@ -37736,7 +37736,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 730227772}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -37746,7 +37746,7 @@ Transform:
   - {fileID: 469351182}
   - {fileID: 2026076803}
   - {fileID: 1437388019}
-  m_Father: {fileID: 1578379824}
+  m_Father: {fileID: 1778497178}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &730266663
 GameObject:
@@ -41484,6 +41484,7 @@ GameObject:
   - component: {fileID: 806787223}
   - component: {fileID: 806787224}
   - component: {fileID: 806787225}
+  - component: {fileID: 806787226}
   m_Layer: 5
   m_Name: ToggleAds
   m_TagString: Untagged
@@ -41571,6 +41572,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 806787226}
+        m_TargetAssemblyTypeName: RemoveObjects, Assembly-CSharp
+        m_MethodName: ToggleElement
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_IsOn: 1
 --- !u!114 &806787225
 MonoBehaviour:
@@ -41585,6 +41598,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   objects: {fileID: 1578379823}
+  slider: {fileID: 242913877}
+--- !u!114 &806787226
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 806787222}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11eda4db70a2eb54690ef760c8bfc15e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objects: {fileID: 730227772}
   slider: {fileID: 242913877}
 --- !u!1001 &809974040
 PrefabInstance:
@@ -80965,7 +80992,6 @@ Transform:
   - {fileID: 1049866554}
   - {fileID: 299210275}
   - {fileID: 460000657}
-  - {fileID: 730227773}
   m_Father: {fileID: 1228816158152534748}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1579195447
@@ -90543,6 +90569,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 730227773}
   - {fileID: 403124082}
   - {fileID: 759608745}
   - {fileID: 763352838}

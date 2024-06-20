@@ -59,7 +59,6 @@ public class GameManager : MonoBehaviour
         bool vendingMachinesValue = (bool)vendingMachines.isOn;
         bool signsValue = (bool)signs.isOn;
         bool benchesValue = (bool)benches.isOn;
-        bool fireboxesValue = (bool)fireboxes.isOn;
 
         GameData newGameData = new GameData
             (
@@ -73,7 +72,6 @@ public class GameManager : MonoBehaviour
             vendingMachinesValue, 
             signsValue, 
             benchesValue, 
-            fireboxesValue,
             exposure,
             rating
             );

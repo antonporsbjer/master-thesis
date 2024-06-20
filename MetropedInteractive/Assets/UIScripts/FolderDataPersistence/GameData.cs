@@ -15,7 +15,6 @@ public class GameData
     public bool vendingMachines;
     public bool signs;
     public bool benches;
-    public bool fireboxes;
     public float exposure;
     public int rating;
     public string timestamp;
@@ -32,7 +31,6 @@ public class GameData
         bool vendingMachines, 
         bool signs, 
         bool benches, 
-        bool fireboxes,
         float exposure,
         int rating
         )
@@ -47,7 +45,6 @@ public class GameData
         this.vendingMachines = vendingMachines;
         this.signs = signs;
         this.benches = benches; 
-        this.fireboxes = fireboxes;
         this.exposure = exposure;
         this.rating = rating;
         timestamp = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
