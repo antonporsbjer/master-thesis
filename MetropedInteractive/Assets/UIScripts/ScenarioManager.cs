@@ -10,6 +10,7 @@ using System.Threading;
 public class ScenarioPicker : MonoBehaviour
 {
     public Slider ExposureSlider;
+    public GameObject CrowdAgents;
     public GameObject Pillars;
     public GameObject Walls;
     public GameObject GlassWalls;
@@ -17,18 +18,18 @@ public class ScenarioPicker : MonoBehaviour
     public GameObject Benches;
     public GameObject Bins;
     public GameObject VendingMachines;
-    public GameObject Crowd;
     public GameObject Trains;
     private bool[] scenariosPicked = new bool[10];
     System.Random random = new System.Random();
     private GameObject[] scenarioObjects;
     public GameObject RatingMenu;
     public GameObject FreeMenu;
+    public CrowdToggle crowdToggle;
 
     /*
     The preset scenarios are saved in the map below. 
     They are saved as follows:
-    {ScenarioId, Lighting, Pillars, Walls, GlassWalls, Ads, Benches, Bins, VendingMachines, Crowd, Trains}
+    {ScenarioId, Lighting, Crowd, Pillars, Walls, GlassWalls, Ads, Benches, Bins, VendingMachines, Trains}
     The lighting has 3 possible values:
         1 - Bright
         2 - Optima
@@ -41,14 +42,14 @@ public class ScenarioPicker : MonoBehaviour
     {
         {1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1}, //Scenario 1
         {2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //Scenario 2
-        {3, 2, 1, 1, 1, 0, 0, 0, 0, 0, 0}, //Scenario 3
+        {3, 2, 0, 1, 1, 1, 0, 0, 0, 0, 0}, //Scenario 3
         {4, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //Scenario 4
         {5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, //Scenario 5
-        {6, 2, 1, 1, 0, 1, 1, 1, 1, 1, 1}, //Scenario 6
+        {6, 2, 1, 1, 1, 0, 1, 1, 1, 1, 1}, //Scenario 6
         {7, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1}, //Scenario 7
-        {8, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0}, //Scenario 8
-        {9, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0}, //Scenario 9
-        {10, 2, 0, 0, 0, 1, 1, 0, 0, 0, 0} //Scenario 10
+        {8, 2, 0, 1, 1, 0, 0, 0, 0, 0, 0}, //Scenario 8
+        {9, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0}, //Scenario 9
+        {10, 2, 0, 0, 0, 0, 1, 1, 0, 0, 0} //Scenario 10
     };
 
 
@@ -60,7 +61,7 @@ public class ScenarioPicker : MonoBehaviour
         }
         scenarioObjects = new GameObject[]
         {
-            Pillars, Walls, GlassWalls, Ads, Benches, Bins, VendingMachines, Crowd, Trains
+            Pillars, Walls, GlassWalls, Ads, Benches, Bins, VendingMachines, Trains
         };
     }
     public bool pickRandScenario()
@@ -95,9 +96,30 @@ public class ScenarioPicker : MonoBehaviour
             return;
         }
 
+        if(presetScenarios[scenarioIdx, 2] == 0)
+        {
+            if (CrowdAgents.activeSelf)
+            {
+                if(crowdToggle != null)
+                {
+                    crowdToggle.ToggleElement();
+                }
+            }
+        }
+        else
+        {
+            if (!CrowdAgents.activeSelf)
+            {
+                if (crowdToggle != null)
+                {
+                    crowdToggle.ToggleElement();
+                }
+            }
+        }
+
         for (int i = 0; i < scenarioObjects.Length; i++)
         {
-            int state = presetScenarios[scenarioIdx, i + 2]; //ignores the ScenarioId and the Lighting
+            int state = presetScenarios[scenarioIdx, i + 3]; //ignores the ScenarioId, the Lighting, and the Crowd
             ToggleObject(scenarioObjects[i], state);
         }
         Debug.Log("Set Scenario Id: " + scenarioId);

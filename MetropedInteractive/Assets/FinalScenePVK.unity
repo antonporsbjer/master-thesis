@@ -30379,6 +30379,7 @@ GameObject:
   m_Component:
   - component: {fileID: 593840562}
   - component: {fileID: 593840561}
+  - component: {fileID: 593840563}
   m_Layer: 0
   m_Name: ScenarioManager
   m_TagString: Untagged
@@ -30399,6 +30400,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ExposureSlider: {fileID: 0}
+  CrowdAgents: {fileID: 1940142102}
   Pillars: {fileID: 2064469322}
   Walls: {fileID: 1778497177}
   GlassWalls: {fileID: 1955037750}
@@ -30406,10 +30408,10 @@ MonoBehaviour:
   Benches: {fileID: 225447811}
   Bins: {fileID: 123095369}
   VendingMachines: {fileID: 868894654}
-  Crowd: {fileID: 480294938}
   Trains: {fileID: 651647151}
   RatingMenu: {fileID: 2008220612}
   FreeMenu: {fileID: 121757684}
+  crowdToggle: {fileID: 593840563}
 --- !u!4 &593840562
 Transform:
   m_ObjectHideFlags: 0
@@ -30425,6 +30427,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &593840563
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 593840560}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e87da1e68a9cb5f49a3a518f8a6f09aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objects: {fileID: 1940142102}
+  slider: {fileID: 242913877}
+  mainObject: {fileID: 1152764981}
 --- !u!1 &596091462
 GameObject:
   m_ObjectHideFlags: 0
@@ -81275,7 +81292,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1592656789}
   - component: {fileID: 1592656791}
-  - component: {fileID: 1592656792}
   m_Layer: 5
   m_Name: ToggleCrowd
   m_TagString: Untagged
@@ -81351,7 +81367,7 @@ MonoBehaviour:
   onValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1592656792}
+      - m_Target: {fileID: 593840563}
         m_TargetAssemblyTypeName: CrowdToggle, Assembly-CSharp
         m_MethodName: ToggleElement
         m_Mode: 1
@@ -81364,21 +81380,6 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
   m_IsOn: 1
---- !u!114 &1592656792
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1592656788}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e87da1e68a9cb5f49a3a518f8a6f09aa, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  objects: {fileID: 1940142102}
-  slider: {fileID: 242913877}
-  mainObject: {fileID: 1152764981}
 --- !u!1 &1603014271
 GameObject:
   m_ObjectHideFlags: 0
