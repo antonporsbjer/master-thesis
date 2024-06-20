@@ -25,7 +25,15 @@ public class ScenarioPicker : MonoBehaviour
     public GameObject RatingMenu;
     public GameObject FreeMenu;
     public CrowdToggle crowdToggle;
+    public GameObject player;
     private ChangeExposure changeExposure;
+
+    public TeleportCoordinates teleportCoordinates = new TeleportCoordinates
+    {
+        position = new Vector3(-42.745f, 0.628f, -2.7f),
+        rotation = new Vector3(0f, 90f, 0f)
+    };
+
 
     /*
     The preset scenarios are saved in the map below. 
@@ -170,16 +178,32 @@ public class ScenarioPicker : MonoBehaviour
         }
         if(!pickRandScenario())
         {
-            pickSpecificScenario(1);
+            pickSpecificScenario(1);    //For when we start the Freeplay
             return;
         }
         StartCoroutine(TimerCoroutine());
         
     }
 
+    public void TeleportPlayer()
+    {
+        if (player != null && teleportCoordinates != null)
+        {
+            player.transform.position = teleportCoordinates.position;
+            player.transform.rotation = Quaternion.Euler(teleportCoordinates.rotation);
+            
+            LookControl lookControl = FindObjectOfType<LookControl>();
+            if (lookControl != null)
+            {
+                lookControl.SetInitialRotation();
+            }
+        }
+
+    }
+
     private IEnumerator TimerCoroutine()
     {
-        yield return new WaitForSeconds(10);
+        yield return new WaitForSeconds(2);
         if (RatingMenu != null)
         {
             RatingMenu.SetActive(true);

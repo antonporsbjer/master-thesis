@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class SmoothCameraFollow : MonoBehaviour
+public class LookControl : MonoBehaviour
 {
     public Transform player; 
     public Vector3 offset; // Offset between the camera and player
@@ -42,5 +42,10 @@ public class SmoothCameraFollow : MonoBehaviour
 
         // Apply the rotation to the camera
         transform.localRotation = Quaternion.Euler(xRotation, yRotation, 0);
+    }
+
+    public void SetInitialRotation()
+    {
+        transform.localRotation = Quaternion.Euler(0, 90, 0);
     }
 }

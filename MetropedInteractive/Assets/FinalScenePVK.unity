@@ -30474,6 +30474,7 @@ MonoBehaviour:
   RatingMenu: {fileID: 2008220612}
   FreeMenu: {fileID: 121757684}
   crowdToggle: {fileID: 593840563}
+  player: {fileID: 2053417186}
 --- !u!4 &593840562
 Transform:
   m_ObjectHideFlags: 0
@@ -70152,6 +70153,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 593840561}
+        m_TargetAssemblyTypeName: ScenarioPicker, Assembly-CSharp
+        m_MethodName: TeleportPlayer
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1358566862
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -102034,9 +102047,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2053417186}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
   m_LocalPosition: {x: -102, y: 0.628, z: -3.5}
-  m_LocalScale: {x: 0.5, y: 1.2000002, z: 0.50000006}
+  m_LocalScale: {x: 0.5000001, y: 1.2000002, z: 0.5000002}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 524301714}
