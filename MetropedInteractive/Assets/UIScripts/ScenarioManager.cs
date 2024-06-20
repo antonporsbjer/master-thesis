@@ -25,6 +25,7 @@ public class ScenarioPicker : MonoBehaviour
     public GameObject RatingMenu;
     public GameObject FreeMenu;
     public CrowdToggle crowdToggle;
+    private ChangeExposure changeExposure;
 
     /*
     The preset scenarios are saved in the map below. 
@@ -63,6 +64,12 @@ public class ScenarioPicker : MonoBehaviour
         {
             Pillars, Walls, GlassWalls, Ads, Benches, Bins, VendingMachines, Trains
         };
+        changeExposure = FindObjectOfType<ChangeExposure>();
+
+        if (changeExposure == null)
+        {
+            Debug.LogError("ChangeExposure component not found in scene.");
+        }
     }
     public bool pickRandScenario()
     {
@@ -94,6 +101,28 @@ public class ScenarioPicker : MonoBehaviour
         {
             Debug.LogError("Invalid scenario index " + scenarioIdx);
             return;
+        }
+
+        int exposureSetting = presetScenarios[scenarioIdx, 1];
+
+        if (changeExposure != null)
+        {
+            if (exposureSetting == 1)
+            {
+                Debug.Log("Exposure set by index to: 2");
+                changeExposure.SetExposureByIndex(2);
+            }
+            if (exposureSetting == 2)
+            {
+                Debug.Log("Exposure set by index to: 1");
+                changeExposure.SetExposureByIndex(1);
+
+            }
+            if(exposureSetting == 3)
+            {
+                Debug.Log("Exposure set by index to: 0");
+                changeExposure.SetExposureByIndex(0);
+            }
         }
 
         if(presetScenarios[scenarioIdx, 2] == 0)

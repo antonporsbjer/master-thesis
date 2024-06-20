@@ -42,4 +42,17 @@ public class ChangeExposure : MonoBehaviour
             slider.value = 0;
         }
     }
+    public void SetExposureByIndex(int index)
+    {
+        if (index >= 0 && index < exposureValues.Length)
+        {
+            exposureSlider.value = index;
+            Debug.Log("Exposure successfully set by index to: " + index);
+            HandleSliderValueChanged(index);
+        }
+        else
+        {
+            Debug.LogError("Exposure index is out of bounds");
+        }
+    }
 }

@@ -30458,7 +30458,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5783d08184bbc024ab1e1b12aa3be8c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ExposureSlider: {fileID: 0}
+  ExposureSlider: {fileID: 669537074}
   CrowdAgents: {fileID: 1940142102}
   Pillars: {fileID: 2064469322}
   Walls: {fileID: 1778497177}
@@ -33736,10 +33736,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   exposureSlider: {fileID: 669537074}
   slider: {fileID: 242913877}
-  exposureValues:
-  - -1
-  - 1.1
-  - 2.2
 --- !u!1 &669750997
 GameObject:
   m_ObjectHideFlags: 0
@@ -36789,6 +36785,52 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 718295011}
   m_CullTransparentMesh: 1
+--- !u!1 &718438030
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 718438031}
+  - component: {fileID: 718438032}
+  m_Layer: 0
+  m_Name: ChangeExposure
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &718438031
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 718438030}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1198493018}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &718438032
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 718438030}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4cc9e9fcc2f194b44a0883bf52e7a864, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  exposureSlider: {fileID: 669537074}
+  slider: {fileID: 242913877}
 --- !u!1 &718972961
 GameObject:
   m_ObjectHideFlags: 0
@@ -62222,7 +62264,8 @@ Transform:
   m_LocalPosition: {x: 1920, y: 1080, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 718438031}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1198493019
