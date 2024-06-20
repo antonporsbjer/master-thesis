@@ -1,19 +1,20 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class LookControl : MonoBehaviour
+public class SmoothCameraFollow : MonoBehaviour
 {
-    public GameObject Player;
-    float xRotation = 0f;
-    float yRotation = 90f;
-    Vector2 mouseMovement;
-    float cameraY;
-    Vector3 position;
-    public float mouseSensitivity = 100f; 
+    public Transform player; 
+    public Vector3 offset; // Offset between the camera and player
+    public float smoothSpeed = 0.125f; // Smoothing factor
+    public float yOffset = 0.3f; // Additional y-offset to adjust camera height
+
+    private Vector2 mouseMovement;
+    private float xRotation = 0f;
+    private float yRotation = 90f;
+    public float mouseSensitivity = 100f;
 
     void Start()
     {
-        cameraY = transform.position.y - Player.transform.position.y;
         Cursor.lockState = CursorLockMode.Confined;
     }
 
@@ -24,12 +25,6 @@ public class LookControl : MonoBehaviour
             return;
         }
 
-        // Update Mouse position to player position
-        position = Player.transform.position;
-        position.y += cameraY;
-        transform.position = position;
-
-        // Get mouse movement using the new input system
         mouseMovement = Mouse.current.delta.ReadValue();
 
         // Rotation
@@ -37,10 +32,15 @@ public class LookControl : MonoBehaviour
         xRotation = Mathf.Clamp(xRotation, -90, 90);
         yRotation += mouseMovement.x * mouseSensitivity * 0.01f;
 
-        // Apply the rotation
-        transform.rotation = Quaternion.Euler(xRotation, yRotation, 0);
+        // Apply the rotation to the player
+        player.localRotation = Quaternion.Euler(0, yRotation, 0);
 
-        // Rotating the player
-        Player.transform.localRotation = Quaternion.Euler(0, yRotation, 0);
+        // Smooth follow
+        Vector3 desiredPosition = player.position + offset + new Vector3(0, yOffset, 0);
+        Vector3 smoothedPosition = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed);
+        transform.position = smoothedPosition;
+
+        // Apply the rotation to the camera
+        transform.localRotation = Quaternion.Euler(xRotation, yRotation, 0);
     }
 }
