@@ -46,6 +46,10 @@ public class LookControl : MonoBehaviour
 
     public void SetInitialRotation()
     {
-        transform.localRotation = Quaternion.Euler(0, 90, 0);
+        // Set the initial rotation for both the player and the camera
+        xRotation = 0;
+        yRotation = 90;
+        player.localRotation = Quaternion.Euler(0, yRotation, 0);
+        transform.localRotation = Quaternion.Euler(xRotation, yRotation, 0);
     }
 }
