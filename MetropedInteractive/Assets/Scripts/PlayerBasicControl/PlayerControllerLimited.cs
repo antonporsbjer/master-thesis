@@ -26,6 +26,10 @@ public class PlayerControllerLimited : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (GameManager.Instance.IsMovementPaused)
+        {
+            return;
+        }
         // Perform the player movement in FixedUpdate for consistent physics updates
         playerMove();
     }
