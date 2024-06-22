@@ -8,7 +8,9 @@ public class GameManager : MonoBehaviour
     public bool IsMovementPaused { get; private set; }
 
     public GameDataManager gameDataManager;
-    public Slider ratingSlider; // Reference to the slider UI component
+    public GameObject scenarioMenu;
+    public Slider ratingSliderFree; // Reference to the slider UI component
+    public Slider ratingSliderPreset;
     public Slider exposureSlider;
     public GameObject glassWalls;
     public GameObject walls;
@@ -47,7 +49,16 @@ public class GameManager : MonoBehaviour
     public void SaveGame()
     {
         string participantId = "00000"; // Example participant ID
-        int rating = (int)ratingSlider.value; // Get the rating from the slider
+        int rating;
+        if (scenarioMenu.activeSelf)
+        {
+            rating = (int)ratingSliderPreset.value; // Get the rating from the slider
+
+        }
+        else
+        {
+            rating = (int)ratingSliderFree.value; // Get the rating from the slider
+        }
         float exposure = (float)exposureSlider.value;
         bool glassWallsValue = (bool)glassWalls.activeSelf;
         bool wallsValue = (bool)walls.activeSelf;
