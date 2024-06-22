@@ -13,7 +13,7 @@ public class GameData
     public bool trains;
     public bool pillars;
     public bool vendingMachines;
-    public bool signs;
+    public bool trashCans;
     public bool benches;
     public float exposure;
     public int rating;
@@ -29,7 +29,7 @@ public class GameData
         bool trains, 
         bool pillars,
         bool vendingMachines, 
-        bool signs, 
+        bool trashCans, 
         bool benches, 
         float exposure,
         int rating
@@ -43,7 +43,7 @@ public class GameData
         this.trains = trains;
         this.pillars = pillars;
         this.vendingMachines = vendingMachines;
-        this.signs = signs;
+        this.trashCans = trashCans;
         this.benches = benches; 
         this.exposure = exposure;
         this.rating = rating;

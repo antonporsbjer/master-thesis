@@ -10,16 +10,15 @@ public class GameManager : MonoBehaviour
     public GameDataManager gameDataManager;
     public Slider ratingSlider; // Reference to the slider UI component
     public Slider exposureSlider;
-    public Toggle glassWalls;
-    public Toggle walls;
-    public Toggle advertisements;
-    public Toggle crowd;
-    public Toggle trains;
-    public Toggle pillars;
-    public Toggle vendingMachines;
-    public Toggle signs;
-    public Toggle benches;
-    public Toggle fireboxes;
+    public GameObject glassWalls;
+    public GameObject walls;
+    public GameObject advertisements;
+    public GameObject crowd;
+    public GameObject trains;
+    public GameObject pillars;
+    public GameObject vendingMachines;
+    public GameObject trashCans;
+    public GameObject benches;
 
     void Start()
     {
@@ -50,15 +49,15 @@ public class GameManager : MonoBehaviour
         string participantId = "00000"; // Example participant ID
         int rating = (int)ratingSlider.value; // Get the rating from the slider
         float exposure = (float)exposureSlider.value;
-        bool glassWallsValue = (bool)glassWalls.isOn;
-        bool wallsValue = (bool)walls.isOn;
-        bool advertisementsValue = (bool)advertisements.isOn;
-        bool crowdValue = (bool)crowd.isOn;
-        bool trainsValue = (bool)trains.isOn;
-        bool pillarsValue = (bool)pillars.isOn;
-        bool vendingMachinesValue = (bool)vendingMachines.isOn;
-        bool signsValue = (bool)signs.isOn;
-        bool benchesValue = (bool)benches.isOn;
+        bool glassWallsValue = (bool)glassWalls.activeSelf;
+        bool wallsValue = (bool)walls.activeSelf;
+        bool advertisementsValue = (bool)advertisements.activeSelf;
+        bool crowdValue = (bool)crowd.activeSelf;
+        bool trainsValue = (bool)trains.activeSelf;
+        bool pillarsValue = (bool)pillars.activeSelf;
+        bool vendingMachinesValue = (bool)vendingMachines.activeSelf;
+        bool trashCanValue = (bool)trashCans.activeSelf&&pillars.activeSelf;
+        bool benchesValue = (bool)benches.activeSelf;
 
         GameData newGameData = new GameData
             (
@@ -70,7 +69,7 @@ public class GameManager : MonoBehaviour
             trainsValue,
             pillarsValue,
             vendingMachinesValue, 
-            signsValue, 
+            trashCanValue, 
             benchesValue, 
             exposure,
             rating
