@@ -12,6 +12,7 @@ public class LookControl : MonoBehaviour
     private float xRotation = 0f;
     private float yRotation = 90f;
     public float mouseSensitivity = 100f;
+    private bool isCursorLocked = false;
 
     void Start()
     {
@@ -22,7 +23,27 @@ public class LookControl : MonoBehaviour
     {
         if (GameManager.Instance.IsMovementPaused)
         {
+            Cursor.lockState = CursorLockMode.Confined;
             return;
+        }
+        
+        if (isCursorLocked)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+        }
+
+        if (Keyboard.current.tabKey.wasPressedThisFrame)
+        {
+            if (isCursorLocked)
+            {
+                Cursor.lockState = CursorLockMode.Confined;
+                isCursorLocked = false;
+            }
+            else
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                isCursorLocked = true;
+            }
         }
 
         mouseMovement = Mouse.current.delta.ReadValue();
