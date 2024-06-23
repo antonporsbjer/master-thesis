@@ -6,6 +6,7 @@ using UnityEngine;
 public class GameData
 {
     public string participantId;
+    public int presetScenarioId;
     public bool walls;
     public bool glassWalls;
     public bool advertisements;
@@ -21,7 +22,8 @@ public class GameData
 
     public GameData
         (
-        string participantId, 
+        string participantId,
+        int presetScenarioId, 
         bool walls, 
         bool glassWalls, 
         bool advertisements, 
@@ -36,6 +38,7 @@ public class GameData
         )
     {
         this.participantId = participantId;
+        this.presetScenarioId = presetScenarioId;
         this.walls = walls;
         this.glassWalls = glassWalls;
         this.advertisements = advertisements;

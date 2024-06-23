@@ -27,7 +27,9 @@ public class ScenarioPicker : MonoBehaviour
     public CrowdToggle crowdToggle;
     public GameObject player;
     private ChangeExposure changeExposure;
-
+    public Slider presetRatingSlider;
+    public int presetScenarioId;
+    
     public TeleportCoordinates teleportCoordinates = new TeleportCoordinates
     {
         position = new Vector3(-42.745f, 0.628f, -2.7f),
@@ -105,6 +107,7 @@ public class ScenarioPicker : MonoBehaviour
     public void pickSpecificScenario(int scenarioId)
     {
         int scenarioIdx = scenarioId - 1;
+        presetScenarioId = scenarioId;
         if (scenarioIdx < 0 || scenarioIdx >= scenariosPicked.Length)
         {
             Debug.LogError("Invalid scenario index " + scenarioIdx);
@@ -161,6 +164,11 @@ public class ScenarioPicker : MonoBehaviour
         }
         Debug.Log("Set Scenario Id: " + scenarioId);
     }
+    
+    public int GetScenarioId()
+    {
+        return presetScenarioId;
+    }
 
     private void ToggleObject(GameObject obj, int state)
     {
@@ -207,6 +215,7 @@ public class ScenarioPicker : MonoBehaviour
         if (RatingMenu != null)
         {
             RatingMenu.SetActive(true);
+            presetRatingSlider.value = 0;
             GameManager.Instance.SetMovementPause(true);
         }
     }

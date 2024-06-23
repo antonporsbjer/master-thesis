@@ -8,6 +8,7 @@ public class GameManager : MonoBehaviour
     public bool IsMovementPaused { get; private set; }
 
     public GameDataManager gameDataManager;
+    public ScenarioPicker scenarioManager;
     public GameObject scenarioMenu;
     public Slider ratingSliderFree; // Reference to the slider UI component
     public Slider ratingSliderPreset;
@@ -21,6 +22,7 @@ public class GameManager : MonoBehaviour
     public GameObject vendingMachines;
     public GameObject trashCans;
     public GameObject benches;
+    private int presetScenarioId;
 
     void Start()
     {
@@ -53,11 +55,15 @@ public class GameManager : MonoBehaviour
         if (scenarioMenu.activeSelf)
         {
             rating = (int)ratingSliderPreset.value; // Get the rating from the slider
-
+            if (scenarioManager != null)
+            {
+                presetScenarioId = scenarioManager.GetScenarioId();
+            }
         }
         else
         {
             rating = (int)ratingSliderFree.value; // Get the rating from the slider
+            presetScenarioId = -1;
         }
         float exposure = (float)exposureSlider.value;
         bool glassWallsValue = (bool)glassWalls.activeSelf;
@@ -72,7 +78,8 @@ public class GameManager : MonoBehaviour
 
         GameData newGameData = new GameData
             (
-            participantId, 
+            participantId,
+            presetScenarioId, 
             wallsValue, 
             glassWallsValue, 
             advertisementsValue, 

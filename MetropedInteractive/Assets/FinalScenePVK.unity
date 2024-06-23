@@ -30007,6 +30007,8 @@ MonoBehaviour:
   FreeMenu: {fileID: 121757684}
   crowdToggle: {fileID: 593840563}
   player: {fileID: 2053417186}
+  presetRatingSlider: {fileID: 2094444221}
+  presetScenarioId: 0
   teleportCoordinates:
     position: {x: -42.745, y: 0.628, z: -2.7}
     rotation: {x: 0, y: 90, z: 0}
@@ -60798,6 +60800,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameDataManager: {fileID: 1198493019}
+  scenarioManager: {fileID: 593840561}
   scenarioMenu: {fileID: 2008220612}
   ratingSliderFree: {fileID: 242913877}
   ratingSliderPreset: {fileID: 2094444221}
