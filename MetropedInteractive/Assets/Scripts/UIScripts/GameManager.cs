@@ -48,6 +48,7 @@ public class GameManager : MonoBehaviour
         IsMovementPaused = pause;
     }
 
+    
     public void SaveGame()
     {
         string participantId = "00000"; // Example participant ID

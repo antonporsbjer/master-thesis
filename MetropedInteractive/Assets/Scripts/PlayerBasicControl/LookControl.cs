@@ -13,6 +13,8 @@ public class LookControl : MonoBehaviour
     private float yRotation = 90f;
     public float mouseSensitivity = 100f;
     private bool isCursorLocked = false;
+    public GameObject freeMenu;
+    public GameObject freeMenuPanel;
 
     void Start()
     {
@@ -21,12 +23,20 @@ public class LookControl : MonoBehaviour
 
     void Update()
     {
+        if (Keyboard.current.pKey.wasPressedThisFrame && freeMenu.activeSelf && !freeMenuPanel.activeSelf)
+        {
+            //Debug.Log("Freeze the screen!");
+            GameManager gameManager = GameManager.Instance;
+            isCursorLocked = !gameManager.IsMovementPaused;
+            gameManager.SetMovementPause(!gameManager.IsMovementPaused);
+        }
+
         if (GameManager.Instance.IsMovementPaused)
         {
             Cursor.lockState = CursorLockMode.Confined;
             return;
         }
-        
+
         if (isCursorLocked)
         {
             Cursor.lockState = CursorLockMode.Locked;
