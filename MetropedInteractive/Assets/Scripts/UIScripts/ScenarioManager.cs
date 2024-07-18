@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
 using System.Threading;
+using UnityEngine.XR.Interaction.Toolkit;
 
 public class ScenarioPicker : MonoBehaviour
 {
@@ -26,6 +27,8 @@ public class ScenarioPicker : MonoBehaviour
     public GameObject FreeMenu;
     public CrowdToggle crowdToggle;
     public GameObject player;
+    public Transform XRrig;
+    public LocomotionSystem locomotionSystem;
     private ChangeExposure changeExposure;
     public Slider presetRatingSlider;
     public int presetScenarioId;
@@ -35,7 +38,11 @@ public class ScenarioPicker : MonoBehaviour
         position = new Vector3(-42.745f, 0.628f, -2.7f),
         rotation = new Vector3(0f, 90f, 0f)
     };
-
+    private TeleportCoordinates VRteleportCoordinates = new TeleportCoordinates
+    {
+        position = new Vector3(-40.53f, 0f, -3.465f),
+        rotation = new Vector3(0f, 90f, 0f)
+    };
 
     /*
     The preset scenarios are saved in the map below. 
@@ -206,8 +213,35 @@ public class ScenarioPicker : MonoBehaviour
                 lookControl.SetInitialRotation();
             }
         }
-
+        StartCoroutine(TeleportVRCoroutine());
     }
+
+    private IEnumerator TeleportVRCoroutine()
+    {
+        if (XRrig != null && VRteleportCoordinates != null)
+        {
+            if (locomotionSystem != null)
+            {
+                locomotionSystem.enabled = false;
+                Debug.Log("Locomotion disabled");
+            }
+
+            yield return new WaitForEndOfFrame();
+
+            XRrig.transform.position = VRteleportCoordinates.position;
+            XRrig.transform.rotation = Quaternion.Euler(VRteleportCoordinates.rotation);
+            Debug.Log("updated VR coordinates: " + VRteleportCoordinates.position);
+            
+            yield return new WaitForEndOfFrame();
+
+            if (locomotionSystem != null)
+            {
+                locomotionSystem.enabled = true;
+            }
+        }
+    }
+
+
 
     private IEnumerator TimerCoroutine()
     {

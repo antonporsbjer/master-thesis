@@ -33831,10 +33831,15 @@ MonoBehaviour:
   FreeMenu: {fileID: 121757684}
   crowdToggle: {fileID: 593840563}
   player: {fileID: 2053417186}
+  XRrig: {fileID: 843463698}
+  locomotionSystem: {fileID: 385243519}
   presetRatingSlider: {fileID: 2094444221}
   presetScenarioId: 0
   teleportCoordinates:
     position: {x: -42.745, y: 0.628, z: -2.7}
+    rotation: {x: 0, y: 90, z: 0}
+  VRteleportCoordinates:
+    position: {x: -101.53, y: 0, z: -3.465}
     rotation: {x: 0, y: 90, z: 0}
 --- !u!4 &593840562
 Transform:
