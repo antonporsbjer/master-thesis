@@ -27,9 +27,7 @@ There are also moving trains and a virtual crowd that move through the scene.
 
 # Running a basic version of the project
 - Press on the play button in the Editor
-- Navigate to the ribbon at the top of the Game View window and make sure Display 4 is selected to try the WASD implementation.
-
-(Keep in mind that any eventual build will default to Display 1, so you will need to switch that if you want to run the project using an executable in the future)
+- Navigate to the ribbon at the top of the Game View window and make sure Display 1 is selected to try the WASD implementation.
 
 
 # Issues with the Crowd
