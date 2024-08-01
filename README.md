@@ -12,7 +12,7 @@ The results are then saved locally to a JSON file (The adress of this file is wr
 
 ![image](https://github.com/JulianLey/MetropedInteractive/assets/146943186/3c9208cd-8a74-423c-bc98-7a52dda075b2)
 
-The participant will be able to move through the scene with the WASD keys and in VR (only the WASD version has been tested on this version of the project).
+The participant will be able to move through the scene with the WASD keys and in VR.
 There are also moving trains and a virtual crowd that move through the scene.
 
 ![image](https://github.com/JulianLey/MetropedInteractive/assets/146943186/760bb78e-7ad5-4149-836d-aaea4105e30f)
