@@ -6,7 +6,9 @@ using UnityEngine.UI;
 public class PanelOpener : MonoBehaviour
 {
     public GameObject Panel;
-    public Slider slider;
+    public Slider slider1;
+    public Slider slider2;
+    public Slider slider3;
 
     void Start ()
     {
@@ -21,9 +23,11 @@ public class PanelOpener : MonoBehaviour
             Panel.SetActive(!isActive);
             GameManager.Instance.SetMovementPause(!isActive);
         }
-        if (slider != null)
+        if (slider1 != null && slider2 != null && slider3 != null)
         {
-            slider.value = 0;
+            slider1.value = 0;
+            slider2.value = 0;
+            slider3.value = 0;
         }
     }
 
