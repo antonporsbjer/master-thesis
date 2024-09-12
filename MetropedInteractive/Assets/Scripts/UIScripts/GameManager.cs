@@ -10,8 +10,12 @@ public class GameManager : MonoBehaviour
     public GameDataManager gameDataManager;
     public ScenarioPicker scenarioManager;
     public GameObject scenarioMenu;
-    public Slider ratingSliderFree; // Reference to the slider UI component
-    public Slider ratingSliderPreset;
+    public Slider ratingSliderFree1; // Reference to the slider UI component
+    public Slider ratingSliderFree2;
+    public Slider ratingSliderFree3;
+    public Slider ratingSliderPreset1;
+    public Slider ratingSliderPreset2;
+    public Slider ratingSliderPreset3;
     public Slider exposureSlider;
     public GameObject glassWalls;
     public GameObject walls;
@@ -52,10 +56,14 @@ public class GameManager : MonoBehaviour
     public void SaveGame()
     {
         string participantId = "00000"; // Example participant ID
-        int rating;
+        int rating1;
+        int rating2;
+        int rating3;
         if (scenarioMenu.activeSelf)
         {
-            rating = (int)ratingSliderPreset.value; // Get the rating from the slider
+            rating1 = (int)ratingSliderPreset1.value; // Get the rating from the slider
+            rating2 = (int)ratingSliderPreset2.value;
+            rating3 = (int)ratingSliderPreset3.value;
             if (scenarioManager != null)
             {
                 presetScenarioId = scenarioManager.GetScenarioId();
@@ -63,7 +71,9 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            rating = (int)ratingSliderFree.value; // Get the rating from the slider
+            rating1 = (int)ratingSliderFree1.value; // Get the rating from the slider
+            rating2 = (int)ratingSliderFree2.value;
+            rating3 = (int)ratingSliderFree3.value;
             presetScenarioId = -1;
         }
         float exposure = (float)exposureSlider.value;
@@ -91,7 +101,9 @@ public class GameManager : MonoBehaviour
             trashCanValue, 
             benchesValue, 
             exposure,
-            rating
+            rating1,
+            rating2,
+            rating3
             );
 
         gameDataManager.SaveGameData(newGameData);

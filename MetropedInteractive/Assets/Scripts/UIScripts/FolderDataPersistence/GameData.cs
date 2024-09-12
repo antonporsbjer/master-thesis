@@ -17,7 +17,9 @@ public class GameData
     public bool trashCans;
     public bool benches;
     public float exposure;
-    public int rating;
+    public int ratingQuestion1;
+    public int ratingQuestion2;
+    public int ratingQuestion3;
     public string timestamp;
 
     public GameData
@@ -34,7 +36,9 @@ public class GameData
         bool trashCans, 
         bool benches, 
         float exposure,
-        int rating
+        int ratingQuestion1,
+        int ratingQuestion2,
+        int ratingQuestion3
         )
     {
         this.participantId = participantId;
@@ -49,7 +53,9 @@ public class GameData
         this.trashCans = trashCans;
         this.benches = benches; 
         this.exposure = exposure;
-        this.rating = rating;
+        this.ratingQuestion1 = ratingQuestion1;
+        this.ratingQuestion2 = ratingQuestion2;
+        this.ratingQuestion3 = ratingQuestion3;
         timestamp = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
     }
 }

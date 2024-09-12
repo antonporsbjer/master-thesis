@@ -30,7 +30,9 @@ public class ScenarioPicker : MonoBehaviour
     public Transform XRrig;
     public LocomotionSystem locomotionSystem;
     private ChangeExposure changeExposure;
-    public Slider presetRatingSlider;
+    public Slider presetRatingSlider1;
+    public Slider presetRatingSlider2;
+    public Slider presetRatingSlider3;
     public int presetScenarioId;
     
     public TeleportCoordinates teleportCoordinates = new TeleportCoordinates
@@ -249,7 +251,9 @@ public class ScenarioPicker : MonoBehaviour
         if (RatingMenu != null)
         {
             RatingMenu.SetActive(true);
-            presetRatingSlider.value = 0;
+            presetRatingSlider1.value = 0;
+            presetRatingSlider2.value = 0;
+            presetRatingSlider3.value = 0;
             GameManager.Instance.SetMovementPause(true);
         }
     }
