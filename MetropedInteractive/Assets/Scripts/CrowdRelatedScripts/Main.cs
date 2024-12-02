@@ -82,37 +82,6 @@ public class Main : MonoBehaviour {
 	void Start () {
 		bool error = false; 
 		float manx = 0.0f;
-//		for (int i = 0; i < agentPrefabs.transform.childCount; ++i) {
-//			
-//			Mesh mes = agentPrefabs.transform.GetChild (i).GetChild(1).GetComponent<SkinnedMeshRenderer>().sharedMesh;
-//			if (agentPrefabs.transform.GetChild (i).gameObject.name == "man-1") {
-//				manx = mes.bounds.extents.x;
-//				break;
-//			}
-//		}
-//		for (int i = 0; i < agentPrefabs.transform.childCount; ++i) {
-//			if (agentPrefabs.transform.GetChild (i).GetComponent<Agent>() == null) {
-//				Debug.LogError("The given agent prefab " + agentPrefabs.transform.GetChild(i).name + " is no agent");
-//				error = true;
-//			}
-//			Mesh mes = agentPrefabs.transform.GetChild (i).GetChild(1).GetComponent<SkinnedMeshRenderer>().sharedMesh;
-//			if (agentPrefabs.transform.GetChild (i).gameObject.name == "man-1") {
-//				
-//				Debug.Log (agentPrefabs.transform.GetChild (i).gameObject.name + ": 1.0");
-//				continue;
-//			}
-//
-//
-//			Debug.Log (agentPrefabs.transform.GetChild (i).gameObject.name + ":" + mes.bounds.extents.x/manx);
-//			Debug.Log (mes.bounds.extents.x + " " + mes.bounds.extents.y + " " + mes.bounds.extents.z);
-//		}
-//
-//		for (int i = 0; i < groupAgentPrefabs.transform.childCount; ++i) {
-//			if (groupAgentPrefabs.transform.GetChild (i).GetComponent<SubgroupAgent>() == null) {
-//				Debug.LogError("The given agent prefab " + groupAgentPrefabs.transform.GetChild(i).name + " is no subgroupagent");
-//				error = true;
-//			}
-//		}
 		if (error)
 			return;
 		
@@ -184,32 +153,27 @@ public class Main : MonoBehaviour {
 	/**
 	 * Main simulation loop which is called every frame
 	**/
-
 	void Update () {
 		Grid.instance.solver = solver;
 		Grid.instance.solverEpsilon = epsilon;
 		Grid.instance.solverMaxIterations = solverMaxIterations;
 
 		// Update grid with new density and velocity values
-	//	System.Diagnostics.Stopwatch s = new System.Diagnostics.Stopwatch();
-	//	s.Start ();
 		Grid.instance.updateCellDensity ();
 		Grid.instance.updateVelocityNodes ();
-//		Debug.Log ("Update took: " + s.ElapsedMilliseconds + " ms");
 		//Solve linear constraint problem
 		Grid.instance.PsolveRenormPsolve ();
-	//	Debug.Log ("Psolve took: " + s.ElapsedMilliseconds + " ms");
 		//Move agents
-		for (int i = 0; i < agentList.Count; ++i) {
-			if (agentList [i].done) {
-
-				Destroy (agentList [i].gameObject);
-				agentList.RemoveAt (i);
+		foreach (Agent agent in agentList)
+		{
+			if (agent.done)
+			{
+				Destroy(agent.gameObject);
+				agentList.Remove(agent);
 				continue;
 			}
-			agentList [i].move(ref roadmap);
+			agent.move(ref roadmap);
 		}
-	//	Debug.Log ("Agent update took: " + s.ElapsedMilliseconds + " ms");
 		//Pair-wise collision handling between agents
 		Grid.instance.collisionHandling(ref agentList);
 		//	Debug.Log ("Collision handling took: " + s.ElapsedMilliseconds + " ms");
