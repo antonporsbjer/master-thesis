@@ -34,7 +34,7 @@ public class MapGen : MonoBehaviour {
 	}
 
 	public bool isFree(Vector3 p) {
-		return !Physics.Raycast (new Vector3 (p.x, 100, p.z), new Vector3 (0, -10, 0), 150f);
+		return !Physics.Raycast(new Vector3 (p.x, 100, p.z), new Vector3 (0, -10, 0), 150f);
 	}
 
 	private Vector3 getClosestPoint(ref List<Vector3> li, Vector3 point) {
@@ -226,11 +226,11 @@ public class MapGen : MonoBehaviour {
 			next.Add (new List<int> ());
 			shortestPaths.Add (new List<List<int>> ());
 			for (int j = 0; j < dist.Count; ++j) {
-				shortestPaths [i].Add (new List<int> ());
-				if ((dist [i] [j] > len)) {
-					next [i].Add (-1);
+				shortestPaths[i].Add (new List<int> ());
+				if (dist[i][j] > len) {
+					next[i].Add (-1);
 				} else {
-					next [i].Add(i);
+					next[i].Add(i);
 				}
 			}
 		}
@@ -240,8 +240,8 @@ public class MapGen : MonoBehaviour {
 			for (int i = 0; i < dist.Count; ++i) {
 				for (int j = 0; j < dist.Count; ++j) {
 					if(dist[i][k] + dist[k][j] < dist[i][j]) {
-						dist [i] [j] = dist [i] [k] + dist [k] [j];
-						next [i] [j] = next [k] [j];
+						dist[i][j] = dist[i][k] + dist[k][j];
+						next[i][j] = next[k][j];
 					}
 				}
 			}
@@ -250,7 +250,7 @@ public class MapGen : MonoBehaviour {
 		//path reconstruction
 		for (int i = 0; i < shortestPaths.Count; ++i) {
 			for (int j = 0; j < shortestPaths.Count; ++j) {
-				shortestPaths [i] [j] = path (ref next, i, j);
+				shortestPaths[i][j] = path (ref next, i, j);
 			}
 
 		}

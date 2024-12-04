@@ -81,7 +81,6 @@ public class Main : MonoBehaviour {
 	**/
 	void Start () {
 		bool error = false; 
-		float manx = 0.0f;
 		if (error)
 			return;
 		
@@ -119,28 +118,28 @@ public class Main : MonoBehaviour {
 		Grid.instance.initGrid (xMinMax, zMinMax, alpha, agentAvoidanceRadius);
 
 		for (int i = 0; i < roadmap.spawns.Count; ++i)
-			roadmap.spawns [i].spawner.init (ref agentPrefabs, ref groupAgentPrefabs, ref shirtColorPrefab, ref roadmap, 
+			roadmap.spawns[i].spawner.init (ref agentPrefabs, ref groupAgentPrefabs, ref shirtColorPrefab, ref roadmap, 
 											 ref agentList, xMinMax, zMinMax, agentAvoidanceRadius, useSimpleAgents,
 											 useGroupedAgents, individualAgents, percentOfTwoInGroup, percentOfThreeInGroup, percentOfFourInGroup);
 		
 		switch(spawnMethod) {
 		case Method.uniformSpawn:
-			agentList.AddRange (roadmap.spawns [0].spawner.spawnRandomAgents (numberOfAgents));
+			agentList.AddRange(roadmap.spawns [0].spawner.spawnRandomAgents (numberOfAgents));
 			break;
 		case Method.areaSpawn:
 			for (int i = 0; i < roadmap.spawns.Count; ++i)
-				agentList.AddRange (roadmap.spawns [i].spawner.spawnAreaAgents (rows, rowLength, roadmap.spawns [i].node));
+				agentList.AddRange(roadmap.spawns[i].spawner.spawnAreaAgents (rows, rowLength, roadmap.spawns[i].node));
 			break;
 		case Method.circleSpawn:
-			agentList = spawnerPrefab.circleSpawn (numberOfAgents, circleRadius, planeSize);
+			agentList = spawnerPrefab.circleSpawn(numberOfAgents, circleRadius, planeSize);
 			break;
 		case Method.discSpawn:
-			agentList = spawnerPrefab.discSpawn (planeSize, circleRadius, numberOfDiscRows);
-			Debug.Log ("Spawned: " + agentList.Count + " agents");
+			agentList = spawnerPrefab.discSpawn(planeSize, circleRadius, numberOfDiscRows);
+			Debug.Log("Spawned: " + agentList.Count + " agents");
 			break;
 		case Method.continuousSpawn:
 			for (int i = 0; i < roadmap.spawns.Count; ++i)
-				roadmap.spawns [i].spawner.continousSpawn (roadmap.spawns [i].node, numberOfAgents);
+				roadmap.spawns[i].spawner.continousSpawn(roadmap.spawns[i].node, numberOfAgents);
 			break;
 		default:
 			agentList = new List<Agent> (); 
