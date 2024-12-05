@@ -81,7 +81,7 @@ public class Agent : MonoBehaviour {
 	bool change = false;
 	internal void calculatePreferredVelocityMap(ref MapGen.map map) {
 		previousDirection = preferredVelocity.normalized;
-		if ((transform.position - map.allNodes [path [pathIndex]].getTargetPoint(transform.position)).magnitude < map.allNodes[path[pathIndex]].getThreshold() || (Grid.instance.skipNodeIfSeeNext && canSeeNext(ref map, 1))) {
+		if ((transform.position - map.allNodes[path[pathIndex]].getTargetPoint(transform.position)).magnitude < map.allNodes[path[pathIndex]].getThreshold() || (Grid.instance.skipNodeIfSeeNext && canSeeNext(ref map, 1))) {
 			//New node reached
 			collision = false;
 			pathIndex += 1;
@@ -97,16 +97,16 @@ public class Agent : MonoBehaviour {
 			}
 		} else if(pathIndex > 0 && Grid.instance.walkBack && !canSeeNext(ref map, 0)) { //Can we see current heading? Are we trapped?
 			//No. We want to go back
-			preferredVelocity = ((map.allNodes [path [pathIndex-1]].getTargetPoint(transform.position)) - transform.position).normalized;
+			preferredVelocity = (map.allNodes[path[pathIndex-1]].getTargetPoint(transform.position) - transform.position).normalized;
 			change = false;
 		} else {
 			collision = false;
-			Vector3 nextDirection = ((map.allNodes [path [pathIndex]].getTargetPoint(transform.position)) - transform.position).normalized;
+			Vector3 nextDirection = (map.allNodes [path [pathIndex]].getTargetPoint(transform.position) - transform.position).normalized;
 			if (change && Vector3.Angle (previousDirection, nextDirection) > 20.0f && Grid.instance.smoothTurns) {
-				preferredVelocity = Vector3.RotateTowards (velocity.normalized, nextDirection, Grid.instance.dt*((35.0f - 400*Grid.instance.dt) * Mathf.PI / 180.0f),  15.0f).normalized;
+				preferredVelocity = Vector3.RotateTowards(velocity.normalized, nextDirection, Grid.instance.dt*((35.0f - 400*Grid.instance.dt) * Mathf.PI / 180.0f),  15.0f).normalized;
 			} else {
 				change = false;
-				preferredVelocity = ((map.allNodes [path [pathIndex]].getTargetPoint (transform.position)) - transform.position).normalized;
+				preferredVelocity = (map.allNodes [path [pathIndex]].getTargetPoint(transform.position) - transform.position).normalized;
 			}
 		}
 		//collision = false;
@@ -149,7 +149,8 @@ public class Agent : MonoBehaviour {
 		setCorrectedVelocity ();
 		prevPos = transform.position;
 
-		Vector3 nextPos = transform.position + velocity * Grid.instance.dt; nextPos.y = 3.0f;
+		Vector3 nextPos = transform.position + velocity * Grid.instance.dt; 
+		nextPos.y = 3.0f;
 
 		transform.position += velocity * Grid.instance.dt;
 

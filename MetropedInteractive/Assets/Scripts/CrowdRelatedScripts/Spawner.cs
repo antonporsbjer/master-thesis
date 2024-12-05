@@ -1,9 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 
 public class Spawner : MonoBehaviour {
 
+	public bool enabled = true;
 	//Common items for this spawner
 	internal GameObject agentModels;
 	internal GameObject subgroupModels;
@@ -241,7 +243,7 @@ public class Spawner : MonoBehaviour {
 
 	internal List<Agent> circleSpawn(int numberOfAgents, float r, float planeScale){
 		Color[] colors = {Color.green, Color.yellow, Color.red, Color.magenta, 0.15f*Color.white+Color.blue, Color.cyan};
-		Cell tempCell;
+
 		Vector3 agentPos = new Vector3(0f, 0f, 0f);
 		if (r > planeScale* 5 - agentAvoidanceRadius) {
 			r = planeScale * 5 - agentAvoidanceRadius;
@@ -292,7 +294,14 @@ public class Spawner : MonoBehaviour {
 		float spawnSizeZ = transform.localScale.z;
 	
 		if (agentList.Count < cap) {
-			Vector3 startPos = new Vector3 (Random.Range (-0.5f, 0.5f), 0.15f, Random.Range (-0.5f, 0.5f)); startPos = transform.TransformPoint (startPos);
+			if(!enabled)
+			{
+				yield return new WaitForSeconds (continousSpawnRate);
+				StartCoroutine (spawnContinously(start, goal, cap, continousSpawnRate));
+				yield break;
+			}
+			Vector3 startPos = new Vector3 (Random.Range (-0.5f, 0.5f), 0.15f, Random.Range (-0.5f, 0.5f)); 
+			startPos = transform.TransformPoint (startPos);
 			float randomRange = Random.Range(0.0f, 1.0f);
 			if (!useGroupedAgents || randomRange < individualAgents) {
 				Agent a;
@@ -331,11 +340,16 @@ public class Spawner : MonoBehaviour {
 	}
 
 	public void continousSpawn(int startNode, int cap) {
+		if(map.goals.Count == 0)
+		{
+			Debug.Log("No node is set to goal");
+			Debug.Break();
+		}
 		int goal = map.goals[0];
 		if (customGoal != null) {
 			//OPT: Use dictionary in mapgen to get constant time access!
 			for(int i = 0; i < map.allNodes.Count; ++i) {
-				if (map.allNodes [i].transform.position == customGoal.transform.position) {
+				if (map.allNodes[i].transform.position == customGoal.transform.position) {
 					goal = i;
 					break;
 				}
