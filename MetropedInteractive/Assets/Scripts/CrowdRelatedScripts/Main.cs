@@ -20,31 +20,23 @@ public class Main : MonoBehaviour {
 	public float epsilon;
 	public int solverMaxIterations;
 	public LCPSolutioner solver;
-	public Method spawnMethod;
+	
 
 	public float planeSize;
-	public int numberOfAgents;
+	
 
-	public bool useGroupedAgents;
-	public float individualAgents;
-	public float percentOfTwoInGroup;
-	public float percentOfThreeInGroup;
-	public float percentOfFourInGroup;
+	
 	public float agentAvoidanceRadius;
 	public float agentMaxSpeed;
 	public bool usePresetGroupDistances;
 	public float p1p2, p2p3, p3p4;
 
-	public float circleRadius;
-	public int numberOfDiscRows;
 
-	public int rows;
-	public int rowLength;
 
 	public GameObject agentPrefabs;
 	public GameObject groupAgentPrefabs;
 	public Agent shirtColorPrefab;
-	public bool useSimpleAgents;
+
 
 	public Grid gridPrefab;
 	public Spawner spawnerPrefab;
@@ -119,33 +111,8 @@ public class Main : MonoBehaviour {
 
 		for (int i = 0; i < roadmap.spawns.Count; ++i)
 			roadmap.spawns[i].spawner.init (ref agentPrefabs, ref groupAgentPrefabs, ref shirtColorPrefab, ref roadmap, 
-											 ref agentList, xMinMax, zMinMax, agentAvoidanceRadius, useSimpleAgents,
-											 useGroupedAgents, individualAgents, percentOfTwoInGroup, percentOfThreeInGroup, percentOfFourInGroup);
+											 ref agentList, xMinMax, zMinMax, agentAvoidanceRadius);
 		
-		switch(spawnMethod) {
-		case Method.uniformSpawn:
-			agentList.AddRange(roadmap.spawns [0].spawner.spawnRandomAgents (numberOfAgents));
-			break;
-		case Method.areaSpawn:
-			for (int i = 0; i < roadmap.spawns.Count; ++i)
-				agentList.AddRange(roadmap.spawns[i].spawner.spawnAreaAgents (rows, rowLength, roadmap.spawns[i].node));
-			break;
-		case Method.circleSpawn:
-			agentList = spawnerPrefab.circleSpawn(numberOfAgents, circleRadius, planeSize);
-			break;
-		case Method.discSpawn:
-			agentList = spawnerPrefab.discSpawn(planeSize, circleRadius, numberOfDiscRows);
-			Debug.Log("Spawned: " + agentList.Count + " agents");
-			break;
-		case Method.continuousSpawn:
-			for (int i = 0; i < roadmap.spawns.Count; ++i)
-				roadmap.spawns[i].spawner.continousSpawn(roadmap.spawns[i].node, numberOfAgents);
-			break;
-		default:
-			agentList = new List<Agent> (); 
-			break;
-		}
-
 	}
 	
 
@@ -163,12 +130,13 @@ public class Main : MonoBehaviour {
 		//Solve linear constraint problem
 		Grid.instance.PsolveRenormPsolve ();
 		//Move agents
-		foreach (Agent agent in agentList)
+		for (int i = agentList.Count - 1; i >= 0; i--)
 		{
+			Agent agent = agentList[i];
 			if (agent.done)
 			{
 				Destroy(agent.gameObject);
-				agentList.Remove(agent);
+				agentList.RemoveAt(i);
 				continue;
 			}
 			agent.move(ref roadmap);

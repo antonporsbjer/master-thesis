@@ -92,7 +92,8 @@ public class MapGen : MonoBehaviour {
 		List<Vector3> map = new List<Vector3> ();
 		map m = new map ();
 		m.allNodes = new List<CustomNode> ();
-		m.spawns = new List<spawnNode> (); m.goals = new List<int> ();
+		m.spawns = new List<spawnNode> (); 
+		m.goals = new List<int> ();
 		GameObject graph = new GameObject (); //Empty stub
 		foreach(CustomNode c in Object.FindObjectsOfType<CustomNode> ()) {
 			map.Add (c.transform.position);
@@ -101,6 +102,7 @@ public class MapGen : MonoBehaviour {
 				spawnNode sn = new spawnNode ();
 				sn.node = map.Count - 1;
 				sn.spawner = c.gameObject.transform.parent.gameObject.GetComponent<Spawner>();
+				sn.spawner.SetNode(sn.node);
 				m.spawns.Add (sn);
 				//	c.gameObject.transform.parent.gameObject.GetComponent<Renderer> ().enabled = false;
 			} 

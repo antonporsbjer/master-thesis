@@ -4,6 +4,36 @@ using System.Collections.Generic;
 
 public class Spawner : MonoBehaviour {
 
+	public enum Method{
+		uniformSpawn,
+		circleSpawn,
+		discSpawn,
+		continuousSpawn,
+		areaSpawn
+	}
+
+	private int node;
+	private Main mainScript;
+
+	public Method spawnMethod;
+	public int numberOfAgents;
+
+	// Continuous spawn
+	public bool useGroupedAgents;
+	public float individualAgents;
+	public float percentOfTwoInGroup;
+	public float percentOfThreeInGroup;
+	public float percentOfFourInGroup;
+	public bool useSimpleAgents;
+
+	// Circle and disc spawn
+	public float circleRadius;
+	public int numberOfDiscRows;
+
+	// Area spawn
+	public int rows;
+	public int rowLength;
+
 	//Common items for this spawner
 	internal GameObject agentModels;
 	internal GameObject subgroupModels;
@@ -26,20 +56,43 @@ public class Spawner : MonoBehaviour {
 	public CustomNode customGoal = null;
 
 	public float spawnRate;
-	internal bool useSimpleAgents;
 
 	internal Dictionary<string, int> skins;
 
+	public void SetNode(int node)
+	{
+		this.node = node;
+	}
 
-	internal bool useGroupedAgents;
-	internal float individualAgents;
-	internal float percentOfTwoInGroup;
-	internal float percentOfThreeInGroup;
-	internal float percentOfFourInGroup;
+	void Start()
+	{
+		mainScript = FindObjectOfType<Main>();
+
+		switch(spawnMethod) {
+		case Method.uniformSpawn:
+			agentList.AddRange(spawnRandomAgents(numberOfAgents));
+			break;
+		case Method.areaSpawn:
+			agentList.AddRange(spawnAreaAgents(rows, rowLength, node));
+			break;
+		case Method.circleSpawn:
+			agentList.AddRange(circleSpawn(numberOfAgents, circleRadius, mainScript.planeSize));
+			break;
+		case Method.discSpawn:
+			agentList.AddRange(discSpawn(mainScript.planeSize, circleRadius, numberOfDiscRows));
+			break;
+		case Method.continuousSpawn:
+				continousSpawn(node, numberOfAgents); 
+			break;
+		default:
+			agentList = new List<Agent> (); 
+			break;
+		}
+	}
+
 
 	public void init(ref GameObject agentModels, ref GameObject subgroupModels, ref Agent manShirtColor, 
-					 ref MapGen.map map,  ref List<Agent> agentList, Vector2 X, Vector2 Z, float agentAvoidanceRadius, bool useSimpleAgents,
-					bool useGroupedAgents, float individualAgents, float percentOfTwoInGroup, float percentOfThreeInGroup, float percentOfFourInGroup) {
+					 ref MapGen.map map,  ref List<Agent> agentList, Vector2 X, Vector2 Z, float agentAvoidanceRadius) {
 		this.agentModels = agentModels;
 		this.subgroupModels = subgroupModels;
 		this.manShirtColor = manShirtColor;
@@ -47,12 +100,6 @@ public class Spawner : MonoBehaviour {
 		this.X = X; this.Z = Z;
 		this.agentAvoidanceRadius = agentAvoidanceRadius;
 		this.agentList = agentList;
-		this.useSimpleAgents = useSimpleAgents;
-		this.useGroupedAgents = useGroupedAgents;
-		this.individualAgents = individualAgents;
-		this.percentOfTwoInGroup = percentOfTwoInGroup;
-		this.percentOfThreeInGroup = percentOfThreeInGroup;
-		this.percentOfFourInGroup = percentOfFourInGroup;
 
 		this.materialColor = Materials.MakeMaterial (agentSpawnColor);
 		this.groupAgentMaterial = Materials.MakeMaterial (groupAgentSpawnColor);
@@ -231,7 +278,14 @@ public class Spawner : MonoBehaviour {
 				posVector.x += 1.5f * j; posVector.z += 1.5f * i; posVector.y = 0.0f;
 				int start = startNode;
 				//Decides whether to make a normal single agent of a group of 2-3 members
-				Agent a = Instantiate (agentModels.transform.GetChild(Random.Range(0, agentModels.transform.childCount)).GetComponent<Agent>()) as Agent;
+				Agent a;
+				if (useSimpleAgents) {
+					a = Instantiate (manShirtColor) as Agent;
+				}
+				else
+				{
+					a = Instantiate (agentModels.transform.GetChild(Random.Range(0, agentModels.transform.childCount)).GetComponent<Agent>()) as Agent;
+				}
 				initAgent (ref a, posVector, start, goal, 1); //Make agent walk towards next destination
 				agents.Add (a);
 			}
@@ -241,7 +295,6 @@ public class Spawner : MonoBehaviour {
 
 	internal List<Agent> circleSpawn(int numberOfAgents, float r, float planeScale){
 		Color[] colors = {Color.green, Color.yellow, Color.red, Color.magenta, 0.15f*Color.white+Color.blue, Color.cyan};
-		Cell tempCell;
 		Vector3 agentPos = new Vector3(0f, 0f, 0f);
 		if (r > planeScale* 5 - agentAvoidanceRadius) {
 			r = planeScale * 5 - agentAvoidanceRadius;
