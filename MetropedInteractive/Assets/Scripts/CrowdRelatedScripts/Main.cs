@@ -71,7 +71,7 @@ public class Main : MonoBehaviour {
 	 * Initialize simulation by taking the user's options into consideration and spawn agents.
 	 * Then create the Staggered Grid along with all cells and velocity nodes.
 	**/
-	void Start () {
+	void OnEnable () {
 		bool error = false; 
 		if (error)
 			return;

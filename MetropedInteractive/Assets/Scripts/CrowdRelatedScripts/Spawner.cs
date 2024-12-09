@@ -90,6 +90,11 @@ public class Spawner : MonoBehaviour {
 		}
 	}
 
+	public void AreaSpawn()
+	{
+		agentList.AddRange(spawnAreaAgents(rows, rowLength, node));
+	}
+
 
 	public void init(ref GameObject agentModels, ref GameObject subgroupModels, ref Agent manShirtColor, 
 					 ref MapGen.map map,  ref List<Agent> agentList, Vector2 X, Vector2 Z, float agentAvoidanceRadius) {
@@ -261,7 +266,7 @@ public class Spawner : MonoBehaviour {
 	 **/
 	public List<Agent> spawnAreaAgents(int rows, int rowLength, int startNode) {
 		List<Agent> agents = new List<Agent> ();
-		Vector3 startPos = transform.localPosition - (transform.right * rowLength / 2);
+		Vector3 startPos = transform.position - (transform.right * rowLength / 2);
 		int goal = map.goals[0];
 		if (customGoal != null) {
 			//OPT: Use dictionary in mapgen to get constant time access!
