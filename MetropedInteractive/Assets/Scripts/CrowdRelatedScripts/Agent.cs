@@ -149,9 +149,15 @@ public class Agent : MonoBehaviour {
 		setCorrectedVelocity ();
 		prevPos = transform.position;
 
-		Vector3 nextPos = transform.position + velocity * Grid.instance.dt; nextPos.y = 3.0f;
+		Vector3 nextPos = transform.position + velocity * Grid.instance.dt; 
+		//nextPos.y = 3.0f;
 
 		transform.position += velocity * Grid.instance.dt;
+
+		// Lock Y position
+    	Vector3 pos = transform.position;
+    	pos.y = 0.0f; // Or whatever fixed height you want
+    	transform.position = pos;
 
 
 		if(rbody != null)
