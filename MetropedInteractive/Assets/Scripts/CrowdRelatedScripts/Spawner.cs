@@ -402,4 +402,43 @@ public class Spawner : MonoBehaviour {
 		StartCoroutine (spawnContinously(startNode, goal, cap, spawnRate));
 	}
 
+	public void spawnOneAgent(int goal)
+	{
+		float spawnSizeX = transform.localScale.x;
+		float spawnSizeZ = transform.localScale.z;
+	
+		Vector3 startPos = new Vector3(transform.position.x + Random.Range(-1.5f, 1.5f), transform.position.y, transform.position.z + Random.Range(-1.5f, 1.5f));
+		//startPos = transform.TransformPoint (startPos);
+
+		Agent a;
+		if (useSimpleAgents) 
+		{
+			a = Instantiate (manShirtColor) as Agent;
+		} else 
+		{
+			a = Instantiate (agentModels.transform.GetChild(Random.Range(0, agentModels.transform.childCount)).GetComponent<Agent>()) as Agent;
+		}
+		initAgent (ref a, startPos, node, goal, 1);
+		agentList.Add (a);
+		a.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f); // Modify this to change the size of characters new Vector3(2.0f, 2.0f, 2.0f) is normal size
+	}
+
+	public IEnumerator BurstSpawn(int nAgents, float burstRate)
+	{
+		int goal = map.goals[0];
+		if (customGoal != null) {
+			for(int i = 0; i < map.allNodes.Count; ++i) {
+				if (map.allNodes [i].transform.position == customGoal.transform.position) {
+					goal = i;
+					break;
+				}
+			}
+		}
+		for (int i = 0; i < nAgents; ++i) {
+			spawnOneAgent (goal);
+			yield return new WaitForSeconds (burstRate);
+		}
+
+	}
+
 }

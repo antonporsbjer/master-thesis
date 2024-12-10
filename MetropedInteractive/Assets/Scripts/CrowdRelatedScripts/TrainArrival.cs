@@ -14,7 +14,8 @@ private float time = 0f;
         {
             foreach (Spawner spawner in spawnGroup)
             {
-                spawner.AreaSpawn();
+                //spawner.AreaSpawn();
+                StartCoroutine(spawner.BurstSpawn(8, 0.5f));
             }
             time = 0f;
         }

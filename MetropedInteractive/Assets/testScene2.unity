@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028331, g: 0.2257133, b: 0.3069217, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -538,9 +538,25 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 705214461199243588, guid: 0a3ad806928659743a0bafd75dbea455, type: 3}
+      propertyPath: rows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 705214461199243588, guid: 0a3ad806928659743a0bafd75dbea455, type: 3}
+      propertyPath: rowLength
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 705214461199243588, guid: 0a3ad806928659743a0bafd75dbea455, type: 3}
       propertyPath: customGoal
       value: 
       objectReference: {fileID: 1711643776}
+    - target: {fileID: 1599832325267341705, guid: 0a3ad806928659743a0bafd75dbea455, type: 3}
+      propertyPath: rows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1599832325267341705, guid: 0a3ad806928659743a0bafd75dbea455, type: 3}
+      propertyPath: rowLength
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1599832325267341705, guid: 0a3ad806928659743a0bafd75dbea455, type: 3}
       propertyPath: customGoal
       value: 
@@ -548,6 +564,14 @@ PrefabInstance:
     - target: {fileID: 1704762625246867027, guid: 0a3ad806928659743a0bafd75dbea455, type: 3}
       propertyPath: m_LocalPosition.z
       value: -40
+      objectReference: {fileID: 0}
+    - target: {fileID: 2850310189122628512, guid: 0a3ad806928659743a0bafd75dbea455, type: 3}
+      propertyPath: rows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2850310189122628512, guid: 0a3ad806928659743a0bafd75dbea455, type: 3}
+      propertyPath: rowLength
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2850310189122628512, guid: 0a3ad806928659743a0bafd75dbea455, type: 3}
       propertyPath: customGoal
@@ -773,7 +797,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: epsilon
-      value: 0.001
+      value: 0.01
       objectReference: {fileID: 0}
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: timeStep
@@ -873,7 +897,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: showSplattedDensity
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: solverMaxIterations
@@ -881,7 +905,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: agentAvoidanceRadius
-      value: 1
+      value: 0.01
       objectReference: {fileID: 0}
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: percentOfFourInGroup
@@ -1406,9 +1430,25 @@ PrefabInstance:
       value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 705214461199243588, guid: 0a3ad806928659743a0bafd75dbea455, type: 3}
+      propertyPath: rows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 705214461199243588, guid: 0a3ad806928659743a0bafd75dbea455, type: 3}
+      propertyPath: rowLength
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 705214461199243588, guid: 0a3ad806928659743a0bafd75dbea455, type: 3}
       propertyPath: customGoal
       value: 
       objectReference: {fileID: 2027357149}
+    - target: {fileID: 1599832325267341705, guid: 0a3ad806928659743a0bafd75dbea455, type: 3}
+      propertyPath: rows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1599832325267341705, guid: 0a3ad806928659743a0bafd75dbea455, type: 3}
+      propertyPath: rowLength
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1599832325267341705, guid: 0a3ad806928659743a0bafd75dbea455, type: 3}
       propertyPath: customGoal
       value: 
@@ -1416,6 +1456,14 @@ PrefabInstance:
     - target: {fileID: 1704762625246867027, guid: 0a3ad806928659743a0bafd75dbea455, type: 3}
       propertyPath: m_LocalPosition.z
       value: -40
+      objectReference: {fileID: 0}
+    - target: {fileID: 2850310189122628512, guid: 0a3ad806928659743a0bafd75dbea455, type: 3}
+      propertyPath: rows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2850310189122628512, guid: 0a3ad806928659743a0bafd75dbea455, type: 3}
+      propertyPath: rowLength
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2850310189122628512, guid: 0a3ad806928659743a0bafd75dbea455, type: 3}
       propertyPath: customGoal
