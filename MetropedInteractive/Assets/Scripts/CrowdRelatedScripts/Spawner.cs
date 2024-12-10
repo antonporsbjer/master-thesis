@@ -361,7 +361,7 @@ public class Spawner : MonoBehaviour {
 				}
 				initAgent (ref a, startPos, start, goal, 1);
 				agentList.Add (a);
-				a.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f); // Modify this to change the size of characters new Vector3(2.0f, 2.0f, 2.0f) is normal size
+				a.transform.localScale = new Vector3(2.0f, 2.0f, 2.0f); // Modify this to change the size of characters new Vector3(2.0f, 2.0f, 2.0f) is normal size
 			} else {
 				int groupSize;
 				if (randomRange - individualAgents < percentOfTwoInGroup) {
@@ -420,7 +420,7 @@ public class Spawner : MonoBehaviour {
 		}
 		initAgent (ref a, startPos, node, goal, 1);
 		agentList.Add (a);
-		a.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f); // Modify this to change the size of characters new Vector3(2.0f, 2.0f, 2.0f) is normal size
+		a.transform.localScale = new Vector3(2.0f, 2.0f, 2.0f); // Modify this to change the size of characters new Vector3(2.0f, 2.0f, 2.0f) is normal size
 	}
 
 	public IEnumerator BurstSpawn(int nAgents, float burstRate)

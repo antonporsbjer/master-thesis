@@ -27,8 +27,8 @@ Transform:
   m_GameObject: {fileID: 1000012215036388}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -101.3, y: 2, z: -0.64}
-  m_LocalScale: {x: 10, y: 1, z: 32}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 0, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4000011747592624}
@@ -46,6 +46,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00d48e31efd525945874c429466b4c1b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  spawnMethod: 0
+  numberOfAgents: 0
+  useGroupedAgents: 0
+  individualAgents: 0
+  percentOfTwoInGroup: 0
+  percentOfThreeInGroup: 0
+  percentOfFourInGroup: 0
+  useSimpleAgents: 0
+  circleRadius: 0
+  numberOfDiscRows: 0
+  rows: 0
+  rowLength: 0
   agentSpawnColor: {r: 0.875, g: 0.045036756, b: 0.045036756, a: 1}
   groupAgentSpawnColor: {r: 0, g: 0, b: 0, a: 1}
   agentEditorContainer: {fileID: 0}
@@ -206,7 +218,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.3, y: 0.09022353, z: 1}
+  m_LocalScale: {x: 1, y: 0, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4000014112489414}
