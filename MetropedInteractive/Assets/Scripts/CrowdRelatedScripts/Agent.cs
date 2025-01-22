@@ -30,6 +30,7 @@ public class Agent : MonoBehaviour {
 	{
 		float currentDensity = calculateDensityAtPosition();
 		return currentDensity > densityThreshold;
+		//return false;
 	}
 	
 
@@ -67,7 +68,7 @@ public class Agent : MonoBehaviour {
 		calculateDensityAtPosition ();
 		calculateContinuumVelocity ();
 		//-1 since we subtract this agents density at position
-		velocity = preferredVelocity + ((densityAtAgentPosition - 1 / Mathf.Pow (Grid.instance.cellLength, 2)) / Grid.maxDensity)
+		velocity = preferredVelocity + (densityAtAgentPosition - 1 / Mathf.Pow (Grid.instance.cellLength, 2)) / Grid.maxDensity
 		* (continuumVelocity - preferredVelocity);
 		velocity.y = 0f;
 		transform.forward = velocity.normalized;
@@ -160,6 +161,9 @@ public class Agent : MonoBehaviour {
 			velocity = Vector3.zero;
        		preferredVelocity = Vector3.zero;
         	collisionAvoidanceVelocity = Vector3.zero;
+			animator.speed = 0;
+			if(rbody != null)
+				rbody.velocity = Vector3.zero;
 			return;
 		}
 		calculatePreferredVelocity(ref map);
