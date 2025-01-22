@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 
 public class Agent : MonoBehaviour {
 	public Vector3 preferredVelocity, continuumVelocity, collisionAvoidanceVelocity;
@@ -22,6 +23,15 @@ public class Agent : MonoBehaviour {
 	internal int row,column;
 	Vector3 prevPos;
 	Vector3 previousDirection;
+
+	private float densityThreshold = 0.2f;
+
+	private bool Wait()
+	{
+		float currentDensity = calculateDensityAtPosition();
+		return currentDensity > densityThreshold;
+	}
+	
 
 	internal void Start() {
 		animator = transform.gameObject.GetComponent<Animator> ();
@@ -144,6 +154,14 @@ public class Agent : MonoBehaviour {
 		if (done) {
 			return; // Dont do anything
 		} 
+		if(Wait())
+		{
+			Debug.Log("Agent is waiting");
+			velocity = Vector3.zero;
+       		preferredVelocity = Vector3.zero;
+        	collisionAvoidanceVelocity = Vector3.zero;
+			return;
+		}
 		calculatePreferredVelocity(ref map);
 
 		setCorrectedVelocity ();
@@ -183,7 +201,7 @@ public class Agent : MonoBehaviour {
 	/**
 	 * Do a bilinear interpolation of surrounding densities and come up with a density at this agents position.
 	 **/
-	internal void calculateDensityAtPosition() {
+	internal float calculateDensityAtPosition() {
 		densityAtAgentPosition = 0.0f;
 		int xNeighbour = (int)(column + neighbourXWeight/Mathf.Abs(neighbourXWeight));	//Column for the neighbour which the agent contributes to
 		int zNeighbour = (int)(row + neighbourZWeight/Mathf.Abs(neighbourZWeight));		//Row for the neighbour which the agent contributes to
@@ -201,6 +219,7 @@ public class Agent : MonoBehaviour {
 		if (!((zNeighbour) < 0) & !((zNeighbour) > Grid.instance.cellsPerRow - 1) & !((xNeighbour) < 0) & !((xNeighbour) > Grid.instance.cellsPerRow - 1)){	//As long as the cell exists
 			densityAtAgentPosition += Mathf.Abs(neighbourXZWeight)*Grid.instance.density[zNeighbour, xNeighbour];
 		}
+		return densityAtAgentPosition;
 	}
 
 	/**
