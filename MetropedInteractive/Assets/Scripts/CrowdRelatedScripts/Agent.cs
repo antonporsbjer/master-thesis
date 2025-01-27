@@ -180,59 +180,48 @@ public class Agent : MonoBehaviour {
 		{
 			Debug.Log("Agent is waiting");
 			velocity = Vector3.zero;
-       		preferredVelocity = Vector3.zero;
-        	collisionAvoidanceVelocity = Vector3.zero;
-			animator.speed = 0;
-			if(rbody != null)
-				rbody.velocity = Vector3.zero;
-			return;
+		} else
+		{
+			calculatePreferredVelocity(ref map);
+			setCorrectedVelocity ();
 		}
-		calculatePreferredVelocity(ref map);
 
-		setCorrectedVelocity ();
 		prevPos = transform.position;
-
 		Vector3 nextPos = transform.position + velocity * Grid.instance.dt; 
 		
 		if (isCollision(nextPos)) 
     	{
-        
-			// Handle sliding along the obstacle
 			RaycastHit hit;
 			LayerMask layerMask = LayerMask.GetMask("Obstacle");
 			
 			float rayLength = Mathf.Max(velocity.magnitude * Grid.instance.dt, 1f);
-			Debug.DrawRay(transform.position, velocity.normalized * rayLength, Color.red, 0.5f);
 			if (Physics.Raycast(transform.position, velocity.normalized, out hit, rayLength, layerMask)) 
 			{
-				Debug.Log("Raycast hit: " + hit.collider.name);
-				Vector3 slideDirection = Vector3.Cross(hit.normal, Vector3.up).normalized; // Slide along the surface
-        		velocity = slideDirection * velocity.magnitude; // Update velocity to slide along obstacle
+				Vector3 slideDirection = Vector3.Cross(hit.normal, Vector3.up).normalized;
+        		velocity = slideDirection * velocity.magnitude;
 			} 
 
     	}	
 
-		transform.position += velocity * Grid.instance.dt;
+    	Vector3 newPosition = transform.position + velocity * Grid.instance.dt;
+    	newPosition.y = 0.0f;	// Lock Y position
+    	transform.position = newPosition;
 
-		// Lock Y position
-    	Vector3 pos = transform.position;
-    	pos.y = 0.0f; // Or whatever fixed height you want
-    	transform.position = pos;
-
-
-		if(rbody != null)
-			rbody.velocity = Vector3.zero;
-
-
+		if(rbody != null) { rbody.velocity = Vector3.zero; }
 		collisionAvoidanceVelocity = Vector3.zero;
 
-		float realSpeed = Vector3.Distance (transform.position, prevPos) / Mathf.Max(Grid.instance.dt, Time.deltaTime);
+		Animate(prevPos);
+	}
+
+	void Animate(Vector3 previousPosition)
+	{
+		float realSpeed = Vector3.Distance (transform.position, previousPosition) / Mathf.Max(Grid.instance.dt, Time.deltaTime);
 		if (animator != null) {
 	
 			if (realSpeed < 0.05f) {
 				animator.speed = 0;
 			} else {
-				animator.speed = (realSpeed) / Grid.instance.agentMaxSpeed;
+				animator.speed = realSpeed / Grid.instance.agentMaxSpeed;
 			}
 		}
 	}
