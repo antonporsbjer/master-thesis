@@ -25,18 +25,39 @@ public class Agent : MonoBehaviour {
 	Vector3 previousDirection;
 
 	private float densityThreshold = 0.2f;
+	private float collisionRadius = 0.5f;
+
 
 	private bool Wait()
 	{
 		float currentDensity = calculateDensityAtPosition();
-		return currentDensity > densityThreshold;
-		//return false;
+		//return currentDensity > densityThreshold;
+		return false;
 	}
+
 	
 
 	internal void Start() {
 		animator = transform.gameObject.GetComponent<Animator> ();
 		rbody = transform.gameObject.GetComponent<Rigidbody> ();
+
+		if (rbody != null)
+		{
+			rbody.isKinematic = true;
+			rbody.useGravity = false;
+			rbody.collisionDetectionMode = CollisionDetectionMode.Continuous;
+		}
+		else
+		{
+				Debug.LogError("No Rigidbody found!");
+		}
+
+		Collider col = GetComponent<Collider>();
+		if (col == null)
+		{
+			Debug.LogError("No Collider found!");
+		}
+
 		//Which cell am i in currently?
 		calculateRowAndColumn();
 		if (!Grid.instance.colHandler && rbody != null) {
@@ -172,7 +193,24 @@ public class Agent : MonoBehaviour {
 		prevPos = transform.position;
 
 		Vector3 nextPos = transform.position + velocity * Grid.instance.dt; 
-		//nextPos.y = 3.0f;
+		
+		if (isCollision(nextPos)) 
+    	{
+        
+			// Handle sliding along the obstacle
+			RaycastHit hit;
+			LayerMask layerMask = LayerMask.GetMask("Obstacle");
+			
+			float rayLength = Mathf.Max(velocity.magnitude * Grid.instance.dt, 1f);
+			Debug.DrawRay(transform.position, velocity.normalized * rayLength, Color.red, 0.5f);
+			if (Physics.Raycast(transform.position, velocity.normalized, out hit, rayLength, layerMask)) 
+			{
+				Debug.Log("Raycast hit: " + hit.collider.name);
+				Vector3 slideDirection = Vector3.Cross(hit.normal, Vector3.up).normalized; // Slide along the surface
+        		velocity = slideDirection * velocity.magnitude; // Update velocity to slide along obstacle
+			} 
+
+    	}	
 
 		transform.position += velocity * Grid.instance.dt;
 
@@ -199,9 +237,15 @@ public class Agent : MonoBehaviour {
 		}
 	}
 
-	internal void OnCollisionEnter(Collision c) {
-		collision = true;
+
+	bool isCollision(Vector3 targetPosition)
+	{
+		LayerMask layerMask = LayerMask.GetMask("Obstacle");
+		Collider[] hits = Physics.OverlapSphere(targetPosition, collisionRadius, layerMask);
+        return hits.Length > 0;
 	}
+
+
 	/**
 	 * Do a bilinear interpolation of surrounding densities and come up with a density at this agents position.
 	 **/
