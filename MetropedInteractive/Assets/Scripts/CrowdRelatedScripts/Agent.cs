@@ -43,13 +43,13 @@ public class Agent : MonoBehaviour {
 
 		if (rbody != null)
 		{
-			rbody.isKinematic = true;
+			rbody.isKinematic = false;
 			rbody.useGravity = false;
 			rbody.collisionDetectionMode = CollisionDetectionMode.Continuous;
 		}
 		else
 		{
-				Debug.LogError("No Rigidbody found!");
+			Debug.LogError("No Rigidbody found!");
 		}
 
 		Collider col = GetComponent<Collider>();
@@ -63,6 +63,11 @@ public class Agent : MonoBehaviour {
 		if (!Grid.instance.colHandler && rbody != null) {
 			Destroy (rbody);
 		}
+	}
+
+	void OnCollisionEnter(Collision collisionInfo)
+	{
+		Debug.Log("Collision detected! " + collisionInfo.gameObject.name);
 	}
 
 	internal void calculateRowAndColumn() {
@@ -187,21 +192,6 @@ public class Agent : MonoBehaviour {
 		}
 
 		prevPos = transform.position;
-		Vector3 nextPos = transform.position + velocity * Grid.instance.dt; 
-		
-		if (isCollision(nextPos)) 
-    	{
-			RaycastHit hit;
-			LayerMask layerMask = LayerMask.GetMask("Obstacle");
-			
-			float rayLength = Mathf.Max(velocity.magnitude * Grid.instance.dt, 1f);
-			if (Physics.Raycast(transform.position, velocity.normalized, out hit, rayLength, layerMask)) 
-			{
-				Vector3 slideDirection = Vector3.Cross(hit.normal, Vector3.up).normalized;
-        		velocity = slideDirection * velocity.magnitude;
-			} 
-
-    	}	
 
     	Vector3 newPosition = transform.position + velocity * Grid.instance.dt;
     	newPosition.y = 0.0f;	// Lock Y position
@@ -225,15 +215,6 @@ public class Agent : MonoBehaviour {
 			}
 		}
 	}
-
-
-	bool isCollision(Vector3 targetPosition)
-	{
-		LayerMask layerMask = LayerMask.GetMask("Obstacle");
-		Collider[] hits = Physics.OverlapSphere(targetPosition, collisionRadius, layerMask);
-        return hits.Length > 0;
-	}
-
 
 	/**
 	 * Do a bilinear interpolation of surrounding densities and come up with a density at this agents position.
