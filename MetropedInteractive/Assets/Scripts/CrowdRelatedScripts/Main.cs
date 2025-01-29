@@ -28,6 +28,7 @@ public class Main : MonoBehaviour {
 	
 	public float agentAvoidanceRadius;
 	public float agentMaxSpeed;
+	public float agentMinSpeed;
 	public bool usePresetGroupDistances;
 	public float p1p2, p2p3, p3p4;
 

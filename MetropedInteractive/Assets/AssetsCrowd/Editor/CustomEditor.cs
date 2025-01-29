@@ -6,6 +6,7 @@ public class PropertyHolderEditor : Editor {
 
 	public SerializedProperty
 		agentMaxSpeed_Prop,
+		agentMinSpeed_Prop,
 		agentPrefabs_Prop,
 		agentPrefabGroup_Prop,
 		alpha_Prop,
@@ -41,6 +42,7 @@ public class PropertyHolderEditor : Editor {
 	void OnEnable () {
 		// Setup the SerializedProperties
 		agentMaxSpeed_Prop = serializedObject.FindProperty ("agentMaxSpeed");
+		agentMinSpeed_Prop = serializedObject.FindProperty ("agentMinSpeed");
 		agentPrefabs_Prop = serializedObject.FindProperty ("agentPrefabs");
 		agentPrefabGroup_Prop = serializedObject.FindProperty("agentPrefabGroup");
 		alpha_Prop = serializedObject.FindProperty ("alpha");
@@ -77,6 +79,7 @@ public class PropertyHolderEditor : Editor {
 		EditorGUILayout.PropertyField(numberOfCells_Prop);
 		EditorGUILayout.PropertyField(neighbourBins_Prop);
 		EditorGUILayout.PropertyField(agentMaxSpeed_Prop);
+		EditorGUILayout.PropertyField(agentMinSpeed_Prop);
 		EditorGUILayout.PropertyField (customTimeStep_Prop);
 		if (customTimeStep_Prop.boolValue) {
 			EditorGUILayout.Slider(timeStep_Prop, 0.01f, 0.05f);

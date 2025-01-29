@@ -381,10 +381,10 @@ public class Grid : MonoBehaviour {
 					}
 					if (dis.magnitude < 2 * groupDis) {
 				
-						agentList [a].collisionAvoidanceVelocity += dis.normalized * (2 * groupDis - dis.magnitude) * agentMaxSpeed; 
+						agentList [a].collisionAvoidanceVelocity += dis.normalized * (2 * groupDis - dis.magnitude) * agentList[a].walkingSpeed; 
 					}
 				} else {
-					agentList [a].collisionAvoidanceVelocity += dis.normalized * (ringDiameter - dis.magnitude) * agentMaxSpeed; //Push away
+					agentList [a].collisionAvoidanceVelocity += dis.normalized * (ringDiameter - dis.magnitude) * agentList[a].walkingSpeed; //Push away
 				}
 			}
 		}

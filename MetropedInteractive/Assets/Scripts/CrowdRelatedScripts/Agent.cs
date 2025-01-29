@@ -23,6 +23,7 @@ public class Agent : MonoBehaviour {
 	internal int row,column;
 	Vector3 prevPos;
 	Vector3 previousDirection;
+	public float walkingSpeed;
 
 	private float densityThreshold = 0.2f;
 	private float collisionRadius = 0.5f;
@@ -63,6 +64,10 @@ public class Agent : MonoBehaviour {
 		if (!Grid.instance.colHandler && rbody != null) {
 			Destroy (rbody);
 		}
+
+		Main mainScript = GameObject.FindObjectOfType<Main>();
+		walkingSpeed = Random.Range(mainScript.agentMinSpeed, mainScript.agentMaxSpeed);
+
 	}
 
 	void OnCollisionEnter(Collision collisionInfo)
@@ -147,7 +152,7 @@ public class Agent : MonoBehaviour {
 			}
 		}
 		//collision = false;
-		preferredVelocity = preferredVelocity * Grid.instance.agentMaxSpeed;
+		preferredVelocity = preferredVelocity * walkingSpeed;
 		preferredVelocity.y = 0f;
 	}
 
@@ -162,7 +167,7 @@ public class Agent : MonoBehaviour {
 		} else {
 			preferredVelocity = (noMapGoal - transform.position).normalized;
 		}
-		preferredVelocity = preferredVelocity * Grid.instance.agentMaxSpeed;
+		preferredVelocity = preferredVelocity * walkingSpeed;
 		preferredVelocity.y = 0f;
 	}
 
@@ -211,7 +216,7 @@ public class Agent : MonoBehaviour {
 			if (realSpeed < 0.05f) {
 				animator.speed = 0;
 			} else {
-				animator.speed = realSpeed / Grid.instance.agentMaxSpeed;
+				animator.speed = realSpeed / walkingSpeed;
 			}
 		}
 	}
