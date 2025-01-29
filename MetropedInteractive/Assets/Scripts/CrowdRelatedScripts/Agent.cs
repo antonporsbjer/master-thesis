@@ -25,8 +25,13 @@ public class Agent : MonoBehaviour {
 	Vector3 previousDirection;
 	public float walkingSpeed;
 
-	private float densityThreshold = 0.2f;
+	private float densityThreshold = 0.25f;
 	private float collisionRadius = 0.5f;
+
+	private bool isWaiting = false;
+    private float waitTimer = 0f;
+    public float maxWaitTime = 2f;
+	bool allowWait = false;
 
 
 	private bool Wait()
@@ -35,6 +40,28 @@ public class Agent : MonoBehaviour {
 		//return currentDensity > densityThreshold;
 		return false;
 	}
+
+	private void OnTriggerEnter(Collider other)
+	{
+		if (other.CompareTag("original") && !other.isTrigger)
+        {
+			float currentDensity = calculateDensityAtPosition();
+			if(currentDensity > densityThreshold)
+			{
+				isWaiting = true;
+            	waitTimer = Random.Range(0.5f, maxWaitTime);
+			}
+            
+        }
+		
+	}
+	private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("original") && !other.isTrigger)
+        {
+            isWaiting = false;
+        }
+    }
 
 	
 
@@ -68,11 +95,6 @@ public class Agent : MonoBehaviour {
 		Main mainScript = GameObject.FindObjectOfType<Main>();
 		walkingSpeed = Random.Range(mainScript.agentMinSpeed, mainScript.agentMaxSpeed);
 
-	}
-
-	void OnCollisionEnter(Collision collisionInfo)
-	{
-		Debug.Log("Collision detected! " + collisionInfo.gameObject.name);
 	}
 
 	internal void calculateRowAndColumn() {
@@ -186,11 +208,20 @@ public class Agent : MonoBehaviour {
 		if (done) {
 			return; // Dont do anything
 		} 
-		if(Wait())
-		{
-			Debug.Log("Agent is waiting");
-			velocity = Vector3.zero;
-		} else
+		if (isWaiting && allowWait)
+        {
+            waitTimer -= Time.deltaTime;
+            if (waitTimer <= 0)
+            {
+                isWaiting = false;
+            }
+			else
+			{
+				velocity = Vector3.zero;
+				preferredVelocity = Vector3.zero;
+			}
+            
+        } else
 		{
 			calculatePreferredVelocity(ref map);
 			setCorrectedVelocity ();

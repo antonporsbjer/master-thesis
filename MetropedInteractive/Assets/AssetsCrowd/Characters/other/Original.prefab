@@ -409,9 +409,9 @@ GameObject:
   - component: {fileID: 111000014120850172}
   - component: {fileID: 114000012423741106}
   - component: {fileID: 114000013582079156}
-  - component: {fileID: 65000013273806996}
   - component: {fileID: 54000012287171058}
   - component: {fileID: 4846567876189223514}
+  - component: {fileID: 8297084202944056173}
   m_Layer: 2
   m_Name: Original
   m_TagString: original
@@ -490,6 +490,8 @@ MonoBehaviour:
   collisionAvoidanceVelocity: {x: 0, y: 0, z: 0}
   velocity: {x: 0, y: 0, z: 0}
   path: 
+  walkingSpeed: 0
+  maxWaitTime: 2
 --- !u!114 &114000013582079156
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -504,27 +506,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   shirtColor: 0
   characterMesh: {fileID: 0}
---- !u!65 &65000013273806996
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1000011080939938}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 0
-  serializedVersion: 3
-  m_Size: {x: 0.6628629, y: 1, z: 1}
-  m_Center: {x: 0.0064003468, y: 0, z: 0}
 --- !u!54 &54000012287171058
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -575,6 +556,27 @@ CapsuleCollider:
   m_Height: 1.99
   m_Direction: 1
   m_Center: {x: 0, y: 0.68, z: 0}
+--- !u!135 &8297084202944056173
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000011080939938}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 4
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.28
+  m_Center: {x: 0, y: 0.33, z: 0.34}
 --- !u!1 &1000011084100006
 GameObject:
   m_ObjectHideFlags: 0
