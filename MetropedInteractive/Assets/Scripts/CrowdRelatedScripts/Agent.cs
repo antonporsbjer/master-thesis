@@ -32,13 +32,22 @@ public class Agent : MonoBehaviour {
     private float waitTimer = 0f;
     public float maxWaitTime = 2f;
 	bool allowWait = false;
-
+	public float currentSpeed;
+	private Vector3 previousPosition;
 
 	private bool Wait()
 	{
 		float currentDensity = calculateDensityAtPosition();
 		//return currentDensity > densityThreshold;
 		return false;
+	}
+
+	void Update()
+	{
+		    Vector3 currentPosition = transform.position;
+			Vector3 displacement = currentPosition - previousPosition;
+			currentSpeed = displacement.magnitude / Time.deltaTime;
+			previousPosition = currentPosition;
 	}
 
 	private void OnTriggerEnter(Collider other)
@@ -94,6 +103,7 @@ public class Agent : MonoBehaviour {
 
 		Main mainScript = GameObject.FindObjectOfType<Main>();
 		walkingSpeed = Random.Range(mainScript.agentMinSpeed, mainScript.agentMaxSpeed);
+		previousPosition = transform.position;
 
 	}
 
