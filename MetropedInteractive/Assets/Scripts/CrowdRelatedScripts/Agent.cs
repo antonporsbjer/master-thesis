@@ -24,56 +24,10 @@ public class Agent : MonoBehaviour {
 	Vector3 prevPos;
 	Vector3 previousDirection;
 	public float walkingSpeed;
-
-	private float densityThreshold = 0.25f;
-	private float collisionRadius = 0.5f;
-
-	private bool isWaiting = false;
-    private float waitTimer = 0f;
     public float maxWaitTime = 2f;
-	bool allowWait = false;
 	public float currentSpeed;
-	private Vector3 previousPosition;
-
-	private bool Wait()
-	{
-		float currentDensity = calculateDensityAtPosition();
-		//return currentDensity > densityThreshold;
-		return false;
-	}
-
-	void Update()
-	{
-		    Vector3 currentPosition = transform.position;
-			Vector3 displacement = currentPosition - previousPosition;
-			currentSpeed = displacement.magnitude / Time.deltaTime;
-			previousPosition = currentPosition;
-	}
-
-	private void OnTriggerEnter(Collider other)
-	{
-		if (other.CompareTag("original") && !other.isTrigger)
-        {
-			float currentDensity = calculateDensityAtPosition();
-			if(currentDensity > densityThreshold)
-			{
-				isWaiting = true;
-            	waitTimer = Random.Range(0.5f, maxWaitTime);
-			}
-            
-        }
-		
-	}
-	private void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("original") && !other.isTrigger)
-        {
-            isWaiting = false;
-        }
-    }
 
 	
-
 	internal void Start() {
 		animator = transform.gameObject.GetComponent<Animator> ();
 		rbody = transform.gameObject.GetComponent<Rigidbody> ();
@@ -82,7 +36,6 @@ public class Agent : MonoBehaviour {
 		{
 			rbody.isKinematic = false;
 			rbody.useGravity = false;
-			rbody.collisionDetectionMode = CollisionDetectionMode.Continuous;
 		}
 		else
 		{
@@ -101,10 +54,8 @@ public class Agent : MonoBehaviour {
 			Destroy (rbody);
 		}
 
-		Main mainScript = GameObject.FindObjectOfType<Main>();
+		Main mainScript = FindObjectOfType<Main>();
 		walkingSpeed = Random.Range(mainScript.agentMinSpeed, mainScript.agentMaxSpeed);
-		previousPosition = transform.position;
-
 	}
 
 	internal void calculateRowAndColumn() {
@@ -216,32 +167,17 @@ public class Agent : MonoBehaviour {
 	 **/
 	internal void changePosition(ref MapGen.map map) {
 		if (done) {
-			return; // Dont do anything
+			return; // Don't do anything
 		} 
-		if (isWaiting && allowWait)
-        {
-            waitTimer -= Time.deltaTime;
-            if (waitTimer <= 0)
-            {
-                isWaiting = false;
-            }
-			else
-			{
-				velocity = Vector3.zero;
-				preferredVelocity = Vector3.zero;
-			}
-            
-        } else
-		{
-			calculatePreferredVelocity(ref map);
-			setCorrectedVelocity ();
-		}
+
+		calculatePreferredVelocity(ref map);
+		setCorrectedVelocity ();
 
 		prevPos = transform.position;
 
-    	Vector3 newPosition = transform.position + velocity * Grid.instance.dt;
-    	newPosition.y = 0.0f;	// Lock Y position
-    	transform.position = newPosition;
+		Vector3 newPosition = transform.position + velocity * Grid.instance.dt;
+		newPosition.y = 0.0f;	// Lock Y position
+		transform.position = newPosition;
 
 		if(rbody != null) { rbody.velocity = Vector3.zero; }
 		collisionAvoidanceVelocity = Vector3.zero;

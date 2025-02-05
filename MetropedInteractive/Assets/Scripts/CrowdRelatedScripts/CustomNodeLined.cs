@@ -2,12 +2,11 @@
 using System.Collections;
 
 public class CustomNodeLined : CustomNode {
-	public float radius = 0.1f;
 
 	public override Vector3 getTargetPoint(Vector3 origin) {
 
-		Vector3 A = transform.TransformPoint(new Vector3 (radius, 0, 0));
-		Vector3 B = transform.TransformPoint (new Vector3 (-radius, 0, 0));
+		Vector3 A = transform.TransformPoint(new Vector3 (0.5f, 0, 0));
+		Vector3 B = transform.TransformPoint (new Vector3 (-0.5f, 0, 0));
 		Vector3 AB = B - A;
 		float dis = Vector3.Dot ((origin - A), AB) / AB.sqrMagnitude;
 		if (dis < 0) {

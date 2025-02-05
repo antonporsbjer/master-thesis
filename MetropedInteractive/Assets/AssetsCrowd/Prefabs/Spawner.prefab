@@ -28,7 +28,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 0, z: 1}
+  m_LocalScale: {x: 1, y: 0.01, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4000011747592624}
@@ -46,14 +46,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00d48e31efd525945874c429466b4c1b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spawnMethod: 0
-  numberOfAgents: 0
+  spawnMethod: 3
+  numberOfAgents: 1000
   useGroupedAgents: 0
   individualAgents: 0
   percentOfTwoInGroup: 0
   percentOfThreeInGroup: 0
   percentOfFourInGroup: 0
-  useSimpleAgents: 0
+  useSimpleAgents: 1
   circleRadius: 0
   numberOfDiscRows: 0
   rows: 0
@@ -62,7 +62,7 @@ MonoBehaviour:
   groupAgentSpawnColor: {r: 0, g: 0, b: 0, a: 1}
   agentEditorContainer: {fileID: 0}
   customGoal: {fileID: 0}
-  spawnRate: 2
+  spawnRate: 1
 --- !u!65 &65000013529230742
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -216,14 +216,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1000014088025222}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 0, z: 1}
+  m_LocalScale: {x: 1, y: 0.01, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4000014112489414}
   m_Father: {fileID: 4000011914076574}
-  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &33000012746056976
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -287,4 +287,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isSpawn: 1
-  isGoal: 1
+  isGoal: 0
+  radius: 0.1

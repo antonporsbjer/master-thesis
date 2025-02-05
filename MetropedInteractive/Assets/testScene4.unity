@@ -1324,11 +1324,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: agentMaxSpeed
-      value: 1
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: agentMinSpeed
-      value: 0.5
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: neighbourBins
@@ -1771,7 +1771,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 114000011514121796, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
       propertyPath: spawnRate
-      value: 0.5
+      value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 114000011514121796, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
       propertyPath: customGoal
@@ -2144,7 +2144,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 114000010366523380, guid: 3ec909799a13ee84d9a7d4f665417e89, type: 3}
       propertyPath: radius
-      value: 0.08
+      value: 0.5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
