@@ -54,6 +54,7 @@ public class Spawner : MonoBehaviour {
 
 	public GameObject agentEditorContainer = null;
 	public CustomNode customGoal = null;
+	private int goal;
 
 	public float spawnRate;
 
@@ -62,6 +63,51 @@ public class Spawner : MonoBehaviour {
 	public void SetNode(int node)
 	{
 		this.node = node;
+	}
+
+	private void SetGoal()
+	{
+		goal = map.goals[0];
+		if (customGoal != null) {
+			//OPT: Use dictionary in mapgen to get constant time access!
+			for(int i = 0; i < map.allNodes.Count; ++i) {
+				if (map.allNodes [i].transform.position == customGoal.transform.position) {
+					goal = i;
+					break;
+				}
+			}
+		}
+	}
+
+	public void Init(ref GameObject agentModels, ref GameObject subgroupModels, ref Agent manShirtColor, 
+					 ref MapGen.map map,  ref List<Agent> agentList, Vector2 X, Vector2 Z, float agentAvoidanceRadius) {
+		this.agentModels = agentModels;
+		this.subgroupModels = subgroupModels;
+		this.manShirtColor = manShirtColor;
+		this.map = map;
+		this.X = X; this.Z = Z;
+		this.agentAvoidanceRadius = agentAvoidanceRadius;
+		this.agentList = agentList;
+
+		this.materialColor = Materials.MakeMaterial (agentSpawnColor);
+		this.groupAgentMaterial = Materials.MakeMaterial (groupAgentSpawnColor);
+		skins = new Dictionary<string, int>();
+		Object[] allSkins = Resources.LoadAll ("");
+		for (int i = 0; i < allSkins.GetLength (0); ++i) {
+			string tag = allSkins [i].name.Split ('-') [0];
+			if (skins.ContainsKey (tag)) {
+				skins [tag] += 1;
+			} else {
+				skins.Add (tag, 1);
+			}
+		}
+		subgroupModelsParentIndex = new List<int> ();
+		for(int i = 0; i < subgroupModels.transform.childCount; ++i) {
+			if (subgroupModels.transform.GetChild (i).tag == "female" || subgroupModels.transform.GetChild (i).tag == "male") {
+				subgroupModelsParentIndex.Add (i);
+			}
+		}
+		SetGoal();
 	}
 
 	void Start()
@@ -90,43 +136,32 @@ public class Spawner : MonoBehaviour {
 		}
 	}
 
-	public void AreaSpawn()
-	{
-		agentList.AddRange(spawnAreaAgents(rows, rowLength, node));
+	private void InitAgent(ref Agent a, Vector3 pos, int start, int goal, int pathIndex, Material argMat = null) {
+		a.transform.position = pos;
+		a.transform.right = transform.right;
+		a.path = map.shortestPaths [start] [goal]; 
+		a.pathIndex = pathIndex;
+		a.preferredVelocity = (map.allNodes [a.path [a.pathIndex]].getTargetPoint (a.transform.position) - a.transform.position).normalized;
+		if (a.tag == "original") {
+			if (a.transform.childCount > 1) {
+				a.transform.GetChild(1).GetComponent<SkinnedMeshRenderer> ().sharedMaterial = materialColor;
+			}
+		} else if (a.transform.childCount > 0) {
+			Renderer ss = a.transform.GetChild (0).GetComponent<Renderer> ();
+			if (ss != null)
+				ss.material.mainTexture = (Texture)Resources.Load (a.tag + "-" + Random.Range (1, skins [a.tag]+1));
+			else {
+				Renderer ss2 = a.transform.GetChild (1).GetComponent<Renderer> ();
+				if (ss2 != null)
+					ss2.material.mainTexture = (Texture)Resources.Load (a.tag + "-" + Random.Range (1, skins [a.tag]+1));
+			}
+			
+		}
+		if (agentEditorContainer != null)
+			a.transform.parent = agentEditorContainer.transform;
 	}
 
-
-	public void init(ref GameObject agentModels, ref GameObject subgroupModels, ref Agent manShirtColor, 
-					 ref MapGen.map map,  ref List<Agent> agentList, Vector2 X, Vector2 Z, float agentAvoidanceRadius) {
-		this.agentModels = agentModels;
-		this.subgroupModels = subgroupModels;
-		this.manShirtColor = manShirtColor;
-		this.map = map;
-		this.X = X; this.Z = Z;
-		this.agentAvoidanceRadius = agentAvoidanceRadius;
-		this.agentList = agentList;
-
-		this.materialColor = Materials.MakeMaterial (agentSpawnColor);
-		this.groupAgentMaterial = Materials.MakeMaterial (groupAgentSpawnColor);
-		skins = new Dictionary<string, int>();
-		Object[] allSkins = Resources.LoadAll ("");
-		for (int i = 0; i < allSkins.GetLength (0); ++i) {
-			string tag = allSkins [i].name.Split ('-') [0];
-			if (skins.ContainsKey (tag)) {
-				skins [tag] += 1;
-			} else {
-				skins.Add (tag, 1);
-			}
-		}
-		subgroupModelsParentIndex = new List<int> ();
-		for(int i = 0; i < subgroupModels.transform.childCount; ++i) {
-			if (subgroupModels.transform.GetChild (i).tag == "female" || subgroupModels.transform.GetChild (i).tag == "male") {
-				subgroupModelsParentIndex.Add (i);
-			}
-		}
-	//	Debug.Log (individualAgents + " " + percentOfTwoInGroup + " " + percentOfThreeInGroup + " " + percentOfFourInGroup);
-	}
-		
+	// UNIFORM SPAWN
 	/**
 	 * Spawn a number of regular agents uniformly placed accross the world grid specified by X and Z vectors.
 	 * Agents are guaranteed to be spawned on a location not obstructed by a static obstacle.
@@ -189,75 +224,10 @@ public class Spawner : MonoBehaviour {
 		return agents;
 	}
 
-	private void initAgent(ref Agent a, Vector3 pos, int start, int goal, int pathIndex, Material argMat = null) {
-		a.transform.position = pos;
-		a.transform.right = transform.right;
-		a.path = map.shortestPaths [start] [goal]; 
-		a.pathIndex = pathIndex;
-		a.preferredVelocity = (map.allNodes [a.path [a.pathIndex]].getTargetPoint (a.transform.position) - a.transform.position).normalized;
-		if (a.tag == "original") {
-			if (a.transform.childCount > 1) {
-				a.transform.GetChild(1).GetComponent<SkinnedMeshRenderer> ().sharedMaterial = materialColor;
-			}
-		} else if (a.transform.childCount > 0) {
-			Renderer ss = a.transform.GetChild (0).GetComponent<Renderer> ();
-			if (ss != null)
-				ss.material.mainTexture = (Texture)Resources.Load (a.tag + "-" + Random.Range (1, skins [a.tag]+1));
-			else {
-				Renderer ss2 = a.transform.GetChild (1).GetComponent<Renderer> ();
-				if (ss2 != null)
-					ss2.material.mainTexture = (Texture)Resources.Load (a.tag + "-" + Random.Range (1, skins [a.tag]+1));
-			}
-			
-		}
-		if (agentEditorContainer != null)
-			a.transform.parent = agentEditorContainer.transform;
-	}
-
-
-	private SubgroupAgent getGroupModel(bool fixedParent, bool leader) {
-		SubgroupAgent model;
-		if (useSimpleAgents) {
-			model = manShirtColor.gameObject.GetComponent<SubgroupAgent> ();
-			model.gameObject.GetComponent<Agent> ().enabled = false;
-		} else {
-			if (fixedParent && leader) {
-				model = subgroupModels.transform.GetChild (subgroupModelsParentIndex [Random.Range (0, subgroupModelsParentIndex.Count)]).GetComponent<SubgroupAgent> ();
-			} else {
-				model = subgroupModels.transform.GetChild (Random.Range (0, subgroupModels.transform.childCount)).GetComponent<SubgroupAgent>();
-			}
-		}
-		return model;
-	}
-	//Supports 4 followers
-	private List<SubgroupAgent> initGroupAgent(int groupSize, Vector3 pos, int start, int goal, int pathIndex, Material argMat = null) {
-		bool fixedParent = true;
-		List<SubgroupAgent> gr = new List<SubgroupAgent> ();
-
-		SubgroupAgent leader = Instantiate (getGroupModel(fixedParent, true)) as SubgroupAgent;
-	
-		leader.isLeader = true; leader.transform.position = pos;
-		List<Vector3> followerPositions = new List<Vector3> (3); 
-		followerPositions.Add (pos);
-		float usedValue = 0.6f;//Grid.instance.agentAvoidanceRadius;
-		followerPositions.Add (leader.transform.TransformPoint (0.0f, 0.0f, usedValue));
-		followerPositions.Add (leader.transform.TransformPoint (0.0f, 0.0f, -usedValue));	
-		followerPositions.Add (leader.transform.TransformPoint (0.0f, 0.0f, 2*usedValue));
-		followerPositions.Add (leader.transform.TransformPoint (0.0f, 0.0f, -2*usedValue));
-		gr.Add (leader);
-		for (int i = 0; i < groupSize - 1; ++i) {
-			SubgroupAgent follower = Instantiate (getGroupModel(fixedParent, false)) as SubgroupAgent;
-			gr.Add (follower);
-		}
-		SubgroupAgent.companions comp = new SubgroupAgent.companions (gr, 0, transform.gameObject.name + tag.ToString());
-		tag++;
-		for (int i = 0; i < gr.Count; ++i) {
-			gr [i].groupMemberNumber = i; gr [i].number = i;
-			gr [i].c = comp;
-			Agent sa = gr [i];
-			initAgent (ref sa, followerPositions [i], start, goal, pathIndex, groupAgentMaterial);
-		}
-		return gr;
+	// AREA SPAWN
+	public void AreaSpawn()
+	{
+		agentList.AddRange(spawnAreaAgents(rows, rowLength, node));
 	}
 
 	/**
@@ -267,16 +237,7 @@ public class Spawner : MonoBehaviour {
 	public List<Agent> spawnAreaAgents(int rows, int rowLength, int startNode) {
 		List<Agent> agents = new List<Agent> ();
 		Vector3 startPos = transform.position - (transform.right * rowLength / 2);
-		int goal = map.goals[0];
-		if (customGoal != null) {
-			//OPT: Use dictionary in mapgen to get constant time access!
-			for(int i = 0; i < map.allNodes.Count; ++i) {
-				if (map.allNodes [i].transform.position == customGoal.transform.position) {
-					goal = i;
-					break;
-				}
-			}
-		}
+		
 		for (int i = 0; i < rows; ++i) {
 			for (int j = 0; j < rowLength; ++j) {
 				Vector3 posVector = startPos + (transform.right * j) + (transform.right *i);
@@ -291,13 +252,14 @@ public class Spawner : MonoBehaviour {
 				{
 					a = Instantiate (agentModels.transform.GetChild(Random.Range(0, agentModels.transform.childCount)).GetComponent<Agent>()) as Agent;
 				}
-				initAgent (ref a, posVector, start, goal, 1); //Make agent walk towards next destination
+				InitAgent (ref a, posVector, start, goal, 1); //Make agent walk towards next destination
 				agents.Add (a);
 			}
 		}
 		return agents;
 	}
 
+	// CIRCLE SPAWN
 	internal List<Agent> circleSpawn(int numberOfAgents, float r, float planeScale){
 		Color[] colors = {Color.green, Color.yellow, Color.red, Color.magenta, 0.15f*Color.white+Color.blue, Color.cyan};
 		Vector3 agentPos = new Vector3(0f, 0f, 0f);
@@ -331,6 +293,7 @@ public class Spawner : MonoBehaviour {
 		return li;
 	}
 
+	// DISC SPAWN
 	internal List<Agent> discSpawn(float planeScale, float startRadius, int numberOfRows) {
 		float r;
 		int numberOfAgents;
@@ -344,6 +307,20 @@ public class Spawner : MonoBehaviour {
 		return li;
 	}
 
+	// CONTINUOUS SPAWN
+	public void continousSpawn(int startNode, int cap) {
+		int goal = map.goals[0];
+		if (customGoal != null) {
+			//OPT: Use dictionary in mapgen to get constant time access!
+			for(int i = 0; i < map.allNodes.Count; ++i) {
+				if (map.allNodes [i].transform.position == customGoal.transform.position) {
+					goal = i;
+					break;
+				}
+			}
+		}
+		StartCoroutine (spawnContinously(startNode, goal, cap, spawnRate));
+	}
 
 	internal IEnumerator spawnContinously(int start, int goal, int cap, float continousSpawnRate) {
 		float spawnSizeX = transform.localScale.x;
@@ -359,7 +336,7 @@ public class Spawner : MonoBehaviour {
 				} else {
 					a = Instantiate (agentModels.transform.GetChild(Random.Range(0, agentModels.transform.childCount)).GetComponent<Agent>()) as Agent;
 				}
-				initAgent (ref a, startPos, start, goal, 1);
+				InitAgent (ref a, startPos, start, goal, 1);
 				agentList.Add (a);
 				a.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f); // Modify this to change the size of characters new Vector3(2.0f, 2.0f, 2.0f) is normal size
 			} else {
@@ -371,7 +348,7 @@ public class Spawner : MonoBehaviour {
 				} else {
 					groupSize = 4;
 				}
-				List<SubgroupAgent> liA = initGroupAgent (groupSize, startPos, start, goal, 1);
+				List<SubgroupAgent> liA = InitGroupAgent (groupSize, startPos, start, goal, 1);
 				for (int i = 0; i < liA.Count; ++i) {
 					agentList.Add ((Agent)liA [i]);
 				}
@@ -388,41 +365,7 @@ public class Spawner : MonoBehaviour {
 		StartCoroutine (spawnContinously(start, goal, cap, continousSpawnRate));
 	}
 
-	public void continousSpawn(int startNode, int cap) {
-		int goal = map.goals[0];
-		if (customGoal != null) {
-			//OPT: Use dictionary in mapgen to get constant time access!
-			for(int i = 0; i < map.allNodes.Count; ++i) {
-				if (map.allNodes [i].transform.position == customGoal.transform.position) {
-					goal = i;
-					break;
-				}
-			}
-		}
-		StartCoroutine (spawnContinously(startNode, goal, cap, spawnRate));
-	}
-
-	public void spawnOneAgent(int goal)
-	{
-		float spawnSizeX = transform.localScale.x;
-		float spawnSizeZ = transform.localScale.z;
-	
-		Vector3 startPos = new Vector3(transform.position.x + Random.Range(-1.5f, 1.5f), transform.position.y, transform.position.z + Random.Range(-1.5f, 1.5f));
-		//startPos = transform.TransformPoint (startPos);
-
-		Agent a;
-		if (useSimpleAgents) 
-		{
-			a = Instantiate (manShirtColor) as Agent;
-		} else 
-		{
-			a = Instantiate (agentModels.transform.GetChild(Random.Range(0, agentModels.transform.childCount)).GetComponent<Agent>()) as Agent;
-		}
-		initAgent (ref a, startPos, node, goal, 1);
-		agentList.Add (a);
-		a.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f); // Modify this to change the size of characters new Vector3(2.0f, 2.0f, 2.0f) is normal size
-	}
-
+	// BURST SPAWN
 	public IEnumerator BurstSpawn(int nAgents, float burstRate)
 	{
 		int goal = map.goals[0];
@@ -435,10 +378,71 @@ public class Spawner : MonoBehaviour {
 			}
 		}
 		for (int i = 0; i < nAgents; ++i) {
-			spawnOneAgent (goal);
+			Vector3 startPos = new Vector3(transform.position.x + Random.Range(-1.5f, 1.5f), transform.position.y, transform.position.z + Random.Range(-1.5f, 1.5f));
+			spawnOneAgent (startPos);
 			yield return new WaitForSeconds (burstRate);
 		}
 
 	}
 
+	public void spawnOneAgent(Vector3 startPos)
+	{
+		Agent a;
+		if (useSimpleAgents) 
+		{
+			a = Instantiate (manShirtColor) as Agent;
+		} else 
+		{
+			a = Instantiate (agentModels.transform.GetChild(Random.Range(0, agentModels.transform.childCount)).GetComponent<Agent>()) as Agent;
+		}
+		InitAgent (ref a, startPos, node, goal, 1);
+		agentList.Add (a);
+		a.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f); // Modify this to change the size of characters new Vector3(2.0f, 2.0f, 2.0f) is normal size
+	}
+
+	// GROUPS
+	private SubgroupAgent getGroupModel(bool fixedParent, bool leader) {
+		SubgroupAgent model;
+		if (useSimpleAgents) {
+			model = manShirtColor.gameObject.GetComponent<SubgroupAgent> ();
+			model.gameObject.GetComponent<Agent> ().enabled = false;
+		} else {
+			if (fixedParent && leader) {
+				model = subgroupModels.transform.GetChild (subgroupModelsParentIndex [Random.Range (0, subgroupModelsParentIndex.Count)]).GetComponent<SubgroupAgent> ();
+			} else {
+				model = subgroupModels.transform.GetChild (Random.Range (0, subgroupModels.transform.childCount)).GetComponent<SubgroupAgent>();
+			}
+		}
+		return model;
+	}
+	//Supports 4 followers
+	private List<SubgroupAgent> InitGroupAgent(int groupSize, Vector3 pos, int start, int goal, int pathIndex, Material argMat = null) {
+		bool fixedParent = true;
+		List<SubgroupAgent> gr = new List<SubgroupAgent> ();
+
+		SubgroupAgent leader = Instantiate (getGroupModel(fixedParent, true)) as SubgroupAgent;
+	
+		leader.isLeader = true; leader.transform.position = pos;
+		List<Vector3> followerPositions = new List<Vector3> (3); 
+		followerPositions.Add (pos);
+		float usedValue = 0.6f;//Grid.instance.agentAvoidanceRadius;
+		followerPositions.Add (leader.transform.TransformPoint (0.0f, 0.0f, usedValue));
+		followerPositions.Add (leader.transform.TransformPoint (0.0f, 0.0f, -usedValue));	
+		followerPositions.Add (leader.transform.TransformPoint (0.0f, 0.0f, 2*usedValue));
+		followerPositions.Add (leader.transform.TransformPoint (0.0f, 0.0f, -2*usedValue));
+		gr.Add (leader);
+		for (int i = 0; i < groupSize - 1; ++i) {
+			SubgroupAgent follower = Instantiate (getGroupModel(fixedParent, false)) as SubgroupAgent;
+			gr.Add (follower);
+		}
+		SubgroupAgent.companions comp = new SubgroupAgent.companions (gr, 0, transform.gameObject.name + tag.ToString());
+		tag++;
+		for (int i = 0; i < gr.Count; ++i) {
+			gr [i].groupMemberNumber = i; gr [i].number = i;
+			gr [i].c = comp;
+			Agent sa = gr [i];
+			InitAgent (ref sa, followerPositions [i], start, goal, pathIndex, groupAgentMaterial);
+		}
+		return gr;
+	}
 }
