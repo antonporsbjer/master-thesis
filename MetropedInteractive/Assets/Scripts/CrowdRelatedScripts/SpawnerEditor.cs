@@ -90,7 +90,6 @@ public class SpawnerEditor : Editor {
 			break;
 
 		case Main.Method.continuousSpawn:     
-			EditorGUILayout.PropertyField (numberOfAgents_Prop);
 			EditorGUILayout.PropertyField(spawnRate_Prop);
 			EditorGUILayout.PropertyField (useSimpleAgents_Prop);
 			EditorGUILayout.PropertyField (useGroupedAgents_Prop);

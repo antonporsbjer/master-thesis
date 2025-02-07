@@ -60,6 +60,7 @@ public class Main : MonoBehaviour {
 	public float alpha; 
 
 	List<Agent> agentList = new List<Agent>();
+	public int maxNumberOfAgents = 1000;
 
 	public bool showSplattedDensity = false;
 	public bool showSplattedVelocity = false;

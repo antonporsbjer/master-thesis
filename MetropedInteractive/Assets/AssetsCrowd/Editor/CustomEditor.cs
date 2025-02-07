@@ -33,7 +33,8 @@ public class PropertyHolderEditor : Editor {
 		visualizeDensity_Prop,
 		visualizeVelocity_Prop,
 		visibleMap_Prop,
-		walkBack_Prop;
+		walkBack_Prop,
+		maxNumberOfAgents_Prop;
 		
 
 		
@@ -70,10 +71,12 @@ public class PropertyHolderEditor : Editor {
 		visualizeVelocity_Prop = serializedObject.FindProperty ("showSplattedVelocity");
 		visibleMap_Prop = serializedObject.FindProperty ("visibleMap");
 		walkBack_Prop = serializedObject.FindProperty ("walkBack");
+		maxNumberOfAgents_Prop = serializedObject.FindProperty("maxNumberOfAgents");
 	}
 	
 	public override void OnInspectorGUI() {
 		serializedObject.Update ();
+		EditorGUILayout.PropertyField(maxNumberOfAgents_Prop);
 		EditorGUILayout.PropertyField(planeSize_Prop);
 		EditorGUILayout.PropertyField(roadNode_Prop);
 		EditorGUILayout.PropertyField(numberOfCells_Prop);
