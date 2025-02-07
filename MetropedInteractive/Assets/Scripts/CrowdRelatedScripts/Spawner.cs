@@ -45,7 +45,7 @@ public class Spawner : MonoBehaviour {
 	Vector2 X, Z; //Information about plane sizes
 	internal float agentAvoidanceRadius;
 
-	internal int tag = 0; //Tag counter for subgroups
+	internal int subgroupTag = 0; //Tag counter for subgroups
 	internal Material materialColor; //Material with a color
 	internal Material groupAgentMaterial; //Material with a color
 
@@ -400,8 +400,8 @@ public class Spawner : MonoBehaviour {
 			SubgroupAgent follower = Instantiate (getGroupModel(fixedParent, false)) as SubgroupAgent;
 			gr.Add (follower);
 		}
-		SubgroupAgent.companions comp = new SubgroupAgent.companions (gr, 0, transform.gameObject.name + tag.ToString());
-		tag++;
+		SubgroupAgent.companions comp = new SubgroupAgent.companions (gr, 0, transform.gameObject.name + subgroupTag.ToString());
+		subgroupTag++;
 		for (int i = 0; i < gr.Count; ++i) {
 			gr [i].groupMemberNumber = i; gr [i].number = i;
 			gr [i].c = comp;
