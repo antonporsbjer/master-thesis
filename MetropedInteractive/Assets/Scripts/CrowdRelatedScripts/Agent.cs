@@ -55,7 +55,15 @@ public class Agent : MonoBehaviour {
 		}
 
 		Main mainScript = FindObjectOfType<Main>();
-		walkingSpeed = Random.Range(mainScript.agentMinSpeed, mainScript.agentMaxSpeed);
+		if(this is SubgroupAgent)
+		{
+			walkingSpeed = mainScript.agentMaxSpeed;
+		}
+		else
+		{
+			walkingSpeed = Random.Range(mainScript.agentMinSpeed, mainScript.agentMaxSpeed);
+		}
+		
 	}
 
 	internal void calculateRowAndColumn() {
