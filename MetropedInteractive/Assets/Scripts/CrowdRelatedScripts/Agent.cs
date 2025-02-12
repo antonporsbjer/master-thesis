@@ -28,13 +28,14 @@ public class Agent : MonoBehaviour {
 	private float speedThreshold = 0.8f;
 	private float collisionRadius = 0.5f;
 
-	private bool isWaiting = false;
-    private float waitTimer = 0f;
+	public bool isWaiting = false;
+    private float waitTimer = 20f;
     public float maxWaitTime = 5f;
 	bool allowWait = true;
 	public float currentSpeed;
-	private int triggerCount = 0;
-	private bool isInWaitZone = false;
+	public int triggerCount = 0;
+	public bool isInWaitZone = false;
+	public WaitZoneController waitZone;
 
 
 	private bool Wait()
@@ -48,7 +49,8 @@ public class Agent : MonoBehaviour {
 	{
 		if (other.CompareTag("original") && !other.isTrigger)
         {
-			if(other.gameObject.GetComponent<Agent>().currentSpeed < speedThreshold)
+			if(other.gameObject.GetComponent<Agent>().currentSpeed < speedThreshold
+			|| other.gameObject.GetComponent<Agent>().isWaiting)
 			{
 				triggerCount++;
 				isWaiting = true;
@@ -62,6 +64,7 @@ public class Agent : MonoBehaviour {
 			isWaiting = true;
 			isInWaitZone = true;
 			waitTimer = other.gameObject.GetComponent<WaitZoneController>().waitTimer;
+			waitZone = other.gameObject.GetComponent<WaitZoneController>();
 		}
 		
 	}
@@ -90,7 +93,7 @@ public class Agent : MonoBehaviour {
 		{
 			Vector3 startPos = transform.position;
 			Vector3 endPos = startPos + Vector3.up * 5f;
-			Debug.DrawLine(startPos, endPos, Color.red);
+			//Debug.DrawLine(startPos, endPos, Color.red);
 		}
 	}
 
@@ -244,8 +247,12 @@ public class Agent : MonoBehaviour {
             waitTimer -= Time.deltaTime;
             if (waitTimer <= 0)
             {
-                isWaiting = false;
-            }
+                //isWaiting = false;
+			}
+			if(isInWaitZone && waitZone.walkingAllowed)
+			{
+				isWaiting = false;
+			}
 			else
 			{
 				velocity = Vector3.zero;
