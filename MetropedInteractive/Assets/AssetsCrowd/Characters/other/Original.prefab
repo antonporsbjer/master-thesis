@@ -492,6 +492,7 @@ MonoBehaviour:
   path: 
   walkingSpeed: 0
   maxWaitTime: 2
+  currentSpeed: 0
 --- !u!114 &114000013582079156
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -575,8 +576,8 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.28
-  m_Center: {x: 0, y: 0.33, z: 0.34}
+  m_Radius: 0.31
+  m_Center: {x: 0, y: 0.64, z: 0.73}
 --- !u!1 &1000011084100006
 GameObject:
   m_ObjectHideFlags: 0
