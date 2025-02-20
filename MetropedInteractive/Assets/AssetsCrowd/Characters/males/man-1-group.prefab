@@ -392,7 +392,7 @@ GameObject:
   - component: {fileID: 114000010309784052}
   - component: {fileID: 95000012110483400}
   - component: {fileID: 54000013927239482}
-  - component: {fileID: 65000010044522272}
+  - component: {fileID: 8327042440317525530}
   m_Layer: 2
   m_Name: man-1-group
   m_TagString: male
@@ -413,8 +413,8 @@ Transform:
   m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 4000013944268306}
   - {fileID: 4000012779877228}
+  - {fileID: 4000013944268306}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &114000010309784052
@@ -434,6 +434,9 @@ MonoBehaviour:
   collisionAvoidanceVelocity: {x: 0, y: 0, z: 0}
   velocity: {x: 0, y: 0, z: 0}
   path: 
+  walkingSpeed: 0
+  maxWaitTime: 2
+  currentSpeed: 0
 --- !u!95 &95000012110483400
 Animator:
   serializedVersion: 5
@@ -482,8 +485,8 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 36
   m_CollisionDetection: 0
---- !u!65 &65000010044522272
-BoxCollider:
+--- !u!136 &8327042440317525530
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -500,9 +503,11 @@ BoxCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  serializedVersion: 2
+  m_Radius: 0.26
+  m_Height: 1.66
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.72, z: 0}
 --- !u!1 &1000011550288210
 GameObject:
   m_ObjectHideFlags: 0

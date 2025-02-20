@@ -79,7 +79,7 @@ public class Agent : MonoBehaviour {
 	{
 		if (tag == "original") {
 			if (transform.childCount > 1) {
-				transform.GetChild(1).GetComponent<SkinnedMeshRenderer> ().sharedMaterial = materialColor;
+				//transform.GetChild(1).GetComponent<SkinnedMeshRenderer> ().sharedMaterial = materialColor;
 			}
 		} else if (transform.childCount > 0) {
 			Renderer ss = transform.GetChild (0).GetComponent<Renderer> ();

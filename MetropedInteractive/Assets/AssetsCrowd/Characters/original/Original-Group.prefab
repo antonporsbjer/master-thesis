@@ -365,11 +365,11 @@ GameObject:
   - component: {fileID: 111000012809407106}
   - component: {fileID: 114000011758340216}
   - component: {fileID: 114000011558264272}
-  - component: {fileID: 65000010644003934}
   - component: {fileID: 54000013148429744}
+  - component: {fileID: 2940279127340741153}
   m_Layer: 2
   m_Name: Original-Group
-  m_TagString: Untagged
+  m_TagString: original
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -401,7 +401,7 @@ Animator:
   m_GameObject: {fileID: 1000010579331644}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: ae82d7da885e89d429ee5125b834ca47, type: 3}
-  m_Controller: {fileID: 9100000, guid: d5b48a85da2df4c4faa379533b34a6ea, type: 2}
+  m_Controller: {fileID: 9100000, guid: b67a8cb6e841af9489160633d52efdaa, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -435,7 +435,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1000010579331644}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 343351f987ef9bf4db2dd6b884c43e61, type: 3}
   m_Name: 
@@ -445,6 +445,9 @@ MonoBehaviour:
   collisionAvoidanceVelocity: {x: 0, y: 0, z: 0}
   velocity: {x: 0, y: 0, z: 0}
   path: 
+  walkingSpeed: 0
+  maxWaitTime: 2
+  currentSpeed: 0
 --- !u!114 &114000011558264272
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -459,27 +462,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   shirtColor: 0
   characterMesh: {fileID: 0}
---- !u!65 &65000010644003934
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1000010579331644}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &54000013148429744
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -507,6 +489,29 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 36
   m_CollisionDetection: 0
+--- !u!136 &2940279127340741153
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000010579331644}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.26
+  m_Height: 1.66
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.72, z: 0}
 --- !u!1 &1000010624933738
 GameObject:
   m_ObjectHideFlags: 0

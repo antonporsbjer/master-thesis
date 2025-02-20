@@ -330,7 +330,7 @@ GameObject:
   - component: {fileID: 114000013091785216}
   - component: {fileID: 95000011785569046}
   - component: {fileID: 54000011544833186}
-  - component: {fileID: 65000012756973772}
+  - component: {fileID: 1962066821281204830}
   m_Layer: 2
   m_Name: girl-1-group
   m_TagString: girl
@@ -362,7 +362,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1000011047445594}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 343351f987ef9bf4db2dd6b884c43e61, type: 3}
   m_Name: 
@@ -372,6 +372,9 @@ MonoBehaviour:
   collisionAvoidanceVelocity: {x: 0, y: 0, z: 0}
   velocity: {x: 0, y: 0, z: 0}
   path: 
+  walkingSpeed: 0
+  maxWaitTime: 2
+  currentSpeed: 0
 --- !u!95 &95000011785569046
 Animator:
   serializedVersion: 5
@@ -420,8 +423,8 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 36
   m_CollisionDetection: 0
---- !u!65 &65000012756973772
-BoxCollider:
+--- !u!136 &1962066821281204830
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -438,9 +441,11 @@ BoxCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  serializedVersion: 2
+  m_Radius: 0.26
+  m_Height: 1.66
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.72, z: 0}
 --- !u!1 &1000011078453970
 GameObject:
   m_ObjectHideFlags: 0

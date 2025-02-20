@@ -265,7 +265,7 @@ GameObject:
   - component: {fileID: 114000011422326570}
   - component: {fileID: 95000013577057126}
   - component: {fileID: 54000011665520772}
-  - component: {fileID: 65000013053839560}
+  - component: {fileID: 7925452327807473668}
   m_Layer: 2
   m_Name: female-1
   m_TagString: female
@@ -286,9 +286,8 @@ Transform:
   m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 4000013270322220}
   - {fileID: 4000014086438596}
-  - {fileID: 4000012024767668}
+  - {fileID: 4000013270322220}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &114000011422326570
@@ -308,6 +307,9 @@ MonoBehaviour:
   collisionAvoidanceVelocity: {x: 0, y: 0, z: 0}
   velocity: {x: 0, y: 0, z: 0}
   path: 
+  walkingSpeed: 0
+  maxWaitTime: 2
+  currentSpeed: 0
 --- !u!95 &95000013577057126
 Animator:
   serializedVersion: 5
@@ -356,8 +358,8 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 36
   m_CollisionDetection: 0
---- !u!65 &65000013053839560
-BoxCollider:
+--- !u!136 &7925452327807473668
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -374,9 +376,11 @@ BoxCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  serializedVersion: 2
+  m_Radius: 0.26
+  m_Height: 1.66
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.72, z: 0}
 --- !u!1 &1000010995499026
 GameObject:
   m_ObjectHideFlags: 0
@@ -548,7 +552,7 @@ GameObject:
   - component: {fileID: 4000014086438596}
   - component: {fileID: 137000011588193894}
   m_Layer: 2
-  m_Name: female_slim
+  m_Name: female_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -746,37 +750,6 @@ Transform:
   m_Children:
   - {fileID: 4000010112397010}
   m_Father: {fileID: 4000012206406394}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1000011847625404
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 4000012024767668}
-  m_Layer: 2
-  m_Name: Particle View 01
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &4000012024767668
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1000011847625404}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 4000011989265882}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1000011912900678
 GameObject:

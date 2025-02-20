@@ -872,7 +872,7 @@ GameObject:
   - component: {fileID: 114000011385861656}
   - component: {fileID: 95000013225140382}
   - component: {fileID: 54000010878650946}
-  - component: {fileID: 65000012900422004}
+  - component: {fileID: -4942708086692557728}
   m_Layer: 2
   m_Name: Boy-group
   m_TagString: boy
@@ -914,6 +914,9 @@ MonoBehaviour:
   collisionAvoidanceVelocity: {x: 0, y: 0, z: 0}
   velocity: {x: 0, y: 0, z: 0}
   path: 
+  walkingSpeed: 0
+  maxWaitTime: 2
+  currentSpeed: 0
 --- !u!95 &95000013225140382
 Animator:
   serializedVersion: 5
@@ -962,8 +965,8 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 36
   m_CollisionDetection: 0
---- !u!65 &65000012900422004
-BoxCollider:
+--- !u!136 &-4942708086692557728
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -980,9 +983,11 @@ BoxCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  serializedVersion: 2
+  m_Radius: 0.26
+  m_Height: 1.66
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.72, z: 0}
 --- !u!1 &1000011874004914
 GameObject:
   m_ObjectHideFlags: 0
