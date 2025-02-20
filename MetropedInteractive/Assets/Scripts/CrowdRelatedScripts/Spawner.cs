@@ -34,6 +34,10 @@ public class Spawner : MonoBehaviour {
 	public int rows;
 	public int rowLength;
 
+	// Waiting agents
+	public bool waitingAgents;
+	private WaitingAreaController waitingAreaController;
+
 	//Common items for this spawner
 	internal GameObject agentModels;
 	internal GameObject subgroupModels;
@@ -118,6 +122,7 @@ public class Spawner : MonoBehaviour {
 	void Start()
 	{
 		mainScript = FindObjectOfType<Main>();
+		waitingAreaController = FindObjectOfType<WaitingAreaController>();
 
 		switch(spawnMethod) {
 		case Method.uniformSpawn:
@@ -331,7 +336,18 @@ public class Spawner : MonoBehaviour {
 		{
 			agent = Instantiate (agentModels.transform.GetChild(Random.Range(0, agentModels.transform.childCount)).GetComponent<Agent>());
 		}
-		agent.InitializeAgent (startPosition, node, goal, ref map);
+
+		int agentGoal = goal;
+
+		if(waitingAgents)
+		{
+			agent.setWaitingAgent();
+			(int,Vector3) waitingSpotAndGatewayNode = waitingAreaController.getWaitingSpotAndGatewayNode(node);
+			agentGoal = waitingSpotAndGatewayNode.Item1;
+			agent.setWaitingSpot(waitingSpotAndGatewayNode.Item2);
+		}
+
+		agent.InitializeAgent (startPosition, node, agentGoal, ref map);
 		agent.ApplyMaterials(materialColor, ref skins);
 
 		if (agentEditorContainer != null)

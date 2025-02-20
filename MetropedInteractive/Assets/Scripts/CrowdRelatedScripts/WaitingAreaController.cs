@@ -20,9 +20,14 @@ public class WaitingAreaController : MonoBehaviour
         }
     }
 
-    void addAgentToWaitingList(Agent agent)
+    public void addAgentToWaitingList(Agent agent)
     {
         waitingAgents.Add(agent);
+    }
+
+    public (int,Vector3) getWaitingSpotAndGatewayNode(int startNode)
+    {
+        return (0, new Vector3(0, 0, 0));
     }
 
 }

@@ -27,6 +27,10 @@ public class Agent : MonoBehaviour {
     public float maxWaitTime = 2f;
 	public float currentSpeed;
 
+	// Waiting
+	private bool isWaitingAgent;
+	private Vector3 waitingSpot;
+
 	
 	internal void Start() {
 		animator = transform.gameObject.GetComponent<Animator> ();
@@ -64,6 +68,16 @@ public class Agent : MonoBehaviour {
 			walkingSpeed = Random.Range(mainScript.agentMinSpeed, mainScript.agentMaxSpeed);
 		}
 		
+	}
+
+	public void setWaitingAgent()
+	{
+		isWaitingAgent = true;
+	}
+
+	public void setWaitingSpot(Vector3 waitingSpot)
+	{
+		this.waitingSpot = waitingSpot;
 	}
 
 	public void InitializeAgent(Vector3 pos, int start, int goal, ref MapGen.map map) {
