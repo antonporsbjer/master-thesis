@@ -84,7 +84,7 @@ public class Spawner : MonoBehaviour {
 		}
 	}
 
-	public void Init(ref GameObject agentModels, ref GameObject subgroupModels, ref Agent manShirtColor, 
+	public void InitializeSpawner(ref GameObject agentModels, ref GameObject subgroupModels, ref Agent manShirtColor, 
 					 ref MapGen.map map,  ref List<Agent> agentList, Vector2 X, Vector2 Z, float agentAvoidanceRadius) {
 		this.agentModels = agentModels;
 		this.subgroupModels = subgroupModels;
@@ -141,36 +141,7 @@ public class Spawner : MonoBehaviour {
 		}
 	}
 
-	private void InitAgent(ref Agent agent, Vector3 pos, int start, int goal, int pathIndex, Material argMat = null) {
-		agent.transform.position = pos;
-		agent.transform.right = transform.right;
-		agent.path = map.shortestPaths [start] [goal]; 
-		agent.pathIndex = pathIndex;
-		agent.preferredVelocity = (map.allNodes [agent.path [agent.pathIndex]].getTargetPoint (agent.transform.position) - agent.transform.position).normalized;
-		
-		ApplyMaterials(agent, argMat);
-
-		if (agentEditorContainer != null)
-			agent.transform.parent = agentEditorContainer.transform;
-	}
-
-	private void ApplyMaterials(Agent agent, Material argMat)
-	{
-		if (agent.tag == "original") {
-			if (agent.transform.childCount > 1) {
-				agent.transform.GetChild(1).GetComponent<SkinnedMeshRenderer> ().sharedMaterial = materialColor;
-			}
-		} else if (agent.transform.childCount > 0) {
-			Renderer ss = agent.transform.GetChild (0).GetComponent<Renderer> ();
-			if (ss != null)
-				ss.material.mainTexture = (Texture)Resources.Load (agent.tag + "-" + Random.Range (1, skins [agent.tag]+1));
-			else {
-				Renderer ss2 = agent.transform.GetChild (1).GetComponent<Renderer> ();
-				if (ss2 != null)
-					ss2.material.mainTexture = (Texture)Resources.Load (agent.tag + "-" + Random.Range (1, skins [agent.tag]+1));
-			}
-		}
-	}
+	
 
 	// UNIFORM SPAWN
 	/**
@@ -270,7 +241,7 @@ public class Spawner : MonoBehaviour {
 		float phi = 360 / (float)numberOfAgents;
 		List<Agent> li = new List<Agent> ();
 		for (int n = 0; n < numberOfAgents; n++) {
-			Agent a = Instantiate (manShirtColor) as Agent;
+			Agent a = Instantiate (manShirtColor);
 
 			a.transform.position = agentPos;
 			a.transform.RotateAround(new Vector3(0f, 0f, 0f), new Vector3(0f, 1f, 0f), (float)(n*phi));
@@ -329,7 +300,7 @@ public class Spawner : MonoBehaviour {
 				} else {
 					groupSize = 4;
 				}
-				List<SubgroupAgent> liA = InitGroupAgent (groupSize, startPos, node, goal, 1);
+				List<SubgroupAgent> liA = InitGroupAgent (groupSize, startPos, node, goal);
 				for (int i = 0; i < liA.Count; ++i) {
 					agentList.Add ((Agent)liA [i]);
 				}
@@ -352,17 +323,21 @@ public class Spawner : MonoBehaviour {
 
 	public void spawnOneAgent(Vector3 startPosition)
 	{
-		Agent a;
+		Agent agent;
 		if (useSimpleAgents) 
 		{
-			a = Instantiate (manShirtColor) as Agent;
+			agent = Instantiate (manShirtColor);
 		} else 
 		{
-			a = Instantiate (agentModels.transform.GetChild(Random.Range(0, agentModels.transform.childCount)).GetComponent<Agent>()) as Agent;
+			agent = Instantiate (agentModels.transform.GetChild(Random.Range(0, agentModels.transform.childCount)).GetComponent<Agent>());
 		}
-		InitAgent (ref a, startPosition, node, goal, 1);
-		agentList.Add (a);
-		a.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f); // Modify this to change the size of characters new Vector3(2.0f, 2.0f, 2.0f) is normal size
+		agent.InitializeAgent (startPosition, node, goal, ref map);
+		agent.ApplyMaterials(materialColor, ref skins);
+
+		if (agentEditorContainer != null)
+			agent.transform.parent = agentEditorContainer.transform;
+
+		agentList.Add (agent);
 	}
 
 	// GROUPS
@@ -381,13 +356,14 @@ public class Spawner : MonoBehaviour {
 		return model;
 	}
 	//Supports 4 followers
-	private List<SubgroupAgent> InitGroupAgent(int groupSize, Vector3 pos, int start, int goal, int pathIndex, Material argMat = null) {
+	private List<SubgroupAgent> InitGroupAgent(int groupSize, Vector3 pos, int start, int goal, Material argMat = null) {
 		bool fixedParent = true;
 		List<SubgroupAgent> gr = new List<SubgroupAgent> ();
 
-		SubgroupAgent leader = Instantiate (getGroupModel(fixedParent, true)) as SubgroupAgent;
+		SubgroupAgent leader = Instantiate (getGroupModel(fixedParent, true));
 	
-		leader.isLeader = true; leader.transform.position = pos;
+		leader.isLeader = true; 
+		leader.transform.position = pos;
 		List<Vector3> followerPositions = new List<Vector3> (3); 
 		followerPositions.Add (pos);
 		float usedValue = 0.6f;//Grid.instance.agentAvoidanceRadius;
@@ -397,7 +373,7 @@ public class Spawner : MonoBehaviour {
 		followerPositions.Add (leader.transform.TransformPoint (0.0f, 0.0f, -2*usedValue));
 		gr.Add (leader);
 		for (int i = 0; i < groupSize - 1; ++i) {
-			SubgroupAgent follower = Instantiate (getGroupModel(fixedParent, false)) as SubgroupAgent;
+			SubgroupAgent follower = Instantiate (getGroupModel(fixedParent, false));
 			gr.Add (follower);
 		}
 		SubgroupAgent.companions comp = new SubgroupAgent.companions (gr, 0, transform.gameObject.name + subgroupTag.ToString());
@@ -406,7 +382,10 @@ public class Spawner : MonoBehaviour {
 			gr [i].groupMemberNumber = i; gr [i].number = i;
 			gr [i].c = comp;
 			Agent sa = gr [i];
-			InitAgent (ref sa, followerPositions [i], start, goal, pathIndex, groupAgentMaterial);
+			sa.InitializeAgent (followerPositions [i], start, goal, ref map);
+			sa.ApplyMaterials(materialColor, ref skins, groupAgentMaterial);
+			if (agentEditorContainer != null)
+				sa.transform.parent = agentEditorContainer.transform;
 		}
 		return gr;
 	}

@@ -66,6 +66,33 @@ public class Agent : MonoBehaviour {
 		
 	}
 
+	public void InitializeAgent(Vector3 pos, int start, int goal, ref MapGen.map map) {
+		transform.position = pos;
+		transform.right = transform.right;
+		path = map.shortestPaths [start] [goal]; 
+		pathIndex = 1;
+		preferredVelocity = (map.allNodes [path [pathIndex]].getTargetPoint (transform.position) - transform.position).normalized;
+		transform.localScale = new Vector3(1.0f, 1.0f, 1.0f); // Modify this to change the size of characters new Vector3(2.0f, 2.0f, 2.0f) is normal size
+	}
+
+	public void ApplyMaterials(Material materialColor, ref Dictionary<string, int> skins, Material argMat = null)
+	{
+		if (tag == "original") {
+			if (transform.childCount > 1) {
+				transform.GetChild(1).GetComponent<SkinnedMeshRenderer> ().sharedMaterial = materialColor;
+			}
+		} else if (transform.childCount > 0) {
+			Renderer ss = transform.GetChild (0).GetComponent<Renderer> ();
+			if (ss != null)
+				ss.material.mainTexture = (Texture)Resources.Load (tag + "-" + Random.Range (1, skins [tag]+1));
+			else {
+				Renderer ss2 = transform.GetChild (1).GetComponent<Renderer> ();
+				if (ss2 != null)
+					ss2.material.mainTexture = (Texture)Resources.Load (tag + "-" + Random.Range (1, skins [tag]+1));
+			}
+		}
+	}
+
 	internal void calculateRowAndColumn() {
 		row = (int)((transform.position.z - Main.zMinMax.x)/Grid.instance.cellLength); 
 		column = (int)((transform.position.x - Main.xMinMax.x)/Grid.instance.cellLength); 
