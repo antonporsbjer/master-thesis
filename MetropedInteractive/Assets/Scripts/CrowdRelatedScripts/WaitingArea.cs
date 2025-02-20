@@ -42,6 +42,8 @@ public class WaitingArea : MonoBehaviour
                 Vector3 spotPosition = new Vector3(xPos, transform.position.y, zPos);
                 waitingSpots[row,col] = spotPosition;
 
+                isOccupied[row,col] = false;
+
                 if(debug)
                 {
                     Debug.DrawLine(spotPosition, spotPosition + Vector3.up * 0.5f, Color.red, 10f);
