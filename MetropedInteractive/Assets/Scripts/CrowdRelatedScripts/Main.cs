@@ -112,7 +112,7 @@ public class Main : MonoBehaviour {
 		Grid.instance.initGrid (xMinMax, zMinMax, alpha, agentAvoidanceRadius);
 
 		for (int i = 0; i < roadmap.spawns.Count; ++i)
-			roadmap.spawns[i].spawner.Init (ref agentPrefabs, ref groupAgentPrefabs, ref shirtColorPrefab, ref roadmap, 
+			roadmap.spawns[i].spawner.InitializeSpawner (ref agentPrefabs, ref groupAgentPrefabs, ref shirtColorPrefab, ref roadmap, 
 											 ref agentList, xMinMax, zMinMax, agentAvoidanceRadius);
 		
 	}
