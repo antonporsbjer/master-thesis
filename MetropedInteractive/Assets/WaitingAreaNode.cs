@@ -14,7 +14,7 @@ public class WaitingAreaNode : CustomNode
     public override Vector3 getTargetPoint(Vector3 origin)
     {
         // Multiply by 5 because a plane's default dimensions is 10x10 world units
-        // when it's scale is (1,1,1) and we want half the width and height.
+        // when its scale is (1,1,1) and we want half the width and height.
         float width = transform.Find("Area").transform.localScale.x * 5f;
         float height = transform.Find("Area").transform.localScale.z * 5f;
 
