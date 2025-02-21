@@ -12,6 +12,8 @@ public class WaitingArea : MonoBehaviour
     private Vector3[,] waitingSpots;
     private bool[,] isOccupied;
 
+    private int mapIndex;
+
     void Start()
     {
         GenerateRowColumnWaitingSpots();
@@ -51,9 +53,10 @@ public class WaitingArea : MonoBehaviour
                 
             }
         }
+    }
 
-            
-
-
+    public void setMapIndex(int index)
+    {
+        mapIndex = index;
     }
 }

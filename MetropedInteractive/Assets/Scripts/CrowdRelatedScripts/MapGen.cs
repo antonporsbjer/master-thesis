@@ -109,6 +109,12 @@ public class MapGen : MonoBehaviour {
 			if (c.gameObject.GetComponent<CustomNode> ().isGoal) {
 				m.goals.Add (map.Count-1);
 			} 
+			// Inform the waiting area of its node index in the map
+			if(c is WaitingAreaNode)
+			{
+				c.GetComponent<WaitingArea>().setMapIndex(map.Count - 1);
+			}
+
 			Renderer r = c.GetComponent<Renderer> ();
 			if (r != null) {
 				if (!visibleMap) {
