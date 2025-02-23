@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class WaitingArea : MonoBehaviour
@@ -9,8 +10,8 @@ public class WaitingArea : MonoBehaviour
     public int columns = 5;
     public bool debug = false;
 
-    private Vector3[,] waitingSpots;
-    private bool[,] isOccupied;
+    private List<Vector3> waitingSpots;
+    private List<bool> isOccupied;
 
     private int mapIndex;
 
@@ -21,8 +22,8 @@ public class WaitingArea : MonoBehaviour
 
     void GenerateRowColumnWaitingSpots()
     {
-        waitingSpots = new Vector3[rows, columns];
-        isOccupied = new bool[rows, columns];
+        waitingSpots = new List<Vector3>();
+        isOccupied = new List<bool>(new bool[columns*rows]);
 
         Renderer renderer = transform.Find("Area").GetComponent<Renderer>();
         Bounds bounds = renderer.bounds;
@@ -33,8 +34,6 @@ public class WaitingArea : MonoBehaviour
         float cellWidth = size.x / columns;
         float cellHeight = size.z / rows;
 
-        Debug.Log(cellWidth + " " + cellHeight);
-
         for (int row = 0; row < rows; row++)
         {
             for (int col = 0; col < columns; col++)
@@ -42,9 +41,9 @@ public class WaitingArea : MonoBehaviour
                 float xPos = corner.x + cellWidth * 0.5f + col*cellWidth;
                 float zPos = corner.z + cellHeight * 0.5f + row*cellHeight;
                 Vector3 spotPosition = new Vector3(xPos, transform.position.y, zPos);
-                waitingSpots[row,col] = spotPosition;
+                waitingSpots.Add(spotPosition);
 
-                isOccupied[row,col] = false;
+                isOccupied[col + row * columns] = false;
 
                 if(debug)
                 {
@@ -59,4 +58,24 @@ public class WaitingArea : MonoBehaviour
     {
         mapIndex = index;
     }
+
+    public (int index, Vector3? position) getWaitingSpot()
+    {
+        // If there are available spots
+        if(!isOccupied.All(spot => spot == true))
+        {
+            for(int i = 0; i < waitingSpots.Count; i++)
+            {
+                if(!isOccupied[i])
+                {
+                    isOccupied[i] = true;
+                    return (i, waitingSpots[i]);
+                }
+            }
+        }
+
+        // No available spots
+        return (-1, null);
+    }
+
 }

@@ -9,6 +9,7 @@ public class WaitingAreaController : MonoBehaviour
     private List<Agent> waitingAgents;
     private GameObject waitingAgentsContainer;
     public Dictionary<int, List<int>> spawnerWaitingAreaDistances;
+    private MapGen.map roadmap;
 
     public void Initialize()
     {
@@ -21,6 +22,8 @@ public class WaitingAreaController : MonoBehaviour
             waitingAreas.Add(waitingArea);
         }
 
+        roadmap = FindObjectOfType<MapGen>().getRoadmap();
+
         BuildSpawnerWaitingAreaDistances();
     }
 
@@ -29,16 +32,27 @@ public class WaitingAreaController : MonoBehaviour
         waitingAgents.Add(agent);
     }
 
-    public (int,Vector3) getWaitingSpotAndGatewayNode(int startNode)
+    public (int,Vector3) getWaitingAreaSpot(int startNode)
     {
-        return (0, new Vector3(0, 0, 0));
+        int assignedWaitingArea;
+        Vector3 assignedWaitingSpot;
+
+        foreach (int waitingAreaIndex in spawnerWaitingAreaDistances[startNode])
+        {
+            (int waitingAreaIndex, Vector3? waitingAreaSpot) areaAndSpot = waitingAreas[waitingAreaIndex].getWaitingSpot();
+            if(areaAndSpot.waitingAreaSpot.HasValue)
+            {
+                assignedWaitingSpot = areaAndSpot.waitingAreaSpot.Value;
+                assignedWaitingArea = areaAndSpot.waitingAreaIndex;
+                break;
+            }
+        }
+        return (-1,Vector3.zero);
     }
 
     void BuildSpawnerWaitingAreaDistances()
     {
         spawnerWaitingAreaDistances = new Dictionary<int, List<int>>();
-
-        MapGen.map roadmap = FindObjectOfType<MapGen>().getRoadmap();
 
         foreach(MapGen.spawnNode spawner in roadmap.spawns)
         {
