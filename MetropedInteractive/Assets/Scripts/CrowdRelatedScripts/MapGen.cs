@@ -22,6 +22,11 @@ public class MapGen : MonoBehaviour {
 
 	private map roadmap;
 
+	public map getRoadmap()
+	{
+		return roadmap;
+	}
+
 	void sweepMap(Vector2 xMinMax, Vector2 zMinMax) {
 		for (int i = 0; i < xMinMax.y - xMinMax.x; ++i) {
 			for(int j = 0; j < zMinMax.y-zMinMax.x; ++j) {

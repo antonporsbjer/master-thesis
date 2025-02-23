@@ -91,6 +91,12 @@ public class Main : MonoBehaviour {
 		MapGen m = Instantiate (mapGen) as MapGen; 
 		roadmap = m.generateRoadMap (roadNodeAmount, xMinMax, zMinMax, visibleMap);
 
+		WaitingAreaController waitingAreaController = FindObjectOfType<WaitingAreaController>();
+		if(waitingAreaController != null)
+		{
+			waitingAreaController.Initialize();
+		}
+
 
 		Grid grid = Instantiate (gridPrefab) as Grid;
 		grid.showSplattedDensity = showSplattedDensity;
