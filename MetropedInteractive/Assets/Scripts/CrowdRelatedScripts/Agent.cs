@@ -364,4 +364,14 @@ public class Agent : MonoBehaviour {
 		neighbourUpperVelocityWeight = upperShiftedRelZPos * Mathf.Abs(agentRelXPos) / clSquared;
 		neighbourLowerVelocityWeight = lowerShiftedRelZPos * Mathf.Abs(agentRelXPos) / clSquared;
 	}
+
+	public void teleportAgent(Vector3 newPosition)
+	{
+		transform.position = newPosition;
+	}
+
+	public void setAnimatorStanding(bool isStanding)
+	{
+		animator.SetBool("Standing",isStanding);
+	}
 }
