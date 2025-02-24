@@ -10,8 +10,8 @@ public class WaitingArea : MonoBehaviour
     public int columns = 5;
     public bool debug = false;
 
-    private List<Vector3> waitingSpots;
-    private List<bool> isOccupied;
+    public List<Vector3> waitingSpots;
+    public List<bool> isOccupied;
 
     private int mapIndex;
 
@@ -69,7 +69,7 @@ public class WaitingArea : MonoBehaviour
                 if(!isOccupied[i])
                 {
                     isOccupied[i] = true;
-                    return (i, waitingSpots[i]);
+                    return (mapIndex, waitingSpots[i]);
                 }
             }
         }

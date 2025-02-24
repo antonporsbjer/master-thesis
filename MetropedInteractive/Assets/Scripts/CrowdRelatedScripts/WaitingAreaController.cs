@@ -34,17 +34,13 @@ public class WaitingAreaController : MonoBehaviour
 
     public (int,Vector3) getWaitingAreaSpot(int startNode)
     {
-        int assignedWaitingArea;
-        Vector3 assignedWaitingSpot;
 
         foreach (int waitingAreaIndex in spawnerWaitingAreaDistances[startNode])
         {
-            (int waitingAreaIndex, Vector3? waitingAreaSpot) areaAndSpot = waitingAreas[waitingAreaIndex].getWaitingSpot();
+            (int waitingAreaMapIndex, Vector3? waitingAreaSpot) areaAndSpot = waitingAreas[waitingAreaIndex].getWaitingSpot();
             if(areaAndSpot.waitingAreaSpot.HasValue)
             {
-                assignedWaitingSpot = areaAndSpot.waitingAreaSpot.Value;
-                assignedWaitingArea = areaAndSpot.waitingAreaIndex;
-                break;
+                return (areaAndSpot.waitingAreaMapIndex, areaAndSpot.waitingAreaSpot.Value);
             }
         }
         return (-1,Vector3.zero);

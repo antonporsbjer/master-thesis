@@ -92,8 +92,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5907818864763391175}
-  - component: {fileID: 7258096397026667644}
-  - component: {fileID: 1587707353413223946}
+  - component: {fileID: 9100568367219303109}
+  - component: {fileID: 8881275998846585255}
   m_Layer: 0
   m_Name: Waiting Area
   m_TagString: Untagged
@@ -117,7 +117,7 @@ Transform:
   - {fileID: 1341267259563188503}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7258096397026667644
+--- !u!114 &9100568367219303109
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -132,7 +132,9 @@ MonoBehaviour:
   rows: 2
   columns: 10
   debug: 1
---- !u!114 &1587707353413223946
+  waitingSpots: []
+  isOccupied: 
+--- !u!114 &8881275998846585255
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -145,5 +147,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isSpawn: 0
-  isGoal: 1
+  isGoal: 0
   thresholdDistance: 1
