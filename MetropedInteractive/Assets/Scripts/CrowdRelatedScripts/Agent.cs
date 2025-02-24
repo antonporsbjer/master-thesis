@@ -28,8 +28,8 @@ public class Agent : MonoBehaviour {
 	public float currentSpeed;
 
 	// Waiting
-	private bool isWaitingAgent;
-	private Vector3 waitingSpot;
+	internal bool isWaitingAgent;
+	internal Vector3 waitingSpot;
 
 	
 	internal void Start() {
@@ -74,6 +74,7 @@ public class Agent : MonoBehaviour {
 	{
 		isWaitingAgent = true;
 	}
+
 
 	public void setWaitingSpot(Vector3 waitingSpot)
 	{

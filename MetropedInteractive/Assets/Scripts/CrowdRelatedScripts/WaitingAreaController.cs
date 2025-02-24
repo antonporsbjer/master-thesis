@@ -46,7 +46,7 @@ public class WaitingAreaController : MonoBehaviour
         return (-1,Vector3.zero);
     }
 
-    void BuildSpawnerWaitingAreaDistances()
+    private void BuildSpawnerWaitingAreaDistances()
     {
         spawnerWaitingAreaDistances = new Dictionary<int, List<int>>();
 
@@ -65,6 +65,13 @@ public class WaitingAreaController : MonoBehaviour
 
             spawnerWaitingAreaDistances.Add(spawner.node, sortedWaitingAreaIndexes);
         }
+    }
+
+    public void putAgentInWaitingArea(Agent agent)
+    {
+        waitingAgents.Add(agent);
+        agent.transform.parent = waitingAgentsContainer.transform;
+        agent.transform.position = agent.waitingSpot;
     }
 
 }

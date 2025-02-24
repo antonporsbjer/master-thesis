@@ -68,6 +68,7 @@ public class Main : MonoBehaviour {
 	public bool skipNodeIfSeeNext = false;
 	public bool smoothTurns = false;
 	public bool handleCollision = false;
+	private WaitingAreaController waitingAreaController;
 
 	/**
 	 * Initialize simulation by taking the user's options into consideration and spawn agents.
@@ -91,7 +92,7 @@ public class Main : MonoBehaviour {
 		MapGen m = Instantiate (mapGen) as MapGen; 
 		roadmap = m.generateRoadMap (roadNodeAmount, xMinMax, zMinMax, visibleMap);
 
-		WaitingAreaController waitingAreaController = FindObjectOfType<WaitingAreaController>();
+		waitingAreaController = FindObjectOfType<WaitingAreaController>();
 		if(waitingAreaController != null)
 		{
 			waitingAreaController.Initialize();
@@ -143,8 +144,15 @@ public class Main : MonoBehaviour {
 			Agent agent = agentList[i];
 			if (agent.done)
 			{
-				Destroy(agent.gameObject);
-				agentList.RemoveAt(i);
+				if(agent.isWaitingAgent)
+				{
+					waitingAreaController.putAgentInWaitingArea(agent);
+				}
+				else
+				{
+					Destroy(agent.gameObject);
+					agentList.RemoveAt(i);
+				}
 				continue;
 			}
 			agent.move(ref roadmap);
