@@ -343,8 +343,11 @@ public class Spawner : MonoBehaviour {
 		{
 			agent.setWaitingAgent();
 			(int waitingArea,Vector3 waitingSpot) waitingAreaSpot = waitingAreaController.getWaitingAreaSpot(node);
-			agentGoal = waitingAreaSpot.waitingArea;
-			agent.setWaitingSpot(waitingAreaSpot.waitingSpot);
+			if(waitingAreaSpot.waitingArea != -1)
+			{
+				agentGoal = waitingAreaSpot.waitingArea;
+				agent.setWaitingSpot(waitingAreaSpot.waitingSpot);
+			}
 		}
 
 		agent.InitializeAgent (startPosition, node, agentGoal, ref map);
