@@ -119,7 +119,7 @@ public class Spawner : MonoBehaviour {
 		SetGoal();
 	}
 
-	public void StartSpawner()
+	void Start()
 	{
 		mainScript = FindObjectOfType<Main>();
 		waitingAreaController = FindObjectOfType<WaitingAreaController>();

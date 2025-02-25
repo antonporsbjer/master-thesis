@@ -122,18 +122,8 @@ public class Main : MonoBehaviour {
 		{
 			roadmap.spawns[i].spawner.InitializeSpawner (ref agentPrefabs, ref groupAgentPrefabs, ref shirtColorPrefab, ref roadmap, 
 											 ref agentList, xMinMax, zMinMax, agentAvoidanceRadius);
-			roadmap.spawns[i].spawner.StartSpawner();
 		}
 	}
-
-    void Start()
-    {
-        for (int i = 0; i < roadmap.spawns.Count; ++i)
-		{
-			roadmap.spawns[i].spawner.StartSpawner();
-		}
-    }
-
 
     /**
 	 * Main simulation loop which is called every frame
