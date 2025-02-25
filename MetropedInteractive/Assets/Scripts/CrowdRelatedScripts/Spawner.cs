@@ -119,7 +119,7 @@ public class Spawner : MonoBehaviour {
 		SetGoal();
 	}
 
-	void Start()
+	public void StartSpawner()
 	{
 		mainScript = FindObjectOfType<Main>();
 		waitingAreaController = FindObjectOfType<WaitingAreaController>();
@@ -346,7 +346,8 @@ public class Spawner : MonoBehaviour {
 			if(waitingAreaSpot.waitingArea != -1)
 			{
 				agentGoal = waitingAreaSpot.waitingArea;
-				agent.setWaitingSpot(waitingAreaSpot.waitingSpot);
+				agent.waitingSpot = waitingAreaSpot.waitingSpot;
+				agent.waitingArea = map.allNodes[waitingAreaSpot.waitingArea].GetComponent<WaitingArea>();
 			}
 		}
 

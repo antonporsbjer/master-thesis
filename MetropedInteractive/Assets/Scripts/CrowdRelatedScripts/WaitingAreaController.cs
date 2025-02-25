@@ -71,7 +71,9 @@ public class WaitingAreaController : MonoBehaviour
     {
         agent.setAnimatorStanding(true);
         waitingAgents.Add(agent);
+        agent.transform.SetParent(waitingAgentsContainer.transform);
         agent.teleportAgent(agent.waitingSpot);
+        agent.rotateAgent(agent.waitingArea.goal.transform.position);
     }
 
 }

@@ -29,6 +29,7 @@ public class Agent : MonoBehaviour {
 
 	// Waiting
 	internal bool isWaitingAgent;
+	internal WaitingArea waitingArea;
 	internal Vector3 waitingSpot;
 
 	
@@ -75,11 +76,6 @@ public class Agent : MonoBehaviour {
 		isWaitingAgent = true;
 	}
 
-
-	public void setWaitingSpot(Vector3 waitingSpot)
-	{
-		this.waitingSpot = waitingSpot;
-	}
 
 	public void InitializeAgent(Vector3 pos, int start, int goal, ref MapGen.map map) {
 		transform.position = pos;
@@ -373,5 +369,11 @@ public class Agent : MonoBehaviour {
 	public void setAnimatorStanding(bool isStanding)
 	{
 		animator.SetBool("Standing",isStanding);
+	}
+
+	public void rotateAgent(Vector3 target)
+	{
+		Vector3 direction = target - transform.position;
+		transform.rotation = Quaternion.LookRotation(direction);
 	}
 }

@@ -9,13 +9,14 @@ public class WaitingArea : MonoBehaviour
     public int rows = 3;
     public int columns = 5;
     public bool debug = false;
+    public CustomNode goal;
 
     public List<Vector3> waitingSpots;
     public List<bool> isOccupied;
 
     private int mapIndex;
 
-    void Start()
+    void OnEnable()
     {
         GenerateRowColumnWaitingSpots();
     }
