@@ -238,6 +238,9 @@ public class Agent : MonoBehaviour {
 	
 			if (realSpeed < 0.05f) {
 				animator.speed = 0;
+			} else if(realSpeed > walkingSpeed)
+			{
+				animator.speed = 1;
 			} else {
 				animator.speed = realSpeed / walkingSpeed;
 			}
