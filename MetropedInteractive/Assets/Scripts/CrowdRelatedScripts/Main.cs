@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 
 public class Main : MonoBehaviour {
 
@@ -169,5 +170,9 @@ public class Main : MonoBehaviour {
 
 		Grid.instance.dt = customTimeStep ? timeStep : Time.deltaTime;
 
+	}
+	public void AddToAgentList(Agent agent)
+	{
+		agentList.Add(agent);
 	}
 }
