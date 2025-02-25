@@ -341,10 +341,10 @@ public class Spawner : MonoBehaviour {
 
 		if(waitingAgents)
 		{
-			agent.setWaitingAgent();
 			(int waitingArea,Vector3 waitingSpot) waitingAreaSpot = waitingAreaController.getWaitingAreaSpot(node);
 			if(waitingAreaSpot.waitingArea != -1)
 			{
+				agent.setWaitingAgent(true);
 				agentGoal = waitingAreaSpot.waitingArea;
 				agent.waitingSpot = waitingAreaSpot.waitingSpot;
 				agent.waitingArea = map.allNodes[waitingAreaSpot.waitingArea].GetComponent<WaitingArea>();

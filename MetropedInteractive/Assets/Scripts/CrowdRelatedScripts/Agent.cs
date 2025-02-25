@@ -71,9 +71,9 @@ public class Agent : MonoBehaviour {
 		
 	}
 
-	public void setWaitingAgent()
+	public void setWaitingAgent(bool isWaitingAgent)
 	{
-		isWaitingAgent = true;
+		this.isWaitingAgent = isWaitingAgent;
 	}
 
 
