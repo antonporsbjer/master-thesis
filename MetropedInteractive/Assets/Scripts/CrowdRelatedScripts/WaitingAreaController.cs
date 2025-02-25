@@ -67,6 +67,13 @@ public class WaitingAreaController : MonoBehaviour
         }
     }
 
+    public void walkAgentToWaitingArea(Agent agent)
+    {
+        agent.done = false;
+        agent.noMap = true;
+        agent.noMapGoal = agent.waitingSpot;
+    }
+
     public void putAgentInWaitingArea(Agent agent)
     {
         agent.setAnimatorStanding(true);

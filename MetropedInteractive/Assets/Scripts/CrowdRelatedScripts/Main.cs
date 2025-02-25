@@ -147,13 +147,22 @@ public class Main : MonoBehaviour {
 			{
 				if(agent.isWaitingAgent)
 				{
-					waitingAreaController.putAgentInWaitingArea(agent);
+					if(!agent.noMap)
+					{
+						waitingAreaController.walkAgentToWaitingArea(agent);
+						agent.move(ref roadmap);
+					}
+					else
+					{
+						waitingAreaController.putAgentInWaitingArea(agent);
+						agentList.RemoveAt(i);
+					}
 				}
 				else
 				{
+					agentList.RemoveAt(i);
 					Destroy(agent.gameObject);
 				}
-				agentList.RemoveAt(i);
 				continue;
 			}
 			agent.move(ref roadmap);
