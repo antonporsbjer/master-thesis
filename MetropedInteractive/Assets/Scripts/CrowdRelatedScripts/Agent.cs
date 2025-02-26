@@ -30,7 +30,7 @@ public class Agent : MonoBehaviour {
 	// Waiting
 	internal bool isWaitingAgent;
 	internal WaitingArea waitingArea;
-	internal Vector3 waitingSpot;
+	internal int waitingSpot;
 
 	
 	internal void Start() {

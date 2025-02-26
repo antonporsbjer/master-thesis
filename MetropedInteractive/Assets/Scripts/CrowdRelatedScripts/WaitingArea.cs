@@ -15,7 +15,7 @@ public class WaitingArea : MonoBehaviour
     public bool debug = false;
     public CustomNode goal;                 // Where agents will go after waiting
 
-    private List<Vector3> waitingSpots;
+    internal List<Vector3> waitingSpots;
     internal List<bool> isOccupied;
     private int mapIndex;
 
@@ -74,10 +74,10 @@ public class WaitingArea : MonoBehaviour
 
     /*
     *   Finds a free waiting spot in the waiting area.
-    *   Returns the index of the spot (in the MapGen roadmap) and the position of the spot.
-    *   If there are no free spots, returns (-1, null).
+    *   Returns the index of the spot (in the MapGen roadmap) and the index of the waiting spot (in the waitingSpots list).
+    *   If there are no free spots, returns (-1, -1).
     */
-    public (int index, Vector3? position) getWaitingSpot()
+    public (int index, int waitingSpot) getWaitingSpot()
     {
         // If there are available spots
         if(!isOccupied.All(spot => spot == true))
@@ -87,13 +87,13 @@ public class WaitingArea : MonoBehaviour
                 if(!isOccupied[i])
                 {
                     isOccupied[i] = true;
-                    return (mapIndex, waitingSpots[i]);
+                    return (mapIndex, i);
                 }
             }
         }
 
         // No available spots
-        return (-1, null);
+        return (-1, -1);
     }
 
 }

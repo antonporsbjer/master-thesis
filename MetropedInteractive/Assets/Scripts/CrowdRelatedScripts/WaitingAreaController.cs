@@ -39,18 +39,18 @@ public class WaitingAreaController : MonoBehaviour
     *   Get a waiting spot in the closest waiting area that has free spots.
     *   Returns the index of the waiting area in the roadmap and the position of the waiting spot.
     */
-    public (int,Vector3) getWaitingAreaSpot(int startNode)
+    public (int,int) getWaitingAreaSpot(int startNode)
     {
 
         foreach (int waitingAreaIndex in spawnerWaitingAreaDistances[startNode])
         {
-            (int waitingAreaMapIndex, Vector3? waitingAreaSpot) areaAndSpot = waitingAreas[waitingAreaIndex].getWaitingSpot();
-            if(areaAndSpot.waitingAreaSpot.HasValue)
+            (int waitingAreaMapIndex, int waitingAreaSpot) areaAndSpot = waitingAreas[waitingAreaIndex].getWaitingSpot();
+            if(areaAndSpot.waitingAreaSpot != -1)
             {
-                return (areaAndSpot.waitingAreaMapIndex, areaAndSpot.waitingAreaSpot.Value);
+                return (areaAndSpot.waitingAreaMapIndex, areaAndSpot.waitingAreaSpot);
             }
         }
-        return (-1,Vector3.zero);
+        return (-1,-1);
     }
 
     /*
@@ -84,7 +84,7 @@ public class WaitingAreaController : MonoBehaviour
     {
         agent.done = false;
         agent.noMap = true;
-        agent.noMapGoal = agent.waitingSpot;
+        agent.noMapGoal = agent.waitingArea.waitingSpots[agent.waitingSpot];
     }
 
     /*
@@ -95,7 +95,7 @@ public class WaitingAreaController : MonoBehaviour
         agent.setAnimatorStanding(true);
         waitingAgents.Add(agent);
         agent.transform.SetParent(waitingAgentsContainer.transform);
-        agent.teleportAgent(agent.waitingSpot);
+        agent.teleportAgent(agent.waitingArea.waitingSpots[agent.waitingSpot]);
         agent.rotateAgent(agent.waitingArea.goal.transform.position);
     }
 
