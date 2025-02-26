@@ -112,13 +112,7 @@ public class WaitingAreaController : MonoBehaviour
             FindObjectOfType<Main>().AddToAgentList(agent);
             waitingAgents.RemoveAt(i);
             agent.setAnimatorStanding(false);
-        }
-        foreach(WaitingArea waitingArea in waitingAreas)
-        {
-            for(int i = 0; i < waitingArea.isOccupied.Count; i++)
-            {
-                waitingArea.isOccupied[i] = false;
-            }
+            agent.waitingArea.isOccupied[agent.waitingSpot] = false;
         }
     }
 
