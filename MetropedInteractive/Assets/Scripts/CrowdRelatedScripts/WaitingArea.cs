@@ -13,11 +13,10 @@ public class WaitingArea : MonoBehaviour
     public int rows = 3;
     public int columns = 5;
     public bool debug = false;
-    public CustomNode goal;
+    public CustomNode goal;                 // Where agents will go after waiting
 
-    public List<Vector3> waitingSpots;
-    public List<bool> isOccupied;
-
+    private List<Vector3> waitingSpots;
+    internal List<bool> isOccupied;
     private int mapIndex;
 
     void OnEnable()
