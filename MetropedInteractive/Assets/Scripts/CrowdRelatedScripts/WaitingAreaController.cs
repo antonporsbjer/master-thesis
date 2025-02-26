@@ -9,7 +9,7 @@ using System.Linq;
 public class WaitingAreaController : MonoBehaviour
 {  
     public List<WaitingArea> waitingAreas;                          // All the waiting areas in the scene
-    private List<Agent> waitingAgents;                              // Agents that are currently waiting
+    internal List<Agent> waitingAgents;                              // Agents that are currently waiting
     private GameObject waitingAgentsContainer;                      // A container for the waiting agent objects in the inspector
     public Dictionary<int, List<int>> spawnerWaitingAreaDistances;  // The distance from each spawner to each waiting area in descending order
     private MapGen.map roadmap;                                     // The map of the nodes in the scene
@@ -99,8 +99,7 @@ public class WaitingAreaController : MonoBehaviour
         agent.rotateAgent(agent.waitingArea.goal.transform.position);
     }
 
-    [ContextMenu("Board Train")]
-    public void BoardTrain()
+    public void BoardWaitingAgents()
     {
         for(int i = waitingAgents.Count - 1; i >= 0; i--)
         {

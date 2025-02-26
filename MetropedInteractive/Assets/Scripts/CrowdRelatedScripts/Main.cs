@@ -186,4 +186,18 @@ public class Main : MonoBehaviour {
 	{
 		agentList.Add(agent);
 	}
+
+	[ContextMenu("Board Train")]
+    public void BoardTrain()
+    {
+        waitingAreaController.BoardWaitingAgents();
+		foreach(Agent agent in agentList)
+		{
+			if(agent.isWaitingAgent)
+			{
+				agent.noMap = true;
+				agent.noMapGoal = agent.waitingArea.goal.transform.position;
+			}
+		}
+    }
 }
