@@ -3,13 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
+/*
+*   This class manages all the waiting areas and related functions.
+*/
 public class WaitingAreaController : MonoBehaviour
 {  
-    public List<WaitingArea> waitingAreas;
-    private List<Agent> waitingAgents;
-    private GameObject waitingAgentsContainer;
-    public Dictionary<int, List<int>> spawnerWaitingAreaDistances;
-    private MapGen.map roadmap;
+    public List<WaitingArea> waitingAreas;                          // All the waiting areas in the scene
+    private List<Agent> waitingAgents;                              // Agents that are currently waiting
+    private GameObject waitingAgentsContainer;                      // A container for the waiting agent objects in the inspector
+    public Dictionary<int, List<int>> spawnerWaitingAreaDistances;  // The distance from each spawner to each waiting area in descending order
+    private MapGen.map roadmap;                                     // The map of the nodes in the scene
 
     public void Initialize()
     {
@@ -32,6 +35,10 @@ public class WaitingAreaController : MonoBehaviour
         waitingAgents.Add(agent);
     }
 
+    /*
+    *   Get a waiting spot in the closest waiting area that has free spots.
+    *   Returns the index of the waiting area in the roadmap and the position of the waiting spot.
+    */
     public (int,Vector3) getWaitingAreaSpot(int startNode)
     {
 
@@ -46,6 +53,9 @@ public class WaitingAreaController : MonoBehaviour
         return (-1,Vector3.zero);
     }
 
+    /*
+    *   Order the waiting areas by distance from each spawner.
+    */
     private void BuildSpawnerWaitingAreaDistances()
     {
         spawnerWaitingAreaDistances = new Dictionary<int, List<int>>();
@@ -67,13 +77,19 @@ public class WaitingAreaController : MonoBehaviour
         }
     }
 
-    public void walkAgentToWaitingArea(Agent agent)
+    /*
+    *   After the agent reached the waiting area, they will walk to the waiting spot.
+    */
+    public void walkAgentToWaitingSpot(Agent agent)
     {
         agent.done = false;
         agent.noMap = true;
         agent.noMapGoal = agent.waitingSpot;
     }
 
+    /*
+    *   After the agent reached the waiting area, they will be teleported to the waiting spot.
+    */
     public void putAgentInWaitingArea(Agent agent)
     {
         agent.setAnimatorStanding(true);

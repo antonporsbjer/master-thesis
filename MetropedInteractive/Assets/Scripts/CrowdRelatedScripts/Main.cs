@@ -147,11 +147,13 @@ public class Main : MonoBehaviour {
 			{
 				if(agent.isWaitingAgent)
 				{
+					// Agent reached the waiting area
 					if(!agent.noMap)
 					{
-						waitingAreaController.walkAgentToWaitingArea(agent);
+						waitingAreaController.walkAgentToWaitingSpot(agent);
 						agent.move(ref roadmap);
 					}
+					// Agent reached the waiting spot
 					else
 					{
 						waitingAreaController.putAgentInWaitingArea(agent);

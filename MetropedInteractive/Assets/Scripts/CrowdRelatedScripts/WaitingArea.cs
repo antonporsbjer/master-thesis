@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+/*
+*   This script manages one waiting area.
+*   It generates a grid of waiting spots and keeps track of which spots are occupied.
+*/
 public class WaitingArea : MonoBehaviour
 {
     // Grid based on number of rows and columns
@@ -21,6 +25,10 @@ public class WaitingArea : MonoBehaviour
         GenerateRowColumnWaitingSpots();
     }
 
+    /*
+    *   Generates a grid of waiting spots for this waiting area 
+    *   based on the number of rows and columns set by the user in the editor.
+    */
     void GenerateRowColumnWaitingSpots()
     {
         waitingSpots = new List<Vector3>();
@@ -55,11 +63,21 @@ public class WaitingArea : MonoBehaviour
         }
     }
 
+    /*
+    *   The waiting area is also a node used for the agents' pathfinding.
+    *   All nodes in the scene are stored in a list in the MapGen script.
+    *   This is the index of this node in that list.
+    */
     public void setMapIndex(int index)
     {
         mapIndex = index;
     }
 
+    /*
+    *   Finds a free waiting spot in the waiting area.
+    *   Returns the index of the spot (in the MapGen roadmap) and the position of the spot.
+    *   If there are no free spots, returns (-1, null).
+    */
     public (int index, Vector3? position) getWaitingSpot()
     {
         // If there are available spots
