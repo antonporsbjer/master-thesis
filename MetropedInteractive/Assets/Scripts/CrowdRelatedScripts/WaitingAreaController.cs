@@ -99,19 +99,23 @@ public class WaitingAreaController : MonoBehaviour
         agent.rotateAgent(agent.waitingArea.goal.transform.position);
     }
 
-    public void BoardWaitingAgents()
+    public void BoardWaitingAgents(int trainLine)
     {
         for(int i = waitingAgents.Count - 1; i >= 0; i--)
         {
             Agent agent = waitingAgents[i];
-            agent.done = false;
-            agent.noMap = true;
-            agent.noMapGoal = agent.waitingArea.goal.transform.position;
-            agent.isWaitingAgent = false;
-            FindObjectOfType<Main>().AddToAgentList(agent);
-            waitingAgents.RemoveAt(i);
-            agent.setAnimatorStanding(false);
-            agent.waitingArea.isOccupied[agent.waitingSpot] = false;
+            if(agent.subwayData.HasValue && agent.subwayData.Value.trainLine == trainLine)
+            {
+                agent.done = false;
+                agent.noMap = true;
+                agent.noMapGoal = agent.waitingArea.goal.transform.position;
+                agent.isWaitingAgent = false;
+                FindObjectOfType<Main>().AddToAgentList(agent);
+                waitingAgents.RemoveAt(i);
+                agent.setAnimatorStanding(false);
+                agent.waitingArea.isOccupied[agent.waitingSpot] = false;
+            }
+            
         }
     }
 

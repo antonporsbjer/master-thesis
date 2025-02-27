@@ -187,17 +187,35 @@ public class Main : MonoBehaviour {
 		agentList.Add(agent);
 	}
 
-	[ContextMenu("Board Train")]
-    public void BoardTrain()
+	[ContextMenu("Board Train 1")]
+    public void BoardTrainLine1()
     {
-        waitingAreaController.BoardWaitingAgents();
+		int trainLine = 1;
+        waitingAreaController.BoardWaitingAgents(trainLine);
 		foreach(Agent agent in agentList)
 		{
-			if(agent.isWaitingAgent)
+			if(agent.subwayData.HasValue && agent.subwayData.Value.trainLine == trainLine)
 			{
 				agent.noMap = true;
 				agent.noMapGoal = agent.waitingArea.goal.transform.position;
 			}
 		}
     }
+
+	[ContextMenu("Board Train 2")]
+    public void BoardTrainLine2()
+    {
+		int trainLine = 2;
+        waitingAreaController.BoardWaitingAgents(trainLine);
+		foreach(Agent agent in agentList)
+		{
+			if(agent.subwayData.HasValue && agent.subwayData.Value.trainLine == trainLine)
+			{
+				agent.noMap = true;
+				agent.noMapGoal = agent.waitingArea.goal.transform.position;
+			}
+		}
+    }
+
+
 }

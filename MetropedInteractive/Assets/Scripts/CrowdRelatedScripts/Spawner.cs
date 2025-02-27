@@ -37,6 +37,7 @@ public class Spawner : MonoBehaviour {
 	// Waiting agents
 	public bool waitingAgents;
 	private WaitingAreaController waitingAreaController;
+	public bool subwayAgents;
 
 	//Common items for this spawner
 	internal GameObject agentModels;
@@ -350,6 +351,13 @@ public class Spawner : MonoBehaviour {
 				agent.waitingSpot = waitingAreaSpot.waitingSpot;
 				agent.waitingArea = map.allNodes[waitingAreaSpot.waitingArea].GetComponent<WaitingArea>();
 			}
+		}
+
+		if(subwayAgents)
+		{
+			int trainLine = Random.Range(1,3);
+			agent.subwayData = new Agent.SubwayData(trainLine);
+
 		}
 
 		agent.InitializeAgent (startPosition, node, agentGoal, ref map);

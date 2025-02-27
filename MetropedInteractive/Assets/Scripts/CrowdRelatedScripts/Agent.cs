@@ -31,8 +31,18 @@ public class Agent : MonoBehaviour {
 	internal bool isWaitingAgent;
 	internal WaitingArea waitingArea;
 	internal int waitingSpot;
+	// Subway
+	internal struct SubwayData
+	{
+		internal int trainLine;
 
-	
+		internal SubwayData(int trainLine)
+		{
+			this.trainLine = trainLine;
+		}
+	}
+	internal SubwayData? subwayData;
+
 	internal void Start() {
 		animator = transform.gameObject.GetComponent<Animator> ();
 		rbody = transform.gameObject.GetComponent<Rigidbody> ();
