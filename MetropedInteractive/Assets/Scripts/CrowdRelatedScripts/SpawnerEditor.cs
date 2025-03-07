@@ -26,11 +26,13 @@ public class SpawnerEditor : Editor {
 		customGoal_Prop,
 		spawnRate_Prop,
 		waitingAgents_Prop,
-		subwayAgents_Prop;
+		subwayAgents_Prop,
+		usePoisson_Prop;
 	
 	private SerializedProperty
 		avoidanceRadius_Prop,
 		planeSize_Prop;
+
 
 
 
@@ -63,6 +65,8 @@ public class SpawnerEditor : Editor {
 		spawnRate_Prop = serializedObject.FindProperty ("spawnRate");
 		waitingAgents_Prop = serializedObject.FindProperty ("waitingAgents");
 		subwayAgents_Prop = serializedObject.FindProperty ("subwayAgents");
+		usePoisson_Prop = serializedObject.FindProperty ("usePoisson");
+
     }
 
     public override void OnInspectorGUI() {
@@ -95,6 +99,7 @@ public class SpawnerEditor : Editor {
 
 		case Main.Method.continuousSpawn:     
 			EditorGUILayout.PropertyField(spawnRate_Prop);
+			EditorGUILayout.PropertyField(usePoisson_Prop);
 			EditorGUILayout.PropertyField(waitingAgents_Prop);
 			EditorGUILayout.PropertyField(subwayAgents_Prop);
 			EditorGUILayout.PropertyField (useSimpleAgents_Prop);

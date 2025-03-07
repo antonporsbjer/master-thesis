@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 
 public class Spawner : MonoBehaviour {
 
@@ -62,6 +63,7 @@ public class Spawner : MonoBehaviour {
 	private int goal;
 
 	public float spawnRate;
+	public bool usePoisson = false;
 
 	internal Dictionary<string, int> skins;
 
@@ -291,7 +293,18 @@ public class Spawner : MonoBehaviour {
 	internal IEnumerator spawnContinously(float continousSpawnRate) {
 		float spawnSizeX = transform.localScale.x;
 		float spawnSizeZ = transform.localScale.z;
-	
+
+		if(usePoisson)
+		{
+			float timeBetweenSpawn = CalculateTimeBetweenSpawns();
+			yield return new WaitForSeconds (timeBetweenSpawn);
+			
+		}
+		else
+		{
+			yield return new WaitForSeconds (continousSpawnRate);
+		}
+		
 		if (agentList.Count < mainScript.maxNumberOfAgents) {
 			Vector3 startPos = new Vector3 (Random.Range (-0.5f, 0.5f), 0.15f, Random.Range (-0.5f, 0.5f)); startPos = transform.TransformPoint (startPos);
 			float randomRange = Random.Range(0.0f, 1.0f);
@@ -312,7 +325,7 @@ public class Spawner : MonoBehaviour {
 				}
 			}
 		}
-		yield return new WaitForSeconds (continousSpawnRate);
+		
 		StartCoroutine (spawnContinously(continousSpawnRate));
 	}
 
@@ -418,4 +431,11 @@ public class Spawner : MonoBehaviour {
 		}
 		return gr;
 	}
+
+	float CalculateTimeBetweenSpawns()
+    {
+        float u = Random.value;
+        // -ln(1-u)/λ
+        return -Mathf.Log(1 - u) / spawnRate;
+    }
 }
