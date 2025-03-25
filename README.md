@@ -1,3 +1,19 @@
+# Welcome to the crowd simulator! 👩‍💻
+
+Please fork this repo if you plan to create a project based on this version.
+
+There are sample scenes in `MetropedInteractive/Assets/CrowdSimulator/Scenes`.
+
+Prefabs needed for the simulation can be found in `MetropedInteractive/Assets/CrowdSimulator/Prefabs`.
+
+Please use the agent models in `MetropedInteractive/Assets/CrowdSimulator/Prefabs/Agents`.
+
+The models are (almost) scaled to match real life (1 unit in Unity = 1 meter).
+
+This setup should work (Main.cs component):
+
+![image](https://github.com/user-attachments/assets/04a53551-eb3d-4ce9-b0dd-79a390398049)
+
 # Components for simulation
 
 The scene needs to have a Main object, and at least one Spawner and one Goal.
