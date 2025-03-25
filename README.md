@@ -132,7 +132,7 @@ Doesn’t seem to do anything. 🤷
 
 **Agent Avoidance Radius**
 
-The preferred distance between two agents.
+The preferred distance between two agents. 0.5 appears to be a good value.
 
 **Use Preset Group Distances**
 
