@@ -162,7 +162,7 @@ public class MapGen : MonoBehaviour {
 				continue;
 			}
 
-			s.y = 1.0f;
+			s.y = 0.01f;
 			if (s.x < xMinMax.x || s.x > xMinMax.y || s.z < zMinMax.x || s.z > zMinMax.y) {
 				i -= 1;
 //				Debug.Log ("Way error");
