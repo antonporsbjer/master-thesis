@@ -2,6 +2,8 @@
 
 Please fork this repo if you plan to create a project based on this version.
 
+Verified to work with Unity 2022.3.18f1.
+
 There are sample scenes in `MetropedInteractive/Assets/CrowdSimulator/Scenes`.
 
 Prefabs needed for the simulation can be found in `MetropedInteractive/Assets/CrowdSimulator/Prefabs`.
