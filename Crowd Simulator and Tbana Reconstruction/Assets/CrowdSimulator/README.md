@@ -40,6 +40,9 @@ Instead of moving towards the center of the node the agents will move towards th
 - Agents will spawn in an area with the given dimensions an walk towards their goal.
 
 ### Main
+This setup should work regarding the prefabs needed in the Main.cs component:
+
+![image](https://github.com/user-attachments/assets/04a53551-eb3d-4ce9-b0dd-79a390398049)
 
 **Max Number Of Agents**
 - The maximum number of agents that can be active at any time when spawning agents continuously.

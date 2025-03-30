@@ -11,8 +11,7 @@
 - Prefabs needed for the simulation can be found in `/Assets/CrowdSimulator/Prefabs`.
 - Please use the agent models in `/Assets/CrowdSimulator/Prefabs/Agents`.
 - The models are (almost) scaled to match real life (1 unit in Unity = 1 meter).
-- This setup should work (Main.cs component):
-- ![image](https://github.com/user-attachments/assets/04a53551-eb3d-4ce9-b0dd-79a390398049)
+- The subway reconstruction assets and scene can be found in `/Assets/Metroped`
 
 ## Acknowledgements
 ### Jack Shabo
