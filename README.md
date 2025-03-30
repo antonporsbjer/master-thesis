@@ -1,53 +1,155 @@
-# Project Description
-This project is a virtual reconstruction of a Stockholm subway station. It will be used in a reasearch project that aims to understand how people react to different elements in enclosed spaces such as subway stations. 
-The reconstruction of the subway station is based of Rådmansgatans subway station in Stockholm, but various elements have been added to alter the appearance, so it isn't an exact replica. See below:
+# Welcome to the crowd simulator! 👩‍💻
 
-<img width="615" alt="image" src="https://github.com/JulianLey/MetropedInteractive/assets/146943186/eaa12f23-9702-435f-8f7c-b9900cec77d7">
+Please fork this repo if you plan to create a project based on this version.
 
-A menu has also been added so that various elements (such as the glass walls lining the rails) can be removed and added for comparison. In the same menu the user also has the possibility to rate the current setup:
+There are sample scenes in `MetropedInteractive/Assets/CrowdSimulator/Scenes`.
 
-![image](https://github.com/JulianLey/MetropedInteractive/assets/146943186/d078cfb4-b84c-4bf1-a09f-6e94f1f2a1de)
+Prefabs needed for the simulation can be found in `MetropedInteractive/Assets/CrowdSimulator/Prefabs`.
 
-The results are then saved locally to a JSON file (The adress of this file is written out in the console when you rate and save a setup. See console for the path if you have trouble finding this file). This will look something like this:
+Please use the agent models in `MetropedInteractive/Assets/CrowdSimulator/Prefabs/Agents`.
 
-![image](https://github.com/JulianLey/MetropedInteractive/assets/146943186/3c9208cd-8a74-423c-bc98-7a52dda075b2)
+The models are (almost) scaled to match real life (1 unit in Unity = 1 meter).
 
-The participant will be able to move through the scene with the WASD keys and in VR.
-There are also moving trains and a virtual crowd that move through the scene.
+This setup should work (Main.cs component):
 
-![image](https://github.com/JulianLey/MetropedInteractive/assets/146943186/760bb78e-7ad5-4149-836d-aaea4105e30f)
+![image](https://github.com/user-attachments/assets/04a53551-eb3d-4ce9-b0dd-79a390398049)
 
-# Installation Instructions
-- Install Unity Hub on your computer.
-- Install editor version 2022.3.18f1
-- Clone the repository to your local computer
-- Open the cloned project folder (MetropedInteractive) in Unity Hub using the "Add from disk" button
-- Open the project with the 2022.3.18f1 editor
-- In the project window navigate to "Assets" and doubleclick "FinalScenePVK" to open the scene
+# Components for simulation
 
-# Running a basic version of the project
-- Press on the play button in the Editor
-- Navigate to the ribbon at the top of the Game View window and make sure Display 1 is selected to try the WASD implementation.
+The scene needs to have a Main object, and at least one Spawner and one Goal.
 
+Nodes are placed in the world to guide agents. They will walk to their goal using the shortest path of nodes.
 
-# Issues with the Crowd
-Currently the project isn't buildable (we can't create an executable/application out of it) due to the Crowd giving certain errors (The project is buildable without the Crowd assets).
-Errors:
-- "Cannot build player while Editor is importing Assets or compiling scripts" --> This could be due to the custom Editor for the Crowd. Assets --> AssetsCrowd --> Editor --> CustomEditor    && Assets --> Scripts --> CustomEditor
-- "Assets\Scripts\CustomEditor.cs(5,37): error CS0246: The type or namespace name 'Editor' could not be found (are you missing a using directive or an assembly reference?)"
-- "Assets\Scripts\CustomEditor.cs(4,2): error CS0246: The type or namespace name 'CustomEditorAttribute' could not be found (are you missing a using directive or an assembly reference?)"
-- "Assets\Scripts\CustomEditor.cs(4,2): error CS0246: The type or namespace name 'CustomEditor' could not be found (are you missing a using directive or an assembly reference?)"
-- "Assets\Scripts\CustomEditor.cs(4,30): error CS0246: The type or namespace name 'CanEditMultipleObjectsAttribute' could not be found (are you missing a using directive or an assembly reference?)"
-- "Assets\Scripts\CustomEditor.cs(4,30): error CS0246: The type or namespace name 'CanEditMultipleObjects' could not be found (are you missing a using directive or an assembly reference?)"
-- "Assets\Scripts\CustomEditor.cs(7,9): error CS0246: The type or namespace name 'SerializedProperty' could not be found (are you missing a using directive or an assembly reference?)"
+**Custom Node**
 
-As you can see these errors all are related to the Custom Editor.
+Agents will steer towards the center of the node, which works well for chokepoints like doorways, but might create unrealistic movement since all agents are moving towards the exact same point.
 
-There are also many warnings that appear that are related to the Crowd files when you try to build the application. Since there are several different warnings, I will not display them all here. To find them go to [File --> BuildSettings --> Build ] and choose a destination folder for the build. The warnings will appear in the console window of Unity.
+**Custom Node Lined**
 
-However there are also warnings that appear when you run the project:
-  - "The referenced script (Unknown) on this Behaviour is missing!
-UnityEngine.Resources:LoadAll (string)
-Spawner:init (UnityEngine.GameObject&,UnityEngine.GameObject&,Agent&,MapGen/map&,System.Collections.Generic.List`1<Agent>&,UnityEngine.Vector2,UnityEngine.Vector2,single,bool,bool,single,single,single,single) (at Assets/Scripts/Spawner.cs:60)
-Main:Start () (at Assets/Scripts/Main.cs:153)"
+Instead of moving towards the center of the node the agents will move towards the closest point along a line across the nodes diameter. This might make the movement look more realistic. It might look like the agents reach the node before they actually reach the node’s area if they steer towards a point closer to the edge.
 
+# Spawner
+
+**Agent Editor Container**
+
+An empty game object of which the agent objects will be children to not make the editor hierarchy window cluttered.
+
+**Custom Goal**
+
+The goal node of the agents of this spawner. If no custom goal is set the agents will have the goal at index 0 as their goal.
+
+### Spawn Method
+
+**Uniform Spawn**
+
+The given number of agents will spawn spread out uniformly over the plane area.
+
+**Circle Spawn**
+
+Agents will spawn in a circle with the given radius and walk towards the center.
+
+**Disc Spawn**
+
+Agents will spawn in a disc with the given radius and number of rows and walk towards the center.
+
+**Continuous Spawn**
+
+Agents will spawn continuously with the given spawn rate and walk towards their goal. A lower spawn rate means less time between spawns.
+
+**Area Spawn**
+
+Agents will spawn in an area with the given dimensions an walk towards their goal.
+
+# Main
+
+**Max Number Of Agents**
+
+The maximum number of agents that can be active at any time when spawning agents continuously.
+
+**Plane Size**
+
+Length of the side of the square plane. 
+
+The plane should be big enough to cover the area where the agents will walk.
+
+**Road Node Amount**
+
+Number of extra nodes to be placed automatically.
+
+Extra nodes can be placed automatically which might make it easier for agents to move around obstacles and might make their movement look more realistic.
+
+**Cells Per Row**
+
+Number of cells per row in the staggered grid.
+
+A higher number allows for a more detailed representation of agent movement but at a higher computation cost.
+
+**Neighbor bins**
+
+The number of neighbor bins used to calculate collision avoidance for agents.
+
+More bins allows for more realistic simulation at the expense of computational cost.
+
+**Agent Max Speed, Agent Min Speed**
+
+Each agent’s walk speed will be a randomized number within this interval.
+
+**Custom Time Step**
+
+Set this to true to use a custom time step. If it’s false Unity’s Time.deltaTime will be used.
+
+**Time Step**
+
+The custom time step if custom time step is used.
+
+**Alpha**
+
+A higher alpha value (closer to 1) allows for more perfect packing of agents and denser crowds, a lower value gives a sparser crowd.
+
+**Solver**
+
+PSOR seems to be faster and more stable than the other two.
+
+**Solver Max Iterations**
+
+A higher number gives more accurate simulation but takes more time.
+
+**Epsilon**
+
+A lower value gives more accurate simulations but takes more time.
+
+**Show Splatted Density**
+
+Visualizes the crowd density.
+
+**Show Splatted Velocity**
+
+Visualizes the crowd velocity.
+
+**Visible Map**
+
+True will show the nodes when playing and false will hide them.
+
+**Walk back**
+
+If this option is checked agents will walk back to their previous target node if they loose sight of the next one. This might be good if agents get stuck, but it might look unrealistic in some scenarios.
+
+**Skip Node If See Next**
+
+If this option is checked agents will start moving to the next node in their path as soon as it’s in their line of sight, otherwise they have to reach each node before proceeding to the next.
+
+**Smooth Turns**
+
+This option makes agents turn more smoothly which might make their movement look more realistic.
+
+**Handle Collision**
+
+Doesn’t seem to do anything. 🤷
+
+**Agent Avoidance Radius**
+
+The preferred distance between two agents. 0.5 appears to be a good value.
+
+**Use Preset Group Distances**
+
+When this option is true preset distances between agents for different group sizes are used. When it is false the same distance is used regardless of group size.
