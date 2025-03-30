@@ -49,8 +49,8 @@ public class Main : MonoBehaviour {
 
 	public int cellsPerRow;
 	public int neighbourBins;
-	public int roadNodeAmount;
-	public bool visibleMap;
+	public int roadNodeAmount; // Number of nodes that are placed automatically
+	public bool visibleMap; // Show or hide the nodes in the world
 	internal float ringDiameter;
 
 	public bool customTimeStep;

@@ -85,7 +85,6 @@ public class MapGen : MonoBehaviour {
 		return borderPoint;
 	}
 
-
 	public map generateRoadMap(int nodes, Vector2 xMinMax, Vector2 zMinMax, bool visibleMap) {
 	//	bool[,] notFree = new bool[(int)(xMinMax.y - xMinMax.x), (int)(zMinMax.y - zMinMax.x)];
 		sweepMap(xMinMax, zMinMax);
@@ -123,7 +122,12 @@ public class MapGen : MonoBehaviour {
 			c.transform.parent = graph.transform;
 		}
 
-
+		/**
+		 * Generate random nodes in the map
+		 * Check if they are free
+		 * If not free, find the closest free point
+		 * If free, add to the list
+		 * */
 		for(int i = 0; i < nodes; ++i) {
 			Vector3 p = new Vector3 (Random.Range (xMinMax.x, xMinMax.y), 0.0f, Random.Range (zMinMax.x, zMinMax.y));
 			Vector3 s = p;
@@ -192,6 +196,9 @@ public class MapGen : MonoBehaviour {
 				}
 			}
 		}
+		// Automatically adding nodes finished
+
+
 		List<List<float>> dist = makeDist (ref map);
 		List<List<List<int>>> shortestPaths = getShortestPaths (ref dist, Mathf.Max(xMinMax.y - xMinMax.x, zMinMax.y - zMinMax.x));
 		m.shortestPaths = shortestPaths;
