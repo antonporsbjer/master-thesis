@@ -1,0 +1,78 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1000012752800524
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4000012987795916}
+  - component: {fileID: 114000011453258514}
+  m_Layer: 0
+  m_Name: Main
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4000012987795916
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000012752800524}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &114000011453258514
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000012752800524}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b00a664df6b7a9345875b64b7b0d359a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  epsilon: 0.01
+  solverMaxIterations: 40
+  solver: 2
+  planeSize: 20
+  agentAvoidanceRadius: 0.7
+  agentMaxSpeed: 5
+  agentMinSpeed: 3
+  usePresetGroupDistances: 0
+  p1p2: 0
+  p2p3: 0
+  p3p4: 0
+  agentPrefabs: {fileID: 1000010616678136, guid: e9bd1b9bec706654aae4f03a25e0212a, type: 3}
+  groupAgentPrefabs: {fileID: 1000010616678136, guid: ddae5f53a9bc5c447922df81f7ed9ec9, type: 3}
+  shirtColorPrefab: {fileID: 114000012423741106, guid: 2c44bda8a2b77f64691d2bc1d7ab160d, type: 3}
+  gridPrefab: {fileID: 114000012242863314, guid: cd00fafb131578642bd11c30bd1d99a2, type: 3}
+  spawnerPrefab: {fileID: 114000011514121796, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
+  mapGen: {fileID: 114000012251945406, guid: 837b7abe7155c624d9b834f28fc8fcc9, type: 3}
+  plane: {fileID: 114000010043078172, guid: fd72e51c92175404799278493295988b, type: 3}
+  cellsPerRow: 30
+  neighbourBins: 100
+  roadNodeAmount: 0
+  visibleMap: 1
+  customTimeStep: 0
+  timeStep: 0
+  alpha: 1
+  maxNumberOfAgents: 1000
+  showSplattedDensity: 0
+  showSplattedVelocity: 0
+  walkBack: 1
+  skipNodeIfSeeNext: 0
+  smoothTurns: 0
+  handleCollision: 1
