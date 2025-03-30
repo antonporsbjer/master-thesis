@@ -5,7 +5,7 @@
 
 ## General information
 - Verified to work with Unity 2022.3.18f1.
-- There is a readme for the components of the simulator here.
+- There is a readme for the components of the simulator [here](Crowd Simulator and Tbana Reconstruction/Assets/CrowdSimulator/README.md)
 - There is a template scene, which you can use as a basis for your own project, `/Assets/CrowdSimulator/Scenes/Template.unity`
 - There are sample scenes in `/Assets/CrowdSimulator/Scenes`.
 - Prefabs needed for the simulation can be found in `/Assets/CrowdSimulator/Prefabs`.
