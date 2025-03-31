@@ -21,7 +21,8 @@ public class PropertyHolderEditor : Editor {
 		neighbourBins_Prop,
 		numberOfCells_Prop,
 		planePrefab_Prop,
-		planeSize_Prop,
+		planeSizeX_Prop,
+		planeSizeZ_Prop,
 		roadNode_Prop,
 		shirtColorPrefab_Prop,
 		skip_Prop,
@@ -58,7 +59,8 @@ public class PropertyHolderEditor : Editor {
 		neighbourBins_Prop = serializedObject.FindProperty ("neighbourBins");
 		numberOfCells_Prop = serializedObject.FindProperty ("cellsPerRow");
 		planePrefab_Prop = serializedObject.FindProperty ("plane");
-		planeSize_Prop = serializedObject.FindProperty ("planeSize");
+		planeSizeX_Prop = serializedObject.FindProperty ("planeSizeX");
+		planeSizeZ_Prop = serializedObject.FindProperty ("planeSizeZ");
 		roadNode_Prop = serializedObject.FindProperty ("roadNodeAmount");
 		shirtColorPrefab_Prop = serializedObject.FindProperty ("shirtColorPrefab");
 		solverIterations_Prop = serializedObject.FindProperty ("solverMaxIterations");
@@ -77,7 +79,8 @@ public class PropertyHolderEditor : Editor {
 	public override void OnInspectorGUI() {
 		serializedObject.Update ();
 		EditorGUILayout.PropertyField(maxNumberOfAgents_Prop);
-		EditorGUILayout.PropertyField(planeSize_Prop);
+		EditorGUILayout.PropertyField(planeSizeX_Prop);
+		EditorGUILayout.PropertyField(planeSizeZ_Prop);
 		EditorGUILayout.PropertyField(roadNode_Prop);
 		EditorGUILayout.PropertyField(numberOfCells_Prop);
 		EditorGUILayout.PropertyField(neighbourBins_Prop);

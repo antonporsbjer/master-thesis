@@ -22,7 +22,8 @@ public class Main : MonoBehaviour {
 	public LCPSolutioner solver;
 	
 
-	public float planeSize;
+	public float planeSizeX;
+	public float planeSizeZ;
 	
 
 	
@@ -78,7 +79,7 @@ public class Main : MonoBehaviour {
 		if (error)
 			return;
 		
-		plane.transform.localScale = new Vector3 (planeSize, 1.0f, planeSize);
+		plane.transform.localScale = new Vector3 (planeSizeX, 1.0f, planeSizeZ);
 		Vector3 planeLength = plane.getLengths (); //Staggered grid length
 		xMinMax = new Vector2 (plane.transform.position.x - planeLength.x / 2, 
 			                   plane.transform.position.x + planeLength.x / 2);

@@ -127,10 +127,10 @@ public class Spawner : MonoBehaviour {
 			spawnAreaAgents(rows, rowLength, node);
 			break;
 		case Method.circleSpawn:
-			agentList.AddRange(circleSpawn(numberOfAgents, circleRadius, mainScript.planeSize));
+			agentList.AddRange(circleSpawn(numberOfAgents, circleRadius, Mathf.Min(mainScript.planeSizeX, mainScript.planeSizeZ)));
 			break;
 		case Method.discSpawn:
-			agentList.AddRange(discSpawn(mainScript.planeSize, circleRadius, numberOfDiscRows));
+			agentList.AddRange(discSpawn(Mathf.Min(mainScript.planeSizeX, mainScript.planeSizeZ), circleRadius, numberOfDiscRows));
 			break;
 		case Method.continuousSpawn:
 				continousSpawn(); 
@@ -170,7 +170,7 @@ public class Spawner : MonoBehaviour {
 				pos.x = Random.Range (X.x, X.y);
 				pos.z = Random.Range (Z.x, Z.y);
 			}
-			pos.y = 2.0f;
+			pos.y = 0f;
 			Agent a = Instantiate (agentModels.transform.GetChild(Random.Range(0, agentModels.transform.childCount)).GetComponent<Agent>()) as Agent;
 			a.transform.position = pos;
 			float closest = -1;
