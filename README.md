@@ -1,5 +1,5 @@
 # Welcome to the crowd simulator! 👩‍💻
-![image](https://github.com/user-attachments/assets/92e9c724-d89c-44c6-af9f-71a534b34905)
+![image](https://github.com/user-attachments/assets/e0cd43e8-44e3-449a-8142-bb1b5b03dfd9)
 
 👩‍💻 Please fork this repo if you plan to create a project based on this version.
 
@@ -32,7 +32,9 @@
 
 ## Screenshots
 
-![platform](https://github.com/user-attachments/assets/cf310d79-30d5-4939-ba05-bc617972f3e2)
+![platform](https://github.com/user-attachments/assets/9f0915a1-38f2-43c5-8779-f3f2bc1480b0)
 
-![mycketfolk](https://github.com/user-attachments/assets/3859463f-a448-4c07-9edd-70f2e520feff)
+![mycketfolk](https://github.com/user-attachments/assets/513d1935-565c-4e22-adf2-e14af7e557df)
+
+
 
