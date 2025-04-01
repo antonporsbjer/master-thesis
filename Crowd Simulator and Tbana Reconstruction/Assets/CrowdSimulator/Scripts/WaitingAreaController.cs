@@ -97,6 +97,10 @@ public class WaitingAreaController : MonoBehaviour
         agent.transform.SetParent(waitingAgentsContainer.transform);
         agent.teleportAgent(agent.waitingArea.waitingSpots[agent.waitingSpot]);
         agent.rotateAgent(agent.waitingArea.goal.transform.position);
+        
+        // Freeze the agent's position and rotation
+        Rigidbody rb = agent.GetComponent<Rigidbody>();
+        rb.constraints = RigidbodyConstraints.FreezeAll;
     }
 
     public void BoardWaitingAgents(int trainLine)
@@ -114,6 +118,10 @@ public class WaitingAreaController : MonoBehaviour
                 waitingAgents.RemoveAt(i);
                 agent.setAnimatorStanding(false);
                 agent.waitingArea.isOccupied[agent.waitingSpot] = false;
+                
+                // Unfreeze the agent's position and rotation
+                Rigidbody rb = agent.GetComponent<Rigidbody>();
+                rb.constraints = RigidbodyConstraints.None;
             }
             
         }
