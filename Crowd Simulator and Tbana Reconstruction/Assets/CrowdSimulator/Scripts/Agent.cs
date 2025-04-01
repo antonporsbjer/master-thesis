@@ -27,7 +27,22 @@ public class Agent : MonoBehaviour {
     public float maxWaitTime = 2f;
 	public float currentSpeed;
 
-	
+	// Waiting
+	internal bool isWaitingAgent;
+	internal WaitingArea waitingArea;
+	internal int waitingSpot;
+	// Subway
+	internal struct SubwayData
+	{
+		internal int trainLine;
+
+		internal SubwayData(int trainLine)
+		{
+			this.trainLine = trainLine;
+		}
+	}
+	internal SubwayData? subwayData;
+
 	internal void Start() {
 		animator = transform.gameObject.GetComponent<Animator> ();
 		rbody = transform.gameObject.GetComponent<Rigidbody> ();
@@ -65,6 +80,12 @@ public class Agent : MonoBehaviour {
 		}
 		
 	}
+
+	public void setWaitingAgent(bool isWaitingAgent)
+	{
+		this.isWaitingAgent = isWaitingAgent;
+	}
+
 
 	public void InitializeAgent(Vector3 pos, int start, int goal, ref MapGen.map map) {
 		transform.position = pos;
@@ -227,6 +248,9 @@ public class Agent : MonoBehaviour {
 	
 			if (realSpeed < 0.05f) {
 				animator.speed = 0;
+			} else if(realSpeed > walkingSpeed)
+			{
+				animator.speed = 1;
 			} else {
 				animator.speed = realSpeed / walkingSpeed;
 			}
@@ -348,5 +372,21 @@ public class Agent : MonoBehaviour {
 		neighbourLeftVelocityWeight  = leftShiftedRelXPos  * Mathf.Abs(agentRelZPos) / clSquared;
 		neighbourUpperVelocityWeight = upperShiftedRelZPos * Mathf.Abs(agentRelXPos) / clSquared;
 		neighbourLowerVelocityWeight = lowerShiftedRelZPos * Mathf.Abs(agentRelXPos) / clSquared;
+	}
+
+	public void teleportAgent(Vector3 newPosition)
+	{
+		transform.position = newPosition;
+	}
+
+	public void setAnimatorStanding(bool isStanding)
+	{
+		animator.SetBool("Standing",isStanding);
+	}
+
+	public void rotateAgent(Vector3 target)
+	{
+		Vector3 direction = target - transform.position;
+		transform.rotation = Quaternion.LookRotation(direction);
 	}
 }

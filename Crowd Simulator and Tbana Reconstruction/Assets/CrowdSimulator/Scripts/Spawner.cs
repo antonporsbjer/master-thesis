@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 
 public class Spawner : MonoBehaviour {
 
@@ -34,6 +35,11 @@ public class Spawner : MonoBehaviour {
 	public int rows;
 	public int rowLength;
 
+	// Waiting agents
+	public bool waitingAgents;
+	private WaitingAreaController waitingAreaController;
+	public bool subwayAgents;
+
 	//Common items for this spawner
 	internal GameObject agentModels;
 	internal GameObject subgroupModels;
@@ -57,6 +63,7 @@ public class Spawner : MonoBehaviour {
 	private int goal;
 
 	public float spawnRate;
+	public bool usePoisson = false;
 
 	internal Dictionary<string, int> skins;
 
@@ -118,6 +125,7 @@ public class Spawner : MonoBehaviour {
 	void Start()
 	{
 		mainScript = FindObjectOfType<Main>();
+		waitingAreaController = FindObjectOfType<WaitingAreaController>();
 
 		switch(spawnMethod) {
 		case Method.uniformSpawn:
@@ -285,7 +293,18 @@ public class Spawner : MonoBehaviour {
 	internal IEnumerator spawnContinously(float continousSpawnRate) {
 		float spawnSizeX = transform.localScale.x;
 		float spawnSizeZ = transform.localScale.z;
-	
+
+		if(usePoisson)
+		{
+			float timeBetweenSpawn = CalculateTimeBetweenSpawns();
+			yield return new WaitForSeconds (timeBetweenSpawn);
+			
+		}
+		else
+		{
+			yield return new WaitForSeconds (continousSpawnRate);
+		}
+		
 		if (agentList.Count < mainScript.maxNumberOfAgents) {
 			Vector3 startPos = new Vector3 (Random.Range (-0.5f, 0.5f), 0.15f, Random.Range (-0.5f, 0.5f)); startPos = transform.TransformPoint (startPos);
 			float randomRange = Random.Range(0.0f, 1.0f);
@@ -306,7 +325,7 @@ public class Spawner : MonoBehaviour {
 				}
 			}
 		}
-		yield return new WaitForSeconds (continousSpawnRate);
+		
 		StartCoroutine (spawnContinously(continousSpawnRate));
 	}
 
@@ -331,7 +350,30 @@ public class Spawner : MonoBehaviour {
 		{
 			agent = Instantiate (agentModels.transform.GetChild(Random.Range(0, agentModels.transform.childCount)).GetComponent<Agent>());
 		}
-		agent.InitializeAgent (startPosition, node, goal, ref map);
+
+		int agentGoal = goal;
+
+		if(waitingAgents)
+		{
+			// Find a waiting area goal for the agent. If there are no free waiting area spots their goal will be the ordinary goal for this spawner.
+			(int waitingArea,int waitingSpot) waitingAreaSpot = waitingAreaController.getWaitingAreaSpot(node);
+			if(waitingAreaSpot.waitingArea != -1)
+			{
+				agent.setWaitingAgent(true);
+				agentGoal = waitingAreaSpot.waitingArea;
+				agent.waitingSpot = waitingAreaSpot.waitingSpot;
+				agent.waitingArea = map.allNodes[waitingAreaSpot.waitingArea].GetComponent<WaitingArea>();
+			}
+		}
+
+		if(subwayAgents)
+		{
+			int trainLine = Random.Range(1,3);
+			agent.subwayData = new Agent.SubwayData(trainLine);
+
+		}
+
+		agent.InitializeAgent (startPosition, node, agentGoal, ref map);
 		agent.ApplyMaterials(materialColor, ref skins);
 
 		if (agentEditorContainer != null)
@@ -389,4 +431,11 @@ public class Spawner : MonoBehaviour {
 		}
 		return gr;
 	}
+
+	float CalculateTimeBetweenSpawns()
+    {
+        float u = Random.value;
+        // -ln(1-u)/λ
+        return -Mathf.Log(1 - u) / spawnRate;
+    }
 }

@@ -20,6 +20,13 @@ public class MapGen : MonoBehaviour {
 		public Spawner spawner;
 	}
 
+	private map roadmap;
+
+	public map getRoadmap()
+	{
+		return roadmap;
+	}
+
 	void sweepMap(Vector2 xMinMax, Vector2 zMinMax) {
 		for (int i = 0; i < xMinMax.y - xMinMax.x; ++i) {
 			for(int j = 0; j < zMinMax.y-zMinMax.x; ++j) {
@@ -108,6 +115,12 @@ public class MapGen : MonoBehaviour {
 			if (c.gameObject.GetComponent<CustomNode> ().isGoal) {
 				m.goals.Add (map.Count-1);
 			} 
+			// Inform the waiting area of its node index in the map
+			if(c is WaitingAreaNode)
+			{
+				c.GetComponent<WaitingArea>().setMapIndex(map.Count - 1);
+			}
+
 			Renderer r = c.GetComponent<Renderer> ();
 			if (r != null) {
 				if (!visibleMap) {
@@ -196,13 +209,16 @@ public class MapGen : MonoBehaviour {
 				}
 			}
 		}
+
+		roadmap = m;
 		// Automatically adding nodes finished
 
 
 		List<List<float>> dist = makeDist (ref map);
 		List<List<List<int>>> shortestPaths = getShortestPaths (ref dist, Mathf.Max(xMinMax.y - xMinMax.x, zMinMax.y - zMinMax.x));
 		m.shortestPaths = shortestPaths;
-
+		roadmap.shortestPaths = shortestPaths;
+		
 		return m;
 	}
 
@@ -214,7 +230,13 @@ public class MapGen : MonoBehaviour {
 		for (int i = 0; i < map.Count; ++i) {
 			for (int j = 0; j < map.Count; ++j) {
 				if (i != j) {
-					if (!Physics.Raycast (map [j], map [i] - map [j], (map [i] - map [j]).magnitude)) {
+					if(roadmap.allNodes[i] is WaitingAreaNode)
+					{
+						// This prevents agents from using waiting areas as nodes in their path
+						// except when their goal is the waiting area
+						dist[i].Add (float.MaxValue);
+					}
+					else if (!Physics.Raycast (map [j], map [i] - map [j], (map [i] - map [j]).magnitude)) {
 						dist [i].Add ((map [i] - map [j]).magnitude);
 					} else {
 						dist [i].Add (float.MaxValue);

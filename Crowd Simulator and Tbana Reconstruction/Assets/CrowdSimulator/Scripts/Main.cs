@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 
 public class Main : MonoBehaviour {
 
@@ -69,6 +70,7 @@ public class Main : MonoBehaviour {
 	public bool skipNodeIfSeeNext = false;
 	public bool smoothTurns = false;
 	public bool handleCollision = false;
+	private WaitingAreaController waitingAreaController;
 
 	/**
 	 * Initialize simulation by taking the user's options into consideration and spawn agents.
@@ -92,6 +94,12 @@ public class Main : MonoBehaviour {
 		MapGen m = Instantiate (mapGen) as MapGen; 
 		roadmap = m.generateRoadMap (roadNodeAmount, xMinMax, zMinMax, visibleMap);
 
+		waitingAreaController = FindObjectOfType<WaitingAreaController>();
+		if(waitingAreaController != null)
+		{
+			waitingAreaController.Initialize();
+		}
+
 
 		Grid grid = Instantiate (gridPrefab) as Grid;
 		grid.showSplattedDensity = showSplattedDensity;
@@ -113,16 +121,16 @@ public class Main : MonoBehaviour {
 		Grid.instance.initGrid (xMinMax, zMinMax, alpha, agentAvoidanceRadius);
 
 		for (int i = 0; i < roadmap.spawns.Count; ++i)
+		{
 			roadmap.spawns[i].spawner.InitializeSpawner (ref agentPrefabs, ref groupAgentPrefabs, ref shirtColorPrefab, ref roadmap, 
 											 ref agentList, xMinMax, zMinMax, agentAvoidanceRadius);
-		
+		}
 	}
-	
 
-	/**
+    /**
 	 * Main simulation loop which is called every frame
 	**/
-	void Update () {
+    void Update () {
 		Grid.instance.solver = solver;
 		Grid.instance.solverEpsilon = epsilon;
 		Grid.instance.solverMaxIterations = solverMaxIterations;
@@ -138,8 +146,26 @@ public class Main : MonoBehaviour {
 			Agent agent = agentList[i];
 			if (agent.done)
 			{
-				Destroy(agent.gameObject);
-				agentList.RemoveAt(i);
+				if(agent.isWaitingAgent)
+				{
+					// Agent reached the waiting area
+					if(!agent.noMap)
+					{
+						waitingAreaController.walkAgentToWaitingSpot(agent);
+						agent.move(ref roadmap);
+					}
+					// Agent reached the waiting spot
+					else
+					{
+						waitingAreaController.putAgentInWaitingArea(agent);
+						agentList.RemoveAt(i);
+					}
+				}
+				else
+				{
+					agentList.RemoveAt(i);
+					Destroy(agent.gameObject);
+				}
 				continue;
 			}
 			agent.move(ref roadmap);
@@ -157,4 +183,40 @@ public class Main : MonoBehaviour {
 		Grid.instance.dt = customTimeStep ? timeStep : Time.deltaTime;
 
 	}
+	public void AddToAgentList(Agent agent)
+	{
+		agentList.Add(agent);
+	}
+
+	[ContextMenu("Board Train 1")]
+    public void BoardTrainLine1()
+    {
+		int trainLine = 1;
+        waitingAreaController.BoardWaitingAgents(trainLine);
+		foreach(Agent agent in agentList)
+		{
+			if(agent.subwayData.HasValue && agent.subwayData.Value.trainLine == trainLine)
+			{
+				agent.noMap = true;
+				agent.noMapGoal = agent.waitingArea.goal.transform.position;
+			}
+		}
+    }
+
+	[ContextMenu("Board Train 2")]
+    public void BoardTrainLine2()
+    {
+		int trainLine = 2;
+        waitingAreaController.BoardWaitingAgents(trainLine);
+		foreach(Agent agent in agentList)
+		{
+			if(agent.subwayData.HasValue && agent.subwayData.Value.trainLine == trainLine)
+			{
+				agent.noMap = true;
+				agent.noMapGoal = agent.waitingArea.goal.transform.position;
+			}
+		}
+    }
+
+
 }
