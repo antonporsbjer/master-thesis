@@ -101,6 +101,8 @@ public class WaitingAreaController : MonoBehaviour
         // Freeze the agent's position and rotation
         Rigidbody rb = agent.GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.FreezeAll;
+        // Make waiting agents obstcales for other agents
+        agent.gameObject.layer = LayerMask.NameToLayer("Obstacle");
     }
 
     public void BoardWaitingAgents(int trainLine)
@@ -122,6 +124,8 @@ public class WaitingAreaController : MonoBehaviour
                 // Unfreeze the agent's position and rotation
                 Rigidbody rb = agent.GetComponent<Rigidbody>();
                 rb.constraints = RigidbodyConstraints.None;
+                // Set the agent's layer to default
+                agent.gameObject.layer = LayerMask.NameToLayer("IgnoreRaycast");
             }
             
         }
