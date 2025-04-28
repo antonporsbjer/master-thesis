@@ -129,7 +129,9 @@ public class Agent : MonoBehaviour {
 			//Can we see next goal?
 			Vector3 next = map.allNodes[path[pathIndex+modifier]].getTargetPoint(transform.position);
 			Vector3 dir = next - transform.position;
-			if(!Physics.Raycast (transform.position, dir.normalized, dir.magnitude)) {
+			LayerMask mask = LayerMask.GetMask("Agent");
+			mask = ~mask;
+			if(!Physics.Raycast (transform.position, dir.normalized, dir.magnitude, mask)) {
 				return true;
 			}
 		}

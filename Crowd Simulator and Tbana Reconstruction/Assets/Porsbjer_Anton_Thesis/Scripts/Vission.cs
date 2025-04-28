@@ -42,12 +42,14 @@ public class Vission : MonoBehaviour
         // Draw the ray in the Scene view
         Debug.DrawRay(origin, direction, Color.red);
 
-        if (Physics.Raycast(origin, direction, out hit))
+        LayerMask mask = LayerMask.GetMask("Obstacle", "Agent");
+
+        if (Physics.Raycast(origin, direction, out hit, mask))
         {
             if (hit.collider.gameObject == target)
             {
                 // Check if the ray is within the collision volume
-                if (IsWithinVolume(origin, hit.point))
+                if (IsWithinVolume(origin))
                 {
                     // Log the hit information
                     Debug.Log("Raycast hit: " + hit.collider.gameObject.name);
@@ -60,14 +62,14 @@ public class Vission : MonoBehaviour
     }
 
     // Method to check if a point is within the collision volume
-    private bool IsWithinVolume(Vector3 origin, Vector3 point)
+    private bool IsWithinVolume(Vector3 origin)
     {
-        Vector3 direction = (point - customVolume.p).normalized;
+        Vector3 direction = (origin - customVolume.p).normalized;
         float dotProduct = Vector3.Dot(direction, customVolume.n);
         float angle = Mathf.Acos(dotProduct);
-        float distance = Vector3.Distance(point, customVolume.p);
+        float distance = Vector3.Distance(origin, customVolume.p);
 
-        // Check if the point is within the cone and sphere
+        // Check if the origin is within the cone and sphere
         return angle <= customVolume.theta / 2 && distance <= customVolume.d;
     }
 }
