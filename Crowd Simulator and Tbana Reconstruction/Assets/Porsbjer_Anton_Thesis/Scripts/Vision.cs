@@ -2,10 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Vission : MonoBehaviour
+public class Vision : MonoBehaviour
 {
     private GameObject target;
     private CustomVolume customVolume;
+    private bool isVisible = false; // Flag to check if the target is visible
+
+    public bool IsVisible
+    {
+        get { return isVisible; }
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -30,11 +36,11 @@ public class Vission : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        getTargetPoint(transform.position);
+        isVisible = getTargetPoint(transform.position);
     }
 
     // Method to get the target point and shoot a raycast to the target
-    public Vector3 getTargetPoint(Vector3 origin)
+    public bool getTargetPoint(Vector3 origin)
     {
         RaycastHit hit;
         Vector3 direction = target.transform.position - origin;
@@ -54,11 +60,11 @@ public class Vission : MonoBehaviour
                     // Log the hit information
                     Debug.Log("Raycast hit: " + hit.collider.gameObject.name);
                     Debug.DrawRay(origin, direction, Color.green);
-                    return target.transform.position;
+                    return true; // Ray hit the target within the volume
                 }
             }
         }
-        return origin;
+        return false; // Ray did not hit the target or was outside the volume
     }
 
     // Method to check if a point is within the collision volume

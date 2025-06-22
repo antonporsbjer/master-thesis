@@ -4,21 +4,22 @@ using UnityEngine;
 
 public class CustomVolume : MonoBehaviour
 {
-    public Vector3 v;
+    private Vector3 v = new Vector3(1, 0, 0); // Direction vector of the cone
+    public Vector3 n; // Normal vector of the cone
     public Vector3 p { get; private set; }
-    public Vector3 n;
-    public float theta;
-    public float d;
+    public float theta { get; private set; }
+    public float d { get; private set; }
+
+    public DataCollector dataCollector; // Reference to the DataCollector
 
     // Start is called before the first frame update
     void Start()
     {
         // Initialize the volume parameters
-        v = new Vector3(1, 0, 0);
-        p = this.transform.position;
-        n = new Vector3(1, 0, 0);
-        theta = Mathf.PI / 4; // 45 degrees
-        d = 5.0f;
+        n = transform.right.normalized; // Sign direction
+        p = transform.position;
+        theta = 1.57f; // (ca 90 degrees) | Mathf.PI / 4 (45 degrees)
+        d = 15.0f; // View distance (in meters)
     }
 
     // Update is called once per frame
@@ -45,7 +46,11 @@ public class CustomVolume : MonoBehaviour
                 // Check if the collider is within the cone and sphere
                 if (angle <= theta / 2 && distance <= d)
                 {
-                    Debug.Log("Collision detected with: " + collider.gameObject.name);
+                    GameObject target = collider.gameObject;
+                    Debug.Log("Collision detected with: " + target.name);
+                    //if (target.)
+                    //collider.gameObject
+                    //dataCollector.IncrementVisibleSignCount(); // Increment the visible sign count
                 }
             }
         }
