@@ -46,7 +46,7 @@ public class Vision : MonoBehaviour
         Vector3 direction = target.transform.position - origin;
 
         // Draw the ray in the Scene view
-        Debug.DrawRay(origin, direction, Color.red);
+        //Debug.DrawRay(origin, direction, Color.red);
 
         LayerMask mask = LayerMask.GetMask("Obstacle", "Agent");
 

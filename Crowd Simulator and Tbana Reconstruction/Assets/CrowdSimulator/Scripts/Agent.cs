@@ -82,7 +82,7 @@ public class Agent : MonoBehaviour {
 		
 	}
 
-/**
+#if DEBUG
 	private void OnDrawGizmos()
 	{
 		UnityEditor.Handles.color = Color.red;
@@ -112,12 +112,10 @@ public class Agent : MonoBehaviour {
 		}
 		
 	}
-
-*/
-	
+#endif
 
 
-    public void setWaitingAgent(bool isWaitingAgent)
+	public void setWaitingAgent(bool isWaitingAgent)
 	{
 		this.isWaitingAgent = isWaitingAgent;
 	}
@@ -302,10 +300,6 @@ public class Agent : MonoBehaviour {
 		} 
 
 		calculatePreferredVelocity(ref map);
-		if((!trainController.dwelling[1] && !trainController.dwelling[2]) || isAlighting)
-		{
-			ApplyYellowLineForce();
-		}
 		setCorrectedVelocity ();
 	
 		prevPos = transform.position;
@@ -314,88 +308,10 @@ public class Agent : MonoBehaviour {
 		newPosition.y = 0.0f;	// Lock Y position
 		transform.position = newPosition;
 
-		CheckYellowLine();
-
 		if(rbody != null) { rbody.velocity = Vector3.zero; }
 		collisionAvoidanceVelocity = Vector3.zero;
 
 		Animate(prevPos);
-	}
-
-	internal void PassiveMove()
-	{
-		if(!trainController.dwelling[1] && !trainController.dwelling[2])
-		{
-			ApplyYellowLineForce();
-		}
-		Vector3 force = collisionAvoidanceVelocity;
-		force.y = 0f;
-
-		if (force.magnitude > 0.01f)
-		{
-			Vector3 newPosition = transform.position + force * Grid.instance.dt;
-			newPosition.y = 0f;
-			transform.position = newPosition;
-			transform.forward = force.normalized;
-
-			CheckYellowLine();
-
-			collisionAvoidanceVelocity = Vector3.zero;
-			rotateAgent(trainController.mainScript.roadmap.allNodes[goal].transform.position);
-		}
-		
-	}
-
-	private void CheckYellowLine()
-	{
-		if(trainController.dwelling[1] || trainController.dwelling[2]){ return; }
-
-		float positionX = Mathf.Abs(transform.position.x);
-
-		switch (trainController.platformType)
-		{
-			case TrainController.PlatformType.Central:
-				if (positionX > 8f && !crossingYellowLine)
-				{
-					Debug.Log($"Agent crossed the yellow line");
-					Debug.DrawLine(transform.position, transform.position + Vector3.up * 10f, Color.red, 10f);
-					crossingYellowLine = true;
-				}
-				if(crossingYellowLine && positionX < 8f)
-				{
-					crossingYellowLine = false;
-				}
-				break;
-
-			case TrainController.PlatformType.Mixed:
-				if (((positionX < 7f && positionX > 4f) ||
-					 (positionX > 2f && positionX < 5f)) 
-					 && !crossingYellowLine)
-				{
-					Debug.Log($"Agent crossed the yellow line");
-					Debug.DrawLine(transform.position, transform.position + Vector3.up * 10f, Color.red, 10f);
-					crossingYellowLine = true;
-				}
-				if(crossingYellowLine && 
-				(positionX > 7f || positionX < 2f))
-				{
-					crossingYellowLine = false;
-				}
-				break;
-
-			case TrainController.PlatformType.Side:
-				if (positionX < 4f && !crossingYellowLine)
-				{
-					Debug.Log($"Agent crossed the yellow line");
-					Debug.DrawLine(transform.position, transform.position + Vector3.up * 10f, Color.red, 10f);
-					crossingYellowLine = true;
-				}
-				if(crossingYellowLine && positionX > 4f)
-				{
-					crossingYellowLine = false;
-				}
-				break;
-		}
 	}
 
 	void Animate(Vector3 previousPosition)

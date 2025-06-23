@@ -7,9 +7,6 @@ public class NewSpawner : MonoBehaviour {
 	internal int node;	//The node for this spawner
 	protected Main mainScript;
 
-	// Waiting agents
-	internal WaitingAreaController waitingAreaController;
-
 	internal List<Agent> agentList; //Reference to global agentlist
 	internal MapGen.map map; //map of available spawns / goals
 	Vector2 X, Z; //Information about plane sizes
@@ -21,7 +18,7 @@ public class NewSpawner : MonoBehaviour {
 
 	public float spawnRate;
 	public bool usePoisson = false;
-    public Agent agentPrefab;
+    public GameObject agentPrefab;
 
 
 	// Set the node index for this spawner's node
@@ -59,8 +56,6 @@ public class NewSpawner : MonoBehaviour {
 	void Start()
 	{
 		mainScript = FindObjectOfType<Main>();
-		waitingAreaController = FindObjectOfType<WaitingAreaController>();
-
 		continousSpawn(); 
 	}
 
@@ -105,58 +100,16 @@ public class NewSpawner : MonoBehaviour {
 
 	public void spawnOneAgent(Vector3 startPosition)
 	{
-        Agent agent;
-		agent = Instantiate (agentPrefab);
+    Agent agent;
+		agent = Instantiate (agentPrefab.transform.GetChild(Random.Range(0, agentPrefab.transform.childCount)).GetComponent<Agent>());
 
-		int agentGoal = SetSubwayData(agent, startPosition);
-		agent.InitializeAgent (startPosition, node, agentGoal, ref map);
+		agent.InitializeAgent (startPosition, node, goal, ref map);
 
 		if (agentEditorContainer != null)
 			agent.transform.parent = agentEditorContainer.transform;
 
-		agentList.Add (agent);
-		if(mainScript.trainController.isPreparingToBoard[agent.trainLine])
-		{
-			//mainScript.trainController.PrepareWalkingAgent(agent);
-		}
+		agentList.Add (agent); 
 	}
-
-	internal virtual int SetSubwayData(Agent agent, Vector3 startPosition)
-	{
-		int agentGoal = goal;
-		int trainLine = 0;
-		if(mainScript.trainController.flow == TrainController.Flow.Symmetric)
-		{
-			trainLine = Random.Range(1,3);
-		}
-		else if(mainScript.trainController.flow == TrainController.Flow.Asymmetric)
-		{
-			float rand = Random.value;
-
-			if (rand < 0.20f) 
-			{
-				trainLine = 1;  // Reduced flow
-			} else 
-			{
-				trainLine = 2;  // Increased flow
-			}
-		}
-		agent.trainLine = trainLine;
-
-		// Find a waiting area goal for the agent. If there are no free waiting area spots their goal will be the ordinary goal for this spawner.
-		CustomNode startNode = transform.GetChild(0).GetComponent<CustomNode>();
-		(int waitingArea,int waitingSpot) waitingAreaSpot = waitingAreaController.GetWaitingAreaSpotNew(ref startNode, trainLine);
-		if(waitingAreaSpot.waitingArea != -1)
-		{
-			agent.setWaitingAgent(true);
-			agentGoal = waitingAreaSpot.waitingArea;
-			agent.waitingSpot = waitingAreaSpot.waitingSpot;
-			agent.waitingArea = map.allNodes[waitingAreaSpot.waitingArea].GetComponent<WaitingArea>();
-		}
-
-		return agentGoal;
-	}
-
 
 	float CalculateTimeBetweenSpawns()
     {

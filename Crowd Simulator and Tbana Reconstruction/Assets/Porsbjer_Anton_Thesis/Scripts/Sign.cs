@@ -5,7 +5,7 @@ using UnityEngine;
 public class CustomVolume : MonoBehaviour
 {
     private Vector3 v = new Vector3(1, 0, 0); // Direction vector of the cone
-    public Vector3 n; // Normal vector of the cone
+    public Vector3 n { get; private set; } // Normal vector of the cone
     public Vector3 p { get; private set; }
     public float theta { get; private set; }
     public float d { get; private set; }
