@@ -29,10 +29,6 @@ public class Agent : MonoBehaviour {
 	public float walkingSpeed;
     public float maxWaitTime = 2f;
 	private bool isProblem = false;
-
-	// Waiting
-	internal bool isWaitingAgent;
-	internal WaitingArea waitingArea;
 	internal int waitingSpot;
 	// Subway
 	internal int trainLine;
@@ -40,13 +36,10 @@ public class Agent : MonoBehaviour {
 	public bool isPreparingToBoard = false;
 	public bool boarding = false;
 	public bool isAlighting = false;
-	private bool crossingYellowLine = false;
-	private TrainController trainController;
 
 	internal void Start() {
 		animator = transform.gameObject.GetComponent<Animator> ();
 		rbody = transform.gameObject.GetComponent<Rigidbody> ();
-		trainController = FindObjectOfType<TrainController>();
 
 		if (rbody != null)
 		{
@@ -113,12 +106,6 @@ public class Agent : MonoBehaviour {
 		
 	}
 #endif
-
-
-	public void setWaitingAgent(bool isWaitingAgent)
-	{
-		this.isWaitingAgent = isWaitingAgent;
-	}
 
 	public void setNewPath(int start, int goal, ref MapGen.map map) {
 		calculateRowAndColumn();
@@ -479,125 +466,5 @@ public class Agent : MonoBehaviour {
         collisionAvoidanceVelocity = Vector3.zero;
 		transform.position = new Vector3(transform.position.x, 0f, transform.position.z);
 		transform.rotation = Quaternion.identity;
-	}
-
-	private void ApplyYellowLineForce()
-	{
-		switch (trainController.platformType)
-		{
-			case TrainController.PlatformType.Central:
-				ApplyYellowLineForceCentral();
-				break;
-			case TrainController.PlatformType.Mixed:
-				ApplyYellowLineForceMixed();
-				break;
-			case TrainController.PlatformType.Side:
-				ApplyYellowLineForceSide();
-				break;
-		}
-	}
-
-	private void ApplyYellowLineForceMixed()
-	{
-		float agentX = transform.position.x;
-
-		// Side Platforms
-		{
-			float platformEdge = 6f;
-			float yellowLineStart = 7.24f;
-			float zoneWidth = yellowLineStart - platformEdge;
-
-			// approaching from -12)
-			if (agentX > -yellowLineStart && agentX < -platformEdge)
-			{
-				float distToEdge = -platformEdge - agentX;
-				float strength = Mathf.Clamp01(distToEdge / zoneWidth);
-				Vector3 repel = Vector3.left * strength * walkingSpeed;
-				collisionAvoidanceVelocity += repel;
-			}
-
-			// approaching from +12)
-			else if (agentX < yellowLineStart && agentX > platformEdge)
-			{
-				float distToEdge = agentX - platformEdge;
-				float strength = Mathf.Clamp01(distToEdge / zoneWidth);
-				Vector3 repel = Vector3.right * strength * walkingSpeed;
-				collisionAvoidanceVelocity += repel;
-			}
-		}
-
-		// Central Platform
-		{
-			float platformEdge = 3f;
-			float yellowLineStart = 1.76f;
-			float zoneWidth = platformEdge - yellowLineStart;
-
-			if (agentX > -platformEdge && agentX < -yellowLineStart)
-			{
-				float distToEdge = agentX + platformEdge;
-				float strength = Mathf.Clamp01(distToEdge / zoneWidth);
-				Vector3 repel = Vector3.right * strength * walkingSpeed;
-				collisionAvoidanceVelocity += repel;
-			}
-
-			else if (agentX < platformEdge && agentX > yellowLineStart)
-			{
-				float distToEdge = platformEdge - agentX;
-				float strength = Mathf.Clamp01(distToEdge / zoneWidth);
-				Vector3 repel = Vector3.left * strength * walkingSpeed;
-				collisionAvoidanceVelocity += repel;
-			}
-		}
-	}
-
-	private void ApplyYellowLineForceCentral()
-	{
-		float agentX = transform.position.x;
-		float platformEdge = 9f;
-		float yellowLineStart = 7.76f;
-		float zoneWidth = platformEdge - yellowLineStart;
-
-		if (agentX > -platformEdge && agentX < -yellowLineStart)
-		{
-			float distToEdge = agentX + platformEdge;
-			float strength = Mathf.Clamp01(distToEdge / zoneWidth);
-			Vector3 repel = Vector3.right * strength * walkingSpeed;
-			collisionAvoidanceVelocity += repel;
-		}
-
-		else if (agentX < platformEdge && agentX > yellowLineStart)
-		{
-			float distToEdge = platformEdge - agentX;
-			float strength = Mathf.Clamp01(distToEdge / zoneWidth);
-			Vector3 repel = Vector3.left * strength * walkingSpeed;
-			collisionAvoidanceVelocity += repel;
-		}
-	}
-
-	private void ApplyYellowLineForceSide()
-	{
-		float agentX = transform.position.x;
-
-		float platformEdge = 3f;
-		float yellowLineStart = 4.24f;
-		float zoneWidth = yellowLineStart - platformEdge;
-
-		// approaching from -
-		if (agentX > -yellowLineStart && agentX < -platformEdge)
-		{
-			float distToEdge = -platformEdge - agentX;
-			float strength = Mathf.Clamp01(distToEdge / zoneWidth);
-			Vector3 repel = Vector3.left * strength * walkingSpeed;
-			collisionAvoidanceVelocity += repel;
-		}
-
-		// approaching from +
-		else if (agentX < yellowLineStart && agentX > platformEdge)
-		{
-			float distToEdge = agentX - platformEdge;
-			float strength = Mathf.Clamp01(distToEdge / zoneWidth);
-			Vector3 repel = Vector3.right * strength * walkingSpeed;
-			collisionAvoidanceVelocity += repel;
-		}
 	}
 }

@@ -2,7 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CustomVolume : MonoBehaviour
+// Visibility Area (VCA)
+public class VisibilityArea : MonoBehaviour
 {
     private Vector3 v = new Vector3(1, 0, 0); // Direction vector of the cone
     public Vector3 n { get; private set; } // Normal vector of the cone
@@ -10,11 +11,14 @@ public class CustomVolume : MonoBehaviour
     public float theta { get; private set; }
     public float d { get; private set; }
 
-    public DataCollector dataCollector; // Reference to the DataCollector
+    private DataCollector dataCollector; // Reference to the DataCollector
 
     // Start is called before the first frame update
     void Start()
     {
+        // Find the DataCollector in the scene
+        dataCollector = FindObjectOfType<DataCollector>();
+
         // Initialize the volume parameters
         n = transform.right.normalized; // Sign direction
         p = transform.position;
@@ -48,9 +52,6 @@ public class CustomVolume : MonoBehaviour
                 {
                     GameObject target = collider.gameObject;
                     Debug.Log("Collision detected with: " + target.name);
-                    //if (target.)
-                    //collider.gameObject
-                    //dataCollector.IncrementVisibleSignCount(); // Increment the visible sign count
                 }
             }
         }

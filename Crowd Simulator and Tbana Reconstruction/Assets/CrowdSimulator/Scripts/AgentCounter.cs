@@ -5,7 +5,6 @@ using UnityEngine;
 public class AgentCounter : MonoBehaviour
 {
     public Main main;
-    public WaitingAreaController waitingAreaController;
     // Start is called before the first frame update
     void Start()
     {
@@ -20,7 +19,7 @@ public class AgentCounter : MonoBehaviour
 
     private void OnDrawGizmos()
 	{
-        if(main.agentList == null || waitingAreaController.waitingAgents == null)
+        if(main.agentList == null)
         {
             return;
         }

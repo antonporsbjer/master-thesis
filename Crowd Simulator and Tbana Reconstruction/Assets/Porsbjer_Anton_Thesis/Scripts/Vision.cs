@@ -1,64 +1,153 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Vision : MonoBehaviour
 {
-    private GameObject target;
-    private CustomVolume customVolume;
-    private bool isVisible = false; // Flag to check if the target is visible
+    private GameObject sign; // Reference to the target GameObject (the sign)
+    private VisibilityArea vca; // Reference to the Visibility Area (VCA) component
+    private static int nextAgentId = 0; // Static counter for unique IDs
+    private int agentId; // Unique identifier for the agent
+    private bool hasSeenSign = false; // Track if agent has already seen the sign
+    private bool isInVCA = false;     // Track if agent is currently in VCA
+    private int timesInVCACounter = 0; // Counter for time spent in the Visibility Area (VCA)
+    private float timeStampEnteredVCA = 0.0f; // Timestamp when the VCA was entered
+    private float timeStampExitedVCA = 0.0f; // Timestamp when the VCA was exited
+    private float timeInVCA = 0.0f; // Time spent in the Visibility Area (VCA)
+    private float comprehensionTime = 1.0f; // Comprehension time to consider the sign visible
+    private bool isVisible = false; // Flag to check if the sign is visible
+    private string agentType; // Type of agent (e.g., "WheelchairAgent", "AdultFemaleAgent", etc.)
 
     public bool IsVisible
     {
         get { return isVisible; }
     }
 
+    void Awake()
+    {
+        agentId = nextAgentId++;
+    }
+
     // Start is called before the first frame update
     void Start()
     {
-        // Find the GameObject with the tag "sign" and set it as the target
-        target = GameObject.FindWithTag("sign");
+        // Get the agent type from the GameObject's name
+        // Get the parent GameObject's name (or root if you want the topmost parent)
+        agentType = transform.parent != null ? transform.parent.gameObject.name : gameObject.name;
+        Debug.Log("Agent Type: " + agentType + ", ID: " + agentId);
 
-        if (target == null)
+        // Set the parent GameObject's name as the agent type and ID
+        if (transform.parent != null)
+        {
+            transform.parent.gameObject.name = agentType + "_" + agentId;
+        }
+
+
+        // Find the GameObject with the tag "sign" and set it as the target
+        sign = GameObject.FindWithTag("sign");
+
+        if (sign == null)
         {
             Debug.LogError("No GameObject with tag 'sign' found!");
         }
 
-        // Get the CustomVolume component
-        customVolume = target.GetComponent<CustomVolume>();
+        // Get the VisibilityArea component
+        vca = sign.GetComponent<VisibilityArea>();
 
-        if (customVolume == null)
+        if (vca == null)
         {
-            Debug.LogError("No CustomVolume component found on the target!");
+            Debug.LogError("No VisibilityArea component found on the target!");
         }
     }
 
     // Update is called once per frame
     void Update()
     {
-        isVisible = getTargetPoint(transform.position);
+        bool currentlyInVCA = IsWithinVolume(transform.position);
+
+        // Check for VCA entry
+        if (currentlyInVCA && !isInVCA)
+        {
+            timeStampEnteredVCA = Time.time; // Record the time when the agent enters the VCA
+            isInVCA = true; // Mark as currently in VCA
+            Debug.Log(agentType + ", ID: " + agentId + ", entered VCA at: " + timeStampEnteredVCA);
+        }
+
+        // Check if the agent is currently in the VCA
+        if (currentlyInVCA && isInVCA)
+        {
+            // Time spent in VCA
+            //Debug.Log(agentType + ", ID: " + agentId + ", time in VCA: " + (Time.time - timeStampEnteredVCA));
+
+            // Check if the sign is visible
+            if (!hasSeenSign && IfInVcaAndSignIsVisible(transform.position))
+            {
+                isVisible = true; // Mark as visible
+                hasSeenSign = true; // Mark as seen so it won't count again
+                Debug.Log(agentType + ", ID: " + agentId + ", can see the sign.");
+            }
+
+            // If the agent has seen the sign, check if it remains visible
+            if (hasSeenSign && IfInVcaAndSignIsVisible(transform.position))
+            {
+                // If the sign is visible, check if comprehension time has passed
+                if (timeStampEnteredVCA > 0 && Time.time - timeStampEnteredVCA >= comprehensionTime)
+                {
+                    isVisible = true; // Mark as visible after comprehension time
+                    Debug.Log(agentType + ", ID: " + agentId + ", can see the sign after comprehension time.");
+                }
+            }
+
+            // If the agent has seen the sign but it is no longer visible
+            if (hasSeenSign && !IfInVcaAndSignIsVisible(transform.position))
+            {
+                isVisible = false; // Mark as not visible if the sign is not in view
+                Debug.Log(agentType + ", ID: " + agentId + ", cannot see the sign anymore.");
+            }
+        }
+
+        // Detect exit (transition from inside to outside)
+        if (!currentlyInVCA && isInVCA)
+        {
+            timeStampExitedVCA = Time.time;
+            isInVCA = false;
+            Debug.Log(agentType + ", ID: " + agentId + ", exited VCA at: " + timeStampExitedVCA);
+
+            // Calculate time spent in VCA
+            timeInVCA = timeStampExitedVCA - timeStampEnteredVCA;
+            Debug.Log(agentType + ", ID: " + agentId + ", time spent in VCA: " + timeInVCA);
+
+            // Reset visibility and counters
+            isVisible = false;
+            hasSeenSign = false;
+            timesInVCACounter++;
+            Debug.Log(agentType + ", ID: " + agentId + ", has been in the VCA " + timesInVCACounter + " times.");
+        }
     }
 
-    // Method to get the target point and shoot a raycast to the target
-    public bool getTargetPoint(Vector3 origin)
+    // Method to check if the target point is visible from the agent's position
+    public bool IfInVcaAndSignIsVisible(Vector3 origin)
     {
         RaycastHit hit;
-        Vector3 direction = target.transform.position - origin;
+        Vector3 direction = sign.transform.position - origin;
 
-        // Draw the ray in the Scene view
-        //Debug.DrawRay(origin, direction, Color.red);
 
-        LayerMask mask = LayerMask.GetMask("Obstacle", "Agent");
+        int mask = LayerMask.GetMask("Obstacle"); // TODO_ANTON: Add later to test whit agent collision
 
-        if (Physics.Raycast(origin, direction, out hit, mask))
+        if (IsWithinVolume(origin))
         {
-            if (hit.collider.gameObject == target)
+            Debug.Log(agentType + ", ID: " + agentId + ", is within the Visibility Area (VCA) of the sign.");
+            if (Physics.Raycast(origin, direction, out hit, vca.d, mask))
             {
-                // Check if the ray is within the collision volume
-                if (IsWithinVolume(origin))
+                // Draw the ray if agent is within the Visibility Area (VCA) but not hitting the sign
+                Debug.DrawRay(origin, direction, Color.red);
+
+                if (hit.collider.gameObject == sign)
                 {
                     // Log the hit information
-                    Debug.Log("Raycast hit: " + hit.collider.gameObject.name);
+                    Debug.Log(agentType + ", ID: " + agentId + ", raycast hit: " + hit.collider.gameObject.name);
+                    // Check if the ray is within the Visibility Area (VCA) and hitting the sign
                     Debug.DrawRay(origin, direction, Color.green);
                     return true; // Ray hit the target within the volume
                 }
@@ -67,15 +156,15 @@ public class Vision : MonoBehaviour
         return false; // Ray did not hit the target or was outside the volume
     }
 
-    // Method to check if a point is within the collision volume
+    // Method to check if a point is within the Visibility Area (VCA)
     private bool IsWithinVolume(Vector3 origin)
     {
-        Vector3 direction = (origin - customVolume.p).normalized;
-        float dotProduct = Vector3.Dot(direction, customVolume.n);
+        Vector3 direction = (origin - vca.p).normalized;
+        float dotProduct = Vector3.Dot(direction, vca.n);
         float angle = Mathf.Acos(dotProduct);
-        float distance = Vector3.Distance(origin, customVolume.p);
+        float distance = Vector3.Distance(origin, vca.p);
 
         // Check if the origin is within the cone and sphere
-        return angle <= customVolume.theta / 2 && distance <= customVolume.d;
+        return angle <= vca.theta / 2 && distance <= vca.d;
     }
 }

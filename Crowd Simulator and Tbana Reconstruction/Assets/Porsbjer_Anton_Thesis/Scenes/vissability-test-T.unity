@@ -135,7 +135,7 @@ GameObject:
   - component: {fileID: 57101659}
   - component: {fileID: 57101658}
   - component: {fileID: 57101657}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cylinder (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -185,7 +185,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: cc994f67e122c7542b59af3c8052123a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -230,6 +230,113 @@ Transform:
   m_Children: []
   m_Father: {fileID: 677361117}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &59409254
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 59409255}
+  - component: {fileID: 59409258}
+  - component: {fileID: 59409257}
+  - component: {fileID: 59409256}
+  m_Layer: 7
+  m_Name: Cylinder (6)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &59409255
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 59409254}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1.56, y: 0, z: -17.23}
+  m_LocalScale: {x: 1.1945, y: 3.3244128, z: 1.1945}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 677361117}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &59409256
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 59409254}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5000001
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
+--- !u!23 &59409257
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 59409254}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: cc994f67e122c7542b59af3c8052123a, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &59409258
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 59409254}
+  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &69290186
 GameObject:
   m_ObjectHideFlags: 0
@@ -242,7 +349,7 @@ GameObject:
   - component: {fileID: 69290189}
   - component: {fileID: 69290188}
   - component: {fileID: 69290187}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cylinder (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -292,7 +399,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: cc994f67e122c7542b59af3c8052123a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -348,7 +455,7 @@ GameObject:
   - component: {fileID: 78676279}
   - component: {fileID: 78676278}
   - component: {fileID: 78676277}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Floor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -413,12 +520,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 78676275}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.8, y: 0, z: -4.6}
   m_LocalScale: {x: 10, y: 1, z: 10}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 677361117}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &160436328
 PrefabInstance:
@@ -735,7 +842,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   agentEditorContainer: {fileID: 357933058}
   customGoal: {fileID: 1367407263}
-  spawnRate: 1.5
+  spawnRate: 3.5
   usePoisson: 1
   agentPrefab: {fileID: 1000010616678136, guid: 7eae4c40fd11d7341b748bb8405a2585, type: 3}
 --- !u!1 &357933058
@@ -781,7 +888,7 @@ GameObject:
   - component: {fileID: 378350920}
   - component: {fileID: 378350919}
   - component: {fileID: 378350918}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Coridor (7)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -829,7 +936,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 373ef865138fb664ab0f4749fa0eb720, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -962,7 +1069,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   agentEditorContainer: {fileID: 357933058}
   customGoal: {fileID: 1480170708}
-  spawnRate: 1.5
+  spawnRate: 3.5
   usePoisson: 1
   agentPrefab: {fileID: 1000010616678136, guid: 7eae4c40fd11d7341b748bb8405a2585, type: 3}
 --- !u!1001 &518161128
@@ -1046,7 +1153,7 @@ GameObject:
   - component: {fileID: 524716438}
   - component: {fileID: 524716437}
   - component: {fileID: 524716436}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Coridor (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1094,7 +1201,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 373ef865138fb664ab0f4749fa0eb720, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1148,7 +1255,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 677361117}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Staton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1182,9 +1289,11 @@ Transform:
   - {fileID: 1685496936}
   - {fileID: 1564618525}
   - {fileID: 69290190}
+  - {fileID: 59409255}
   - {fileID: 1322660746}
   - {fileID: 57101660}
   - {fileID: 1767251358}
+  - {fileID: 78676279}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &688376840
@@ -1270,6 +1379,10 @@ PrefabInstance:
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: agentMinSpeed
       value: 1.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
+      propertyPath: handleCollision
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: groupAgentPrefabs
@@ -1376,7 +1489,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   agentEditorContainer: {fileID: 357933058}
   customGoal: {fileID: 694627393}
-  spawnRate: 1.5
+  spawnRate: 3.5
   usePoisson: 1
   agentPrefab: {fileID: 1000010616678136, guid: 7eae4c40fd11d7341b748bb8405a2585, type: 3}
 --- !u!1001 &694627390
@@ -1667,7 +1780,7 @@ GameObject:
   - component: {fileID: 891941154}
   - component: {fileID: 891941153}
   - component: {fileID: 891941152}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Coridor (9)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1715,7 +1828,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 373ef865138fb664ab0f4749fa0eb720, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1848,7 +1961,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   agentEditorContainer: {fileID: 357933058}
   customGoal: {fileID: 1750069734}
-  spawnRate: 1.5
+  spawnRate: 3.5
   usePoisson: 1
   agentPrefab: {fileID: 1000010616678136, guid: 7eae4c40fd11d7341b748bb8405a2585, type: 3}
 --- !u!1 &1009613219
@@ -1863,7 +1976,7 @@ GameObject:
   - component: {fileID: 1009613222}
   - component: {fileID: 1009613221}
   - component: {fileID: 1009613220}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Coridor (13)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1911,7 +2024,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 373ef865138fb664ab0f4749fa0eb720, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2044,7 +2157,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   agentEditorContainer: {fileID: 357933058}
   customGoal: {fileID: 179720454}
-  spawnRate: 1.5
+  spawnRate: 3.5
   usePoisson: 1
   agentPrefab: {fileID: 1000010616678136, guid: 7eae4c40fd11d7341b748bb8405a2585, type: 3}
 --- !u!1 &1199646308
@@ -2059,7 +2172,7 @@ GameObject:
   - component: {fileID: 1199646311}
   - component: {fileID: 1199646310}
   - component: {fileID: 1199646309}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Coridor (11)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2107,7 +2220,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 373ef865138fb664ab0f4749fa0eb720, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2164,7 +2277,7 @@ GameObject:
   - component: {fileID: 1223758162}
   - component: {fileID: 1223758161}
   - component: {fileID: 1223758160}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Coridor (6)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2212,7 +2325,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 373ef865138fb664ab0f4749fa0eb720, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2313,7 +2426,7 @@ GameObject:
   - component: {fileID: 1322660745}
   - component: {fileID: 1322660744}
   - component: {fileID: 1322660743}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cylinder (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2363,7 +2476,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: cc994f67e122c7542b59af3c8052123a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2500,7 +2613,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   agentEditorContainer: {fileID: 357933058}
   customGoal: {fileID: 1731295920}
-  spawnRate: 1.5
+  spawnRate: 3.5
   usePoisson: 1
   agentPrefab: {fileID: 1000010616678136, guid: 7eae4c40fd11d7341b748bb8405a2585, type: 3}
 --- !u!1001 &1367407262
@@ -2693,7 +2806,7 @@ GameObject:
   - component: {fileID: 1535157322}
   - component: {fileID: 1535157321}
   - component: {fileID: 1535157320}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Coridor (14)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2741,7 +2854,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 373ef865138fb664ab0f4749fa0eb720, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2798,7 +2911,7 @@ GameObject:
   - component: {fileID: 1564618524}
   - component: {fileID: 1564618523}
   - component: {fileID: 1564618522}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cylinder (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2848,7 +2961,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: cc994f67e122c7542b59af3c8052123a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2905,7 +3018,7 @@ GameObject:
   - component: {fileID: 1665304185}
   - component: {fileID: 1665304184}
   - component: {fileID: 1665304183}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Coridor (15)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2953,7 +3066,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 373ef865138fb664ab0f4749fa0eb720, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3010,7 +3123,7 @@ GameObject:
   - component: {fileID: 1685496935}
   - component: {fileID: 1685496934}
   - component: {fileID: 1685496933}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cylinder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3060,7 +3173,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: cc994f67e122c7542b59af3c8052123a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3295,7 +3408,7 @@ GameObject:
   - component: {fileID: 1767251357}
   - component: {fileID: 1767251356}
   - component: {fileID: 1767251355}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cylinder (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3345,7 +3458,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: cc994f67e122c7542b59af3c8052123a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3402,7 +3515,7 @@ GameObject:
   - component: {fileID: 1795264589}
   - component: {fileID: 1795264588}
   - component: {fileID: 1795264587}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Coridor (8)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3450,7 +3563,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 373ef865138fb664ab0f4749fa0eb720, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3644,7 +3757,7 @@ GameObject:
   - component: {fileID: 1814050073}
   - component: {fileID: 1814050072}
   - component: {fileID: 1814050071}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Coridor (12)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3692,7 +3805,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 373ef865138fb664ab0f4749fa0eb720, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3818,7 +3931,7 @@ GameObject:
   - component: {fileID: 2015549940}
   - component: {fileID: 2015549939}
   - component: {fileID: 2015549938}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Coridor (10)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3866,7 +3979,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 373ef865138fb664ab0f4749fa0eb720, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3992,6 +4105,5 @@ SceneRoots:
   - {fileID: 688864876}
   - {fileID: 946036446}
   - {fileID: 305867202}
-  - {fileID: 78676279}
   - {fileID: 792372012}
   - {fileID: 160436328}

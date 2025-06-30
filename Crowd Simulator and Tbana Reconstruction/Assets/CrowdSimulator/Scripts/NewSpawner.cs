@@ -78,7 +78,7 @@ public class NewSpawner : MonoBehaviour {
 		}
 		
 		if (agentList.Count < mainScript.maxNumberOfAgents) 
-        {
+    {
 			Vector3 startPos = new Vector3 (Random.Range (-0.5f, 0.5f), 0f, Random.Range (-0.5f, 0.5f)); 
 			startPos = spawnerNode.TransformPoint (startPos);
 			spawnOneAgent(startPos);
