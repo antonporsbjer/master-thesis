@@ -5,12 +5,10 @@ using UnityEngine;
 // Visibility Area (VCA)
 public class VisibilityArea : MonoBehaviour
 {
-    private Vector3 v = new Vector3(1, 0, 0); // Direction vector of the cone
-    public Vector3 n { get; private set; } // Normal vector of the cone
-    public Vector3 p { get; private set; }
-    public float theta { get; private set; }
-    public float d { get; private set; }
-
+   //[Range(0, 180)]
+    public float ThetaDegrees = 90f; // Angle in degrees
+    private float Theta; // Angle in radians
+    public float ViewingDistance = 15.0f; // View distance (in meters)
     private DataCollector dataCollector; // Reference to the DataCollector
 
     // Start is called before the first frame update
@@ -20,15 +18,14 @@ public class VisibilityArea : MonoBehaviour
         dataCollector = FindObjectOfType<DataCollector>();
 
         // Initialize the volume parameters
-        n = transform.right.normalized; // Sign direction
-        p = transform.position;
-        theta = 1.57f; // (ca 90 degrees) | Mathf.PI / 4 (45 degrees)
-        d = 15.0f; // View distance (in meters)
+        Theta = ThetaDegrees * Mathf.Deg2Rad; // Convert angle to radians
     }
 
     // Update is called once per frame
     void Update()
     {
+        // Update the angle in radians
+        Theta = ThetaDegrees * Mathf.Deg2Rad; // Convert angle to radians
         // Check for collisions
         CheckCollisions();
     }
@@ -36,19 +33,19 @@ public class VisibilityArea : MonoBehaviour
     // Method to check for collisions
     void CheckCollisions()
     {
-        Collider[] colliders = Physics.OverlapSphere(p, d);
+        Collider[] colliders = Physics.OverlapSphere(transform.position, ViewingDistance);
         foreach (Collider collider in colliders)
         {
             if (collider.gameObject.CompareTag("eye"))
             {
                 Vector3 vi = collider.transform.position;
-                Vector3 direction = (vi - p).normalized;
-                float dotProduct = Vector3.Dot(direction, n);
+                Vector3 direction = (vi - transform.position).normalized;
+                float dotProduct = Vector3.Dot(direction, transform.forward.normalized);
                 float angle = Mathf.Acos(dotProduct);
-                float distance = Vector3.Distance(vi, p);
+                float distance = Vector3.Distance(vi, transform.position);
 
                 // Check if the collider is within the cone and sphere
-                if (angle <= theta / 2 && distance <= d)
+                if (angle <= Theta / 2 && distance <= ViewingDistance)
                 {
                     GameObject target = collider.gameObject;
                     Debug.Log("Collision detected with: " + target.name);
@@ -61,34 +58,33 @@ public class VisibilityArea : MonoBehaviour
     void OnDrawGizmos()
     {
         Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(p, d);
+        Gizmos.DrawWireSphere(transform.position, ViewingDistance);
 
         // Draw the cone
-        Vector3 forward = n.normalized;
-        Vector3 right = Vector3.Cross(Vector3.up, forward).normalized;
-        Vector3 up = Vector3.Cross(forward, right).normalized;
+        Vector3 right = Vector3.Cross(Vector3.up, transform.forward.normalized).normalized;
+        Vector3 up = Vector3.Cross(transform.forward.normalized, right).normalized;
 
-        float halfAngle = theta / 2;
-        float coneHeight = d * Mathf.Cos(halfAngle);
-        float coneRadius = d * Mathf.Sin(halfAngle);
+        float halfAngle = Theta / 2;
+        float coneHeight = ViewingDistance * Mathf.Cos(halfAngle);
+        float coneRadius = ViewingDistance * Mathf.Sin(halfAngle);
 
         Gizmos.color = Color.yellow;
-        Gizmos.DrawLine(p, p + forward * coneHeight);
-        Gizmos.DrawLine(p, p + (forward * coneHeight + right * coneRadius));
-        Gizmos.DrawLine(p, p + (forward * coneHeight - right * coneRadius));
-        Gizmos.DrawLine(p, p + (forward * coneHeight + up * coneRadius));
-        Gizmos.DrawLine(p, p + (forward * coneHeight - up * coneRadius));
+        Gizmos.DrawLine(transform.position, transform.position + transform.forward.normalized * coneHeight);
+        Gizmos.DrawLine(transform.position, transform.position + (transform.forward.normalized * coneHeight + right * coneRadius));
+        Gizmos.DrawLine(transform.position, transform.position + (transform.forward.normalized * coneHeight - right * coneRadius));
+        Gizmos.DrawLine(transform.position, transform.position + (transform.forward.normalized * coneHeight + up * coneRadius));
+        Gizmos.DrawLine(transform.position, transform.position + (transform.forward.normalized * coneHeight - up * coneRadius));
 
         // Draw the base of the cone
         int segments = 20;
-        Vector3 previousPoint = p + forward * coneHeight + right * coneRadius;
+        Vector3 previousPoint = transform.position + transform.forward.normalized * coneHeight + right * coneRadius;
         for (int i = 1; i <= segments; i++)
         {
             float angle = i * Mathf.PI * 2 / segments;
-            Vector3 point = p + forward * coneHeight + right * Mathf.Cos(angle) * coneRadius + up * Mathf.Sin(angle) * coneRadius;
+            Vector3 point = transform.position + transform.forward.normalized * coneHeight + right * Mathf.Cos(angle) * coneRadius + up * Mathf.Sin(angle) * coneRadius;
             Gizmos.DrawLine(previousPoint, point);
             previousPoint = point;
         }
-        Gizmos.DrawLine(previousPoint, p + forward * coneHeight + right * coneRadius);
+        Gizmos.DrawLine(previousPoint, transform.position + transform.forward.normalized * coneHeight + right * coneRadius);
     }
 }

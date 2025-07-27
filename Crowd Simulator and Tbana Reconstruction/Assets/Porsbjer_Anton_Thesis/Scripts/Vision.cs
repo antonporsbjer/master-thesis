@@ -138,7 +138,7 @@ public class Vision : MonoBehaviour
         if (IsWithinVolume(origin))
         {
             Debug.Log(agentType + ", ID: " + agentId + ", is within the Visibility Area (VCA) of the sign.");
-            if (Physics.Raycast(origin, direction, out hit, vca.d, mask))
+            if (Physics.Raycast(origin, direction, out hit, vca.ViewingDistance, mask))
             {
                 // Draw the ray if agent is within the Visibility Area (VCA) but not hitting the sign
                 Debug.DrawRay(origin, direction, Color.red);
@@ -159,12 +159,12 @@ public class Vision : MonoBehaviour
     // Method to check if a point is within the Visibility Area (VCA)
     private bool IsWithinVolume(Vector3 origin)
     {
-        Vector3 direction = (origin - vca.p).normalized;
-        float dotProduct = Vector3.Dot(direction, vca.n);
+        Vector3 direction = (origin - vca.transform.position).normalized;
+        float dotProduct = Vector3.Dot(direction, vca.transform.forward.normalized);
         float angle = Mathf.Acos(dotProduct);
-        float distance = Vector3.Distance(origin, vca.p);
+        float distance = Vector3.Distance(origin, vca.transform.position);
 
         // Check if the origin is within the cone and sphere
-        return angle <= vca.theta / 2 && distance <= vca.d;
+        return angle <= vca.ThetaDegrees * Mathf.Deg2Rad / 2 && distance <= vca.ViewingDistance;
     }
 }
