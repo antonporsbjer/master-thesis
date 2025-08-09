@@ -15,9 +15,14 @@ public class Vision : MonoBehaviour
     private float timeStampEnteredVCA = 0.0f; // Timestamp when the VCA was entered
     private float timeStampExitedVCA = 0.0f; // Timestamp when the VCA was exited
     private float timeInVCA = 0.0f; // Time spent in the Visibility Area (VCA)
-    private float comprehensionTime = 1.0f; // Comprehension time to consider the sign visible
+    private readonly float comprehensionTime = 1.0f; // Comprehension time to consider the sign visible
     private bool isVisible = false; // Flag to check if the sign is visible
     private string agentType; // Type of agent (e.g., "WheelchairAgent", "AdultFemaleAgent", etc.)
+
+    DataCollector dataCollector; // Reference to the DataCollector
+    AgentData agentData; // Reference to the AgentData for this agent
+
+    // TODO_ANTON: Let each agent hold a data collector for its own data!
 
     public bool IsVisible
     {
@@ -26,6 +31,8 @@ public class Vision : MonoBehaviour
 
     void Awake()
     {
+        // Initialize the DataCollector reference
+        dataCollector = FindObjectOfType<DataCollector>();
         agentId = nextAgentId++;
     }
 
@@ -36,6 +43,19 @@ public class Vision : MonoBehaviour
         // Get the parent GameObject's name (or root if you want the topmost parent)
         agentType = transform.parent != null ? transform.parent.gameObject.name : gameObject.name;
         Debug.Log("Agent Type: " + agentType + ", ID: " + agentId);
+
+        // Set the agent ID in the DataCollector
+        if (dataCollector != null)
+        {
+            int startNode = transform.parent.GetComponent<Agent>().path[0]; // Assuming the first node in the path is the start node
+            int goalNode = transform.parent.GetComponent<Agent>().path[^1]; // Assuming the last node in the path is the goal node
+            agentData = new AgentData(agentId, agentType, startNode, goalNode);
+            dataCollector.dataRecord.agents.Add(agentData);
+        }
+        else
+        {
+            Debug.LogError("DataCollector not found in the scene!");
+        }
 
         // Set the parent GameObject's name as the agent type and ID
         if (transform.parent != null)
@@ -71,6 +91,7 @@ public class Vision : MonoBehaviour
         {
             timeStampEnteredVCA = Time.time; // Record the time when the agent enters the VCA
             isInVCA = true; // Mark as currently in VCA
+            dataCollector.dataRecord.global.inVcaCount++; // Increment the inVCA count in the DataCollector
             Debug.Log(agentType + ", ID: " + agentId + ", entered VCA at: " + timeStampEnteredVCA);
         }
 
@@ -95,6 +116,7 @@ public class Vision : MonoBehaviour
                 if (timeStampEnteredVCA > 0 && Time.time - timeStampEnteredVCA >= comprehensionTime)
                 {
                     isVisible = true; // Mark as visible after comprehension time
+                    agentData.sawSign = true; // Mark that the agent saw the sign
                     Debug.Log(agentType + ", ID: " + agentId + ", can see the sign after comprehension time.");
                 }
             }
@@ -116,12 +138,14 @@ public class Vision : MonoBehaviour
 
             // Calculate time spent in VCA
             timeInVCA = timeStampExitedVCA - timeStampEnteredVCA;
+            agentData.timeInVCA = timeInVCA; // Store the time spent in VCA in the AgentData
             Debug.Log(agentType + ", ID: " + agentId + ", time spent in VCA: " + timeInVCA);
 
             // Reset visibility and counters
             isVisible = false;
             hasSeenSign = false;
             timesInVCACounter++;
+            // TODO_ANTON: Count the number of times the agent has been in the VCA
             Debug.Log(agentType + ", ID: " + agentId + ", has been in the VCA " + timesInVCACounter + " times.");
         }
     }

@@ -2399,6 +2399,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4b471ee2aa45774ababc65dc5a67ea4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  dataRecord:
+    global:
+      totalAgents: 0
+      scenarioId: default_scenario
+      visibleSignCount: 0
+    agents: []
 --- !u!4 &1321634897
 Transform:
   m_ObjectHideFlags: 0
@@ -4040,6 +4046,10 @@ PrefabInstance:
       propertyPath: dataCollector
       value: 
       objectReference: {fileID: 1321634896}
+    - target: {fileID: 7803906688627839690, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8265780763492419663, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
       propertyPath: m_LocalPosition.x
       value: 1.49
@@ -4080,7 +4090,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7803906688627839690, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

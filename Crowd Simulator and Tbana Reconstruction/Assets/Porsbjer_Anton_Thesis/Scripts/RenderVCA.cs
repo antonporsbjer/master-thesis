@@ -23,10 +23,18 @@ public class RenderVCA : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        if (groundPlane == null)
+        {
+            Debug.LogError("Ground plane reference is not set!");
+        }
+        else
+        {
+            VisualizeVCA(vca.transform.position, vca.transform.forward.normalized, vca.ThetaDegrees * Mathf.Deg2Rad, vca.ViewingDistance);
+        }
     }
-    
-    // Method to visualize the Visibility Area (VCA) on the ground plane
+
+    // Method to visualize the Visibility Area (VCA) on the ground plane by drawing a triangle
+    // at the specified position, direction, angle, and distance
     public void VisualizeVCA(Vector3 position, Vector3 direction, float angle, float distance)
     {
         if (groundPlane == null)
@@ -34,18 +42,5 @@ public class RenderVCA : MonoBehaviour
             Debug.LogError("Ground plane reference is not set!");
             return;
         }
-
-        // Create a cone to visualize the VCA
-        GameObject cone = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-        cone.transform.position = position;
-        cone.transform.rotation = Quaternion.LookRotation(direction);
-        cone.transform.localScale = new Vector3(distance, 0.1f, distance); // Adjust scale for visualization
-
-        // Set the cone's parent to the ground plane
-        cone.transform.parent = groundPlane.transform;
-
-        // Optionally, set a color for the cone
-        Renderer renderer = cone.GetComponent<Renderer>();
-        renderer.material.color = Color.yellow; // Change color as needed
     }
 }
