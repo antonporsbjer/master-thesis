@@ -9,13 +9,36 @@ public class VisibilityArea : MonoBehaviour
     public float ThetaDegrees = 90f; // Angle in degrees
     private float Theta; // Angle in radians
     public float ViewingDistance = 15.0f; // View distance (in meters)
+    public GameObject signPositionBoundary; // Boundary object to define the area within which the sign can be placed
+    public bool RandomPosition = false; // If true, the sign will be placed at a random position within the volume
     private DataCollector dataCollector; // Reference to the DataCollector
+
+    void Awake()
+    {
+        // Find the DataCollector in the scene
+        dataCollector = FindObjectOfType<DataCollector>();
+
+        if (signPositionBoundary != null && RandomPosition)
+        {
+            // Random angle around the Y-axis
+            float angle = Random.Range(0, 360) * Mathf.Deg2Rad;
+
+            BoxCollider boundary = signPositionBoundary.GetComponentsInParent<BoxCollider>()[0];
+            // random x and z within the box collider
+            float x = Random.Range(boundary.center.x - boundary.size.x / 2, boundary.center.x + boundary.size.x / 2);
+            float z = Random.Range(boundary.center.z - boundary.size.z / 2, boundary.center.z + boundary.size.z / 2);
+
+            transform.SetPositionAndRotation(new Vector3(x, transform.position.y, z), Quaternion.Euler(0, angle * Mathf.Rad2Deg, 0));
+            signPositionBoundary.GetComponent<BoxCollider>().enabled = false;
+        }
+    }
 
     // Start is called before the first frame update
     void Start()
     {
-        // Find the DataCollector in the scene
-        dataCollector = FindObjectOfType<DataCollector>();
+        dataCollector.dataRecord.global.signHeight = transform.position.y; // Set the sign height in the global data
+        dataCollector.dataRecord.global.vcaDistance = ViewingDistance; // Set the viewing distance in the global data
+        dataCollector.dataRecord.global.vcaAngle = ThetaDegrees; // Set the viewing angle in the global data
 
         // Initialize the volume parameters
         Theta = ThetaDegrees * Mathf.Deg2Rad; // Convert angle to radians

@@ -47,9 +47,12 @@ public class Vision : MonoBehaviour
         // Set the agent ID in the DataCollector
         if (dataCollector != null)
         {
+            dataCollector.dataRecord.global.signComprehensionTime = comprehensionTime; // Set the comprehension time in the global data
             int startNode = transform.parent.GetComponent<Agent>().path[0]; // Assuming the first node in the path is the start node
             int goalNode = transform.parent.GetComponent<Agent>().path[^1]; // Assuming the last node in the path is the goal node
-            agentData = new AgentData(agentId, agentType, startNode, goalNode);
+            float agentHeight = transform.parent.GetComponent<CapsuleCollider>().height; // Get the agent's height
+            float agentEyeHeight = transform.transform.position.y; // Get the agent's eye height
+            agentData = new AgentData(agentId, agentType, startNode, goalNode, agentHeight, agentEyeHeight);
             dataCollector.dataRecord.agents.Add(agentData);
         }
         else
@@ -83,7 +86,7 @@ public class Vision : MonoBehaviour
 
     // Update is called once per frame
     void Update()
-    {
+    {        
         bool currentlyInVCA = IsWithinVolume(transform.position);
 
         // Check for VCA entry
@@ -151,28 +154,80 @@ public class Vision : MonoBehaviour
     }
 
     // Method to check if the target point is visible from the agent's position
+    // public bool IfInVcaAndSignIsVisible(Vector3 origin)
+    // {
+    //     RaycastHit hit;
+    //     Vector3 direction = sign.transform.position - origin;
+
+
+    //     int mask = LayerMask.GetMask("Obstacle"); // TODO_ANTON: Add later to test whit agent collision
+
+    //     if (IsWithinVolume(origin))
+    //     {
+    //         Debug.Log(agentType + ", ID: " + agentId + ", is within the Visibility Area (VCA) of the sign.");
+    //         if (Physics.Raycast(origin, direction, out hit, vca.ViewingDistance, mask))
+    //         {
+    //             // Draw the ray if agent is within the Visibility Area (VCA) but not hitting the sign
+    //             Debug.DrawRay(origin, direction, Color.red);
+
+    //             if (hit.collider.gameObject == sign)
+    //             {
+    //                 // Log the hit information
+    //                 Debug.Log(agentType + ", ID: " + agentId + ", raycast hit: " + hit.collider.gameObject.name);
+    //                 // Check if the ray is within the Visibility Area (VCA) and hitting the sign
+    //                 Debug.DrawRay(origin, direction, Color.green);
+    //                 return true; // Ray hit the target within the volume
+    //             }
+    //         }
+    //     }
+    //     return false; // Ray did not hit the target or was outside the volume
+    // }
+
+    // Method to check if the target point is visible from the agent's position
     public bool IfInVcaAndSignIsVisible(Vector3 origin)
     {
         RaycastHit hit;
-        Vector3 direction = sign.transform.position - origin;
+        Vector3 directionToSign = (sign.transform.position - origin).normalized;
 
+        // Field of View check (120 degrees)
+        bool toggleFov = true; // Toggle for Field of View (FoV)
+        float fovAngle = 120f; // Field of View angle in degrees
+        float halfFov = fovAngle / 2f;
+        float angleToSign = Vector3.Angle(transform.forward, directionToSign);
 
-        int mask = LayerMask.GetMask("Obstacle"); // TODO_ANTON: Add later to test whit agent collision
+        // Visualize the Field of View (FoV) cone
+        if (toggleFov)
+        {
+            Debug.DrawRay(origin, transform.forward * vca.ViewingDistance, Color.blue);
+            Debug.DrawRay(origin, Quaternion.Euler(0, -halfFov, 0) * transform.forward * vca.ViewingDistance, Color.blue);
+            Debug.DrawRay(origin, Quaternion.Euler(0, halfFov, 0) * transform.forward * vca.ViewingDistance, Color.blue);
+            Debug.DrawRay(origin, directionToSign * vca.ViewingDistance, Color.red);
+        }
+
+        if (toggleFov && angleToSign > halfFov)
+        {
+            // Sign is outside the FoV cone
+            Debug.Log(agentType + ", ID: " + agentId + ", sign is outside FoV.");
+            return false;
+        }
+
+        string[] layerNames = { "Obstacle", "Agent" };
+        int mask = LayerMask.GetMask(layerNames);
 
         if (IsWithinVolume(origin))
         {
             Debug.Log(agentType + ", ID: " + agentId + ", is within the Visibility Area (VCA) of the sign.");
-            if (Physics.Raycast(origin, direction, out hit, vca.ViewingDistance, mask))
+            if (Physics.Raycast(origin, directionToSign, out hit, vca.ViewingDistance, mask))
             {
                 // Draw the ray if agent is within the Visibility Area (VCA) but not hitting the sign
-                Debug.DrawRay(origin, direction, Color.red);
+                Debug.DrawRay(origin, directionToSign * vca.ViewingDistance, Color.red);
 
                 if (hit.collider.gameObject == sign)
                 {
                     // Log the hit information
                     Debug.Log(agentType + ", ID: " + agentId + ", raycast hit: " + hit.collider.gameObject.name);
                     // Check if the ray is within the Visibility Area (VCA) and hitting the sign
-                    Debug.DrawRay(origin, direction, Color.green);
+                    Debug.DrawRay(origin, directionToSign * vca.ViewingDistance, Color.green);
                     return true; // Ray hit the target within the volume
                 }
             }

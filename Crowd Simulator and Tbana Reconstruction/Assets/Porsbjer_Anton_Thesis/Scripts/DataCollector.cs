@@ -12,6 +12,10 @@ public class GlobalData
     public string scenarioId;
     public int inVcaCount;
     public int visibleSignCount;
+    public float signHeight;
+    public float vcaAngle;
+    public float vcaDistance;
+    public float signComprehensionTime;
 
     public GlobalData()
     {
@@ -28,15 +32,21 @@ public class AgentData
     public string type;
     public int startNode;
     public int goalNode;
+    public float height;
+    public float eyeHeight;
     public float timeInVCA;
     public bool sawSign;
 
-    public AgentData(int id, string agentType, int start, int goal)
+    public AgentData(int id, string agentType, int start, int goal, float agentHeight, float agentEyeHeight)
     {
         agentId = id;
         type = agentType;
         startNode = start;
         goalNode = goal;
+        height = agentHeight;
+        eyeHeight = agentEyeHeight;
+        timeInVCA = 0f; // Initialize time in VCA
+        sawSign = false; // Initialize as not seeing the sign
     }
 }
 
