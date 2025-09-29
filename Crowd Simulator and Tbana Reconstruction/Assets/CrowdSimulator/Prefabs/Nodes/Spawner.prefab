@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4000011914076574}
-  - component: {fileID: 114000011514121796}
+  - component: {fileID: 6087752598800942581}
   m_Layer: 2
   m_Name: Spawner
   m_TagString: Untagged
@@ -33,7 +33,7 @@ Transform:
   - {fileID: 5189029260220175495}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &114000011514121796
+--- !u!114 &6087752598800942581
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -42,26 +42,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 1000012215036388}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 00d48e31efd525945874c429466b4c1b, type: 3}
+  m_Script: {fileID: 11500000, guid: 827e8876ec2abd74cb997cf58fb058ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spawnMethod: 3
-  numberOfAgents: 1000
-  useGroupedAgents: 0
-  individualAgents: 0
-  percentOfTwoInGroup: 0
-  percentOfThreeInGroup: 0
-  percentOfFourInGroup: 0
-  useSimpleAgents: 1
-  circleRadius: 0
-  numberOfDiscRows: 0
-  rows: 0
-  rowLength: 0
-  agentSpawnColor: {r: 0.875, g: 0.045036756, b: 0.045036756, a: 1}
-  groupAgentSpawnColor: {r: 0, g: 0, b: 0, a: 1}
   agentEditorContainer: {fileID: 0}
   customGoal: {fileID: 0}
   spawnRate: 1
+  usePoisson: 0
+  agentPrefab: {fileID: 1000010616678136, guid: 7eae4c40fd11d7341b748bb8405a2585, type: 3}
 --- !u!1001 &5191831660572880241
 PrefabInstance:
   m_ObjectHideFlags: 0
