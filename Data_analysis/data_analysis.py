@@ -38,7 +38,9 @@ for idx, data in enumerate(all_data):
     
     print(f"Scenario Name: {global_data['scenarioId']}")
     print(f"Total number of agents: {global_data['totalAgents']}")
+    print(f"Sign comprehension time: {global_data['signComprehensionTime']} seconds")
     print(f"Sign height: {global_data['signHeight']} meters")
+    print(f"Sign position: ({global_data['signPositionX']},{global_data['signPositionZ']})")
     print(f"Average time spent in VCA: {sum(agent['timeInVCA'] for agent in agent_data) / len(agent_data)} seconds")
     
     print('-' * 40)
