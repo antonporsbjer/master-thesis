@@ -13,23 +13,99 @@ public class VisibilityArea : MonoBehaviour
     public bool RandomPosition = false; // If true, the sign will be placed at a random position within the volume
     private DataCollector dataCollector; // Reference to the DataCollector
 
+    // Range parameters for random sign placement (set these in the Inspector)
+    public float signMinX = -5f;
+    public float signMaxX = 5f;
+    public float signMinZ = -5f;
+    public float signMaxZ = 5f;
+    public float randomYawMin = 0f;
+    public float randomYawMax = 90f;
+
     void Awake()
     {
         // Find the DataCollector in the scene
         dataCollector = FindObjectOfType<DataCollector>();
 
-        if (signPositionBoundary != null && RandomPosition)
+        if (RandomPosition)
         {
-            // Random angle around the Y-axis
+            // Random 90 degree angle
             float angle = Random.Range(0, 1) * 90 * Mathf.Deg2Rad;
 
-            BoxCollider boundary = signPositionBoundary.GetComponentsInParent<BoxCollider>()[0];
-            // random x and z within the box collider
-            float x = Random.Range(boundary.center.x - boundary.size.x / 2, boundary.center.x + boundary.size.x / 2);
-            float z = Random.Range(boundary.center.z - boundary.size.z / 2, boundary.center.z + boundary.size.z / 2);
+            // Random x and z within the configured ranges
+            float x = Random.Range(signMinX, signMaxX);
+            float z = Random.Range(signMinZ, signMaxZ);
 
-            transform.SetPositionAndRotation(new Vector3(x, transform.position.y, z), Quaternion.Euler(0, angle * Mathf.Rad2Deg, 0));
-            signPositionBoundary.GetComponent<BoxCollider>().enabled = false;
+            transform.SetPositionAndRotation(new Vector3(x, transform.position.y, z), Quaternion.Euler(0f,  angle * Mathf.Rad2Deg, 0f));
+        }
+
+        // If a boundary object is assigned, add a tiny helper component to draw its bounds as a gizmo.
+        if (signPositionBoundary != null && signPositionBoundary.GetComponent<BoundaryGizmoDrawer>() == null)
+        {
+            signPositionBoundary.AddComponent<BoundaryGizmoDrawer>().Initialize(Color.cyan);
+        }
+    }
+
+    // Helper component that draws the bounding area for a GameObject (uses Collider/Renderer/children)
+    private class BoundaryGizmoDrawer : MonoBehaviour
+    {
+        private Color gizmoColor = Color.cyan;
+
+        public void Initialize(Color color)
+        {
+            gizmoColor = color;
+        }
+
+        void OnDrawGizmos()
+        {
+            Bounds bounds = new Bounds(transform.position, Vector3.zero);
+            bool hasBounds = false;
+
+            Collider col = GetComponent<Collider>();
+            if (col != null)
+            {
+                bounds = col.bounds;
+                hasBounds = true;
+            }
+            else
+            {
+                Renderer rend = GetComponent<Renderer>();
+                if (rend != null)
+                {
+                    bounds = rend.bounds;
+                    hasBounds = true;
+                }
+                else
+                {
+                    Renderer[] rends = GetComponentsInChildren<Renderer>();
+                    if (rends.Length > 0)
+                    {
+                        bounds = rends[0].bounds;
+                        for (int i = 1; i < rends.Length; i++) bounds.Encapsulate(rends[i].bounds);
+                        hasBounds = true;
+                    }
+                    else
+                    {
+                        Collider[] cols = GetComponentsInChildren<Collider>();
+                        if (cols.Length > 0)
+                        {
+                            bounds = cols[0].bounds;
+                            for (int i = 1; i < cols.Length; i++) bounds.Encapsulate(cols[i].bounds);
+                            hasBounds = true;
+                        }
+                    }
+                }
+            }
+
+            if (!hasBounds) return;
+
+            Gizmos.color = gizmoColor;
+            Gizmos.DrawWireCube(bounds.center, bounds.size);
+
+            // Optionally draw a filled semi-transparent cube for clarity in editor (uncomment if wanted)
+            // Color prev = Gizmos.color;
+            // Gizmos.color = new Color(gizmoColor.r, gizmoColor.g, gizmoColor.b, 0.05f);
+            // Gizmos.DrawCube(bounds.center, bounds.size);
+            // Gizmos.color = prev;
         }
     }
 

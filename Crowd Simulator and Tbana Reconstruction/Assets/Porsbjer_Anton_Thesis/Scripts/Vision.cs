@@ -31,9 +31,16 @@ public class Vision : MonoBehaviour
 
     void Awake()
     {
-        // Initialize the DataCollector reference
-        dataCollector = FindObjectOfType<DataCollector>();
+        // ensure agentId assigned
         agentId = nextAgentId++;
+
+        // try to find components if not assigned
+        if (sign == null)
+            sign = GameObject.FindWithTag("sign");
+        if (vca == null)
+            vca = FindObjectOfType<VisibilityArea>();
+
+        dataCollector = FindObjectOfType<DataCollector>();
     }
 
     // Start is called before the first frame update
@@ -186,6 +193,13 @@ public class Vision : MonoBehaviour
     // Method to check if the target point is visible from the agent's position
     public bool IfInVcaAndSignIsVisible(Vector3 origin)
     {
+        // Defensive checks
+        if (sign == null || vca == null)
+        {
+            // missing required objects, treat as not visible
+            return false;
+        }
+
         RaycastHit hit;
         Vector3 directionToSign = (sign.transform.position - origin).normalized;
 
@@ -238,17 +252,22 @@ public class Vision : MonoBehaviour
     // Method to check if a point is within the Visibility Area (VCA)
     private bool IsWithinVolume(Vector3 origin)
     {
-        Vector3 direction = (origin - vca.transform.position).normalized;
-        float dotForward = Vector3.Dot(direction, vca.transform.forward.normalized);
-        float dotBackward = Vector3.Dot(direction, -vca.transform.forward.normalized);
+        if (vca == null)
+            return false;
 
-        float angleForward = Mathf.Acos(dotForward);
-        float angleBackward = Mathf.Acos(dotBackward);
-        float minAngle = Mathf.Min(angleForward, angleBackward);
+        // distance check
+        float dist = Vector3.Distance(origin, vca.transform.position);
+        if (dist > vca.ViewingDistance)
+            return false;
 
-        float distance = Vector3.Distance(origin, vca.transform.position);
+        // angle check (support double-sided if you want)
+        Vector3 dir = (origin - vca.transform.position).normalized;
+        float halfThetaRad = vca.ThetaDegrees * Mathf.Deg2Rad / 2f;
+        float angle = Vector3.Angle(vca.transform.forward, dir) * Mathf.Deg2Rad;
+        if (angle <= halfThetaRad) return true;
 
-        // Check if the origin is within the cone (either direction) and sphere
-        return minAngle <= vca.ThetaDegrees * Mathf.Deg2Rad / 2 && distance <= vca.ViewingDistance;
+        // also allow opposite direction (both sides)
+        angle = Vector3.Angle(-vca.transform.forward, dir) * Mathf.Deg2Rad;
+        return angle <= halfThetaRad;
     }
 }

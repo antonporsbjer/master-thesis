@@ -63,6 +63,45 @@ public class DataCollector : MonoBehaviour
 {
     public DataRecord dataRecord;
 
+    // save current dataRecord to disk (callable from other scripts)
+    public void SaveRun(int runIndex = -1)
+    {
+        try
+        {
+            string json = JsonUtility.ToJson(dataRecord, true);
+            string folderPath = Application.persistentDataPath;
+            string timePart = dataRecord.global != null ? dataRecord.global.timestamp.ToString("yyyy-MM-dd_HH.mm.ss") : DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+            string runPart = runIndex > 0 ? $"_run{runIndex}" : "";
+            string fileName = $"visibility_data_{timePart}{runPart}.json";
+            string filePath = Path.Combine(folderPath, fileName);
+
+            if (!Directory.Exists(folderPath))
+                Directory.CreateDirectory(folderPath);
+
+            File.WriteAllText(filePath, json);
+            Debug.Log($"[DataCollector] Run saved to {filePath}");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"[DataCollector] Failed to save JSON: {ex.Message}");
+        }
+    }
+
+    // prepare a fresh record for the next run (keeps scenarioId if present)
+    public void ResetForNextRun()
+    {
+        // keep the same DataRecord instance so other scripts don't see a suddenly different object reference
+        if (dataRecord == null)
+            dataRecord = new DataRecord();
+
+        string scenario = dataRecord.global != null ? dataRecord.global.scenarioId : SceneManager.GetActiveScene().name + "_scenario";
+
+        // clear agent list and reset globals
+        dataRecord.agents.Clear();
+        dataRecord.global = new GlobalData();
+        dataRecord.global.scenarioId = scenario;
+    }
+
     private void SaveToJSON()
     {
         try
@@ -88,16 +127,24 @@ public class DataCollector : MonoBehaviour
             Debug.LogError($"[DataCollector] Failed to save JSON: {ex.Message}");
         }
     }
-
+    
     private void Awake()
     {
+        if (dataRecord == null)
+            dataRecord = new DataRecord();
+        if (dataRecord.global == null)
+            dataRecord.global = new GlobalData();
+
         dataRecord.global.scenarioId = SceneManager.GetActiveScene().name + "_scenario";
     }
 
     private void OnApplicationQuit()
     {
-        dataRecord.global.totalAgents = dataRecord.agents.Count;
-        dataRecord.global.visibleSignCount = dataRecord.agents.FindAll(agent => agent.sawSign).Count;
-        SaveToJSON();
+        if (dataRecord != null)
+        {
+            dataRecord.global.totalAgents = dataRecord.agents.Count;
+            dataRecord.global.visibleSignCount = dataRecord.agents.FindAll(agent => agent.sawSign).Count;
+            SaveToJSON();
+        }
     }
 }
