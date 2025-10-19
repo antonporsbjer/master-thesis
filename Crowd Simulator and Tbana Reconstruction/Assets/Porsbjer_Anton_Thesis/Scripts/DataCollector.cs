@@ -13,6 +13,8 @@ public class GlobalData
     public int inVcaCount;
     public int visibleSignCount;
     public float signHeight;
+    public float signPositionX;
+    public float signPositionZ;
     public float vcaAngle;
     public float vcaDistance;
     public float signComprehensionTime;
