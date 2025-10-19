@@ -63,10 +63,26 @@ public class RunManager : MonoBehaviour
             // reload scene to reset simulation (this will keep RunManager alive)
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 
+            // allow a frame for reload
+            yield return null;
+
+            // wait for the VisibilityArea (sign) to be created and re-randomize it
+            yield return new WaitUntil(() => FindObjectOfType<VisibilityArea>() != null);
+            var vca = FindObjectOfType<VisibilityArea>();
+            if (vca != null)
+                vca.RandomizePosition();
+
             // after reload the coroutine will continue in the surviving RunManager instance
             yield return null;
         }
 
         Debug.Log($"RunManager: Completed {totalRuns} runs.");
+
+        // stop Play mode in Editor, quit application in a build
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
 }

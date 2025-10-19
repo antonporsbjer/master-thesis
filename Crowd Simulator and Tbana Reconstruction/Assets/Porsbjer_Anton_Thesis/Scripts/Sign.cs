@@ -26,23 +26,29 @@ public class VisibilityArea : MonoBehaviour
         // Find the DataCollector in the scene
         dataCollector = FindObjectOfType<DataCollector>();
 
-        if (RandomPosition)
-        {
-            // Random 90 degree angle
-            float angle = Random.Range(0, 1) * 90 * Mathf.Deg2Rad;
-
-            // Random x and z within the configured ranges
-            float x = Random.Range(signMinX, signMaxX);
-            float z = Random.Range(signMinZ, signMaxZ);
-
-            transform.SetPositionAndRotation(new Vector3(x, transform.position.y, z), Quaternion.Euler(0f,  angle * Mathf.Rad2Deg, 0f));
-        }
+        // perform initial randomization (if enabled)
+        RandomizePosition();
 
         // If a boundary object is assigned, add a tiny helper component to draw its bounds as a gizmo.
         if (signPositionBoundary != null && signPositionBoundary.GetComponent<BoundaryGizmoDrawer>() == null)
         {
             signPositionBoundary.AddComponent<BoundaryGizmoDrawer>().Initialize(Color.cyan);
         }
+    }
+
+    // public helper to (re)randomize sign position & yaw
+    public void RandomizePosition()
+    {
+        if (!RandomPosition) return;
+
+        // pick only 0 or 90 degrees
+        float yaw = (Random.value < 0.5f) ? 0f : 90f;
+
+        // random position within bounds
+        float x = Random.Range(signMinX, signMaxX);
+        float z = Random.Range(signMinZ, signMaxZ);
+
+        transform.SetPositionAndRotation(new Vector3(x, transform.position.y, z), Quaternion.Euler(0f, yaw, 0f));
     }
 
     // Helper component that draws the bounding area for a GameObject (uses Collider/Renderer/children)
