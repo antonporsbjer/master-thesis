@@ -68,6 +68,13 @@ public class DataCollector : MonoBehaviour
     {
         try
         {
+            // Ensure global counters reflect current agents before saving
+            if (dataRecord != null && dataRecord.global != null)
+            {
+                dataRecord.global.totalAgents = dataRecord.agents != null ? dataRecord.agents.Count : 0;
+                dataRecord.global.visibleSignCount = dataRecord.agents != null ? dataRecord.agents.FindAll(a => a.sawSign).Count : 0;
+            }
+
             string json = JsonUtility.ToJson(dataRecord, true);
             string folderPath = Application.persistentDataPath;
             string timePart = dataRecord.global != null ? dataRecord.global.timestamp.ToString("yyyy-MM-dd_HH.mm.ss") : DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
@@ -106,6 +113,13 @@ public class DataCollector : MonoBehaviour
     {
         try
         {
+            // update counters before writing (same logic as SaveRun)
+            if (dataRecord != null && dataRecord.global != null)
+            {
+                dataRecord.global.totalAgents = dataRecord.agents != null ? dataRecord.agents.Count : 0;
+                dataRecord.global.visibleSignCount = dataRecord.agents != null ? dataRecord.agents.FindAll(a => a.sawSign).Count : 0;
+            }
+
             // Convert to JSON
             string json = JsonUtility.ToJson(dataRecord, true);
 
