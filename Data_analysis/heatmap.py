@@ -96,22 +96,34 @@ else:
         df.dropna(subset=['x', 'z'], inplace=True)
 
         if not df.empty:
-            # Create a pivot table for the heatmap. Use mean for duplicate positions.
-            try:
-                heatmap_pivot = df.pivot_table(index='z', columns='x', values='visibility', aggfunc='mean')
-                
-                # Sort the pivot table for a correct plot
-                heatmap_pivot.sort_index(axis=0, ascending=False, inplace=True)
-                heatmap_pivot.sort_index(axis=1, ascending=True, inplace=True)
+            # --- New: convert positions to nearest integer bins and aggregate ---
+            df['x_int'] = df['x'].astype(float).round().astype(int)
+            df['z_int'] = df['z'].astype(float).round().astype(int)
 
+            # Pivot using integer positions and mean visibility for duplicates
+            try:
+                heatmap_pivot = df.pivot_table(index='z_int', columns='x_int', values='visibility', aggfunc='mean')
+                
+                # Define the desired integer range for axes
+                x_range = list(range(-10, 11))
+                z_range = list(range(10, -11, -1))  # descending so top is +10
+
+                # Reindex to include full grid and keep NaNs where no data
+                heatmap_pivot = heatmap_pivot.reindex(index=z_range, columns=x_range)
+                # --- End new section ---
+
+                # Make results directory and save plot
+                os.makedirs('results', exist_ok=True)
                 plt.figure(figsize=(14, 10))
-                sns.heatmap(heatmap_pivot, annot=True, fmt=".2%", cmap="viridis", linewidths=.5, cbar_kws={'label': 'Total Visibility Ratio'})
+                # mask NaNs so they are not annotated
+                mask = heatmap_pivot.isna()
+                sns.heatmap(heatmap_pivot, mask=mask, vmin=0, vmax=1, annot=True, fmt=".1%", cmap="viridis", linewidths=.5, cbar_kws={'label': 'Total Visibility Ratio'})
                 plt.title('Heatmap of Total Visibility Ratio by Sign Position', fontsize=16)
                 plt.xlabel('Sign Position X', fontsize=12)
                 plt.ylabel('Sign Position Z', fontsize=12)
                 plt.tight_layout()
                 plt.savefig('results/heatmap.png')
-                print("\nHeatmap successfully saved as heatmap.png")
+                print("\nHeatmap successfully saved as results/heatmap.png")
             except Exception as e:
                 print(f"\nCould not generate heatmap. Error: {e}")
         else:
