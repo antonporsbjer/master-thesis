@@ -110,7 +110,7 @@ else:
                 plt.xlabel('Sign Position X', fontsize=12)
                 plt.ylabel('Sign Position Z', fontsize=12)
                 plt.tight_layout()
-                plt.savefig('heatmap.png')
+                plt.savefig('results/heatmap.png')
                 print("\nHeatmap successfully saved as heatmap.png")
             except Exception as e:
                 print(f"\nCould not generate heatmap. Error: {e}")
