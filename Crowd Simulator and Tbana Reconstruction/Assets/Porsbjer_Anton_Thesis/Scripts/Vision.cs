@@ -31,9 +31,16 @@ public class Vision : MonoBehaviour
 
     void Awake()
     {
-        // Initialize the DataCollector reference
-        dataCollector = FindObjectOfType<DataCollector>();
+        // ensure agentId assigned
         agentId = nextAgentId++;
+
+        // try to find components if not assigned
+        if (sign == null)
+            sign = GameObject.FindWithTag("sign");
+        if (vca == null)
+            vca = FindObjectOfType<VisibilityArea>();
+
+        dataCollector = FindObjectOfType<DataCollector>();
     }
 
     // Start is called before the first frame update
@@ -42,7 +49,7 @@ public class Vision : MonoBehaviour
         // Get the agent type from the GameObject's name
         // Get the parent GameObject's name (or root if you want the topmost parent)
         agentType = transform.parent != null ? transform.parent.gameObject.name : gameObject.name;
-        Debug.Log("Agent Type: " + agentType + ", ID: " + agentId);
+        // Debug.Log("Agent Type: " + agentType + ", ID: " + agentId);
 
         // Set the agent ID in the DataCollector
         if (dataCollector != null)
@@ -95,7 +102,7 @@ public class Vision : MonoBehaviour
             timeStampEnteredVCA = Time.time; // Record the time when the agent enters the VCA
             isInVCA = true; // Mark as currently in VCA
             dataCollector.dataRecord.global.inVcaCount++; // Increment the inVCA count in the DataCollector
-            Debug.Log(agentType + ", ID: " + agentId + ", entered VCA at: " + timeStampEnteredVCA);
+            // Debug.Log(agentType + ", ID: " + agentId + ", entered VCA at: " + timeStampEnteredVCA);
         }
 
         // Check if the agent is currently in the VCA
@@ -109,7 +116,7 @@ public class Vision : MonoBehaviour
             {
                 isVisible = true; // Mark as visible
                 hasSeenSign = true; // Mark as seen so it won't count again
-                Debug.Log(agentType + ", ID: " + agentId + ", can see the sign.");
+                // Debug.Log(agentType + ", ID: " + agentId + ", can see the sign.");
             }
 
             // If the agent has seen the sign, check if it remains visible
@@ -120,7 +127,7 @@ public class Vision : MonoBehaviour
                 {
                     isVisible = true; // Mark as visible after comprehension time
                     agentData.sawSign = true; // Mark that the agent saw the sign
-                    Debug.Log(agentType + ", ID: " + agentId + ", can see the sign after comprehension time.");
+                    // Debug.Log(agentType + ", ID: " + agentId + ", can see the sign after comprehension time.");
                 }
             }
 
@@ -128,7 +135,7 @@ public class Vision : MonoBehaviour
             if (hasSeenSign && !IfInVcaAndSignIsVisible(transform.position))
             {
                 isVisible = false; // Mark as not visible if the sign is not in view
-                Debug.Log(agentType + ", ID: " + agentId + ", cannot see the sign anymore.");
+                // Debug.Log(agentType + ", ID: " + agentId + ", cannot see the sign anymore.");
             }
         }
 
@@ -137,19 +144,19 @@ public class Vision : MonoBehaviour
         {
             timeStampExitedVCA = Time.time;
             isInVCA = false;
-            Debug.Log(agentType + ", ID: " + agentId + ", exited VCA at: " + timeStampExitedVCA);
+            // Debug.Log(agentType + ", ID: " + agentId + ", exited VCA at: " + timeStampExitedVCA);
 
             // Calculate time spent in VCA
             timeInVCA = timeStampExitedVCA - timeStampEnteredVCA;
             agentData.timeInVCA = timeInVCA; // Store the time spent in VCA in the AgentData
-            Debug.Log(agentType + ", ID: " + agentId + ", time spent in VCA: " + timeInVCA);
+            // Debug.Log(agentType + ", ID: " + agentId + ", time spent in VCA: " + timeInVCA);
 
             // Reset visibility and counters
             isVisible = false;
             hasSeenSign = false;
             timesInVCACounter++;
             // TODO_ANTON: Count the number of times the agent has been in the VCA
-            Debug.Log(agentType + ", ID: " + agentId + ", has been in the VCA " + timesInVCACounter + " times.");
+            // Debug.Log(agentType + ", ID: " + agentId + ", has been in the VCA " + timesInVCACounter + " times.");
         }
     }
 
@@ -186,6 +193,13 @@ public class Vision : MonoBehaviour
     // Method to check if the target point is visible from the agent's position
     public bool IfInVcaAndSignIsVisible(Vector3 origin)
     {
+        // Defensive checks
+        if (sign == null || vca == null)
+        {
+            // missing required objects, treat as not visible
+            return false;
+        }
+
         RaycastHit hit;
         Vector3 directionToSign = (sign.transform.position - origin).normalized;
 
@@ -207,7 +221,7 @@ public class Vision : MonoBehaviour
         if (toggleFov && angleToSign > halfFov)
         {
             // Sign is outside the FoV cone
-            Debug.Log(agentType + ", ID: " + agentId + ", sign is outside FoV.");
+            // Debug.Log(agentType + ", ID: " + agentId + ", sign is outside FoV.");
             return false;
         }
 
@@ -216,7 +230,7 @@ public class Vision : MonoBehaviour
 
         if (IsWithinVolume(origin))
         {
-            Debug.Log(agentType + ", ID: " + agentId + ", is within the Visibility Area (VCA) of the sign.");
+            // Debug.Log(agentType + ", ID: " + agentId + ", is within the Visibility Area (VCA) of the sign.");
             if (Physics.Raycast(origin, directionToSign, out hit, vca.ViewingDistance, mask))
             {
                 // Draw the ray if agent is within the Visibility Area (VCA) but not hitting the sign
@@ -225,7 +239,7 @@ public class Vision : MonoBehaviour
                 if (hit.collider.gameObject == sign)
                 {
                     // Log the hit information
-                    Debug.Log(agentType + ", ID: " + agentId + ", raycast hit: " + hit.collider.gameObject.name);
+                    // Debug.Log(agentType + ", ID: " + agentId + ", raycast hit: " + hit.collider.gameObject.name);
                     // Check if the ray is within the Visibility Area (VCA) and hitting the sign
                     Debug.DrawRay(origin, directionToSign * vca.ViewingDistance, Color.green);
                     return true; // Ray hit the target within the volume
@@ -238,12 +252,22 @@ public class Vision : MonoBehaviour
     // Method to check if a point is within the Visibility Area (VCA)
     private bool IsWithinVolume(Vector3 origin)
     {
-        Vector3 direction = (origin - vca.transform.position).normalized;
-        float dotProduct = Vector3.Dot(direction, vca.transform.forward.normalized);
-        float angle = Mathf.Acos(dotProduct);
-        float distance = Vector3.Distance(origin, vca.transform.position);
+        if (vca == null)
+            return false;
 
-        // Check if the origin is within the cone and sphere
-        return angle <= vca.ThetaDegrees * Mathf.Deg2Rad / 2 && distance <= vca.ViewingDistance;
+        // distance check
+        float dist = Vector3.Distance(origin, vca.transform.position);
+        if (dist > vca.ViewingDistance)
+            return false;
+
+        // angle check (support double-sided if you want)
+        Vector3 dir = (origin - vca.transform.position).normalized;
+        float halfThetaRad = vca.ThetaDegrees * Mathf.Deg2Rad / 2f;
+        float angle = Vector3.Angle(vca.transform.forward, dir) * Mathf.Deg2Rad;
+        if (angle <= halfThetaRad) return true;
+
+        // also allow opposite direction (both sides)
+        angle = Vector3.Angle(-vca.transform.forward, dir) * Mathf.Deg2Rad;
+        return angle <= halfThetaRad;
     }
 }
