@@ -109,39 +109,6 @@ public class DataCollector : MonoBehaviour
         dataRecord.agents.Clear();
         dataRecord.global = new GlobalData { scenarioId = scenario };
   }
-
-    private void SaveToJSON()
-    {
-        try
-        {
-            // update counters before writing (same logic as SaveRun)
-            if (dataRecord != null && dataRecord.global != null)
-            {
-                dataRecord.global.totalAgents = dataRecord.agents != null ? dataRecord.agents.Count : 0;
-                dataRecord.global.visibleSignCount = dataRecord.agents != null ? dataRecord.agents.FindAll(a => a.sawSign).Count : 0;
-            }
-
-            // Convert to JSON
-            string json = JsonUtility.ToJson(dataRecord, true);
-
-            // Prepare safe file name
-            string folderPath = Application.persistentDataPath;
-            string fileName = $"visibility_data_{dataRecord.global.timestamp.ToString("yyyy-MM-dd_HH.mm.ss")}.json";
-            string filePath = Path.Combine(folderPath, fileName);
-
-            // Ensure directory exists
-            if (!Directory.Exists(folderPath))
-                Directory.CreateDirectory(folderPath);
-
-            // Write to file
-            File.WriteAllText(filePath, json);
-            Debug.Log($"[DataCollector] Data saved to {filePath}");
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError($"[DataCollector] Failed to save JSON: {ex.Message}");
-        }
-    }
     
     private void Awake()
     {
@@ -151,15 +118,5 @@ public class DataCollector : MonoBehaviour
             dataRecord.global = new GlobalData();
 
         dataRecord.global.scenarioId = SceneManager.GetActiveScene().name + "_scenario";
-    }
-
-    private void OnApplicationQuit()
-    {
-        if (dataRecord != null)
-        {
-            dataRecord.global.totalAgents = dataRecord.agents.Count;
-            dataRecord.global.visibleSignCount = dataRecord.agents.FindAll(agent => agent.sawSign).Count;
-            SaveToJSON();
-        }
     }
 }
