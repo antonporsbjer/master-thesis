@@ -67,8 +67,8 @@ public class RunManager : MonoBehaviour
             yield return null;
 
             // wait for the VisibilityArea (sign) to be created and re-randomize it
-            yield return new WaitUntil(() => FindObjectOfType<VisibilityArea>() != null);
-            var vca = FindObjectOfType<VisibilityArea>();
+            yield return new WaitUntil(() => FindObjectOfType<VisibilityVolume>() != null);
+            var vca = FindObjectOfType<VisibilityVolume>();
             if (vca != null)
                 vca.RandomizePosition();
 

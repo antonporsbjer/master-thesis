@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // Visibility Area (VCA)
-public class VisibilityArea : MonoBehaviour
+public class VisibilityVolume : MonoBehaviour
 {
     //[Range(0, 180)]
     public float ThetaDegrees = 90f; // Angle in degrees
@@ -28,12 +28,6 @@ public class VisibilityArea : MonoBehaviour
 
         // perform initial randomization (if enabled)
         RandomizePosition();
-
-        // If a boundary object is assigned, add a tiny helper component to draw its bounds as a gizmo.
-        if (signPositionBoundary != null && signPositionBoundary.GetComponent<BoundaryGizmoDrawer>() == null)
-        {
-            signPositionBoundary.AddComponent<BoundaryGizmoDrawer>().Initialize(Color.cyan);
-        }
     }
 
     // public helper to (re)randomize sign position & yaw
@@ -49,70 +43,6 @@ public class VisibilityArea : MonoBehaviour
         float z = Random.Range(signMinZ, signMaxZ);
 
         transform.SetPositionAndRotation(new Vector3(x, transform.position.y, z), Quaternion.Euler(0f, yaw, 0f));
-    }
-
-    // Helper component that draws the bounding area for a GameObject (uses Collider/Renderer/children)
-    private class BoundaryGizmoDrawer : MonoBehaviour
-    {
-        private Color gizmoColor = Color.cyan;
-
-        public void Initialize(Color color)
-        {
-            gizmoColor = color;
-        }
-
-        void OnDrawGizmos()
-        {
-            Bounds bounds = new Bounds(transform.position, Vector3.zero);
-            bool hasBounds = false;
-
-            Collider col = GetComponent<Collider>();
-            if (col != null)
-            {
-                bounds = col.bounds;
-                hasBounds = true;
-            }
-            else
-            {
-                Renderer rend = GetComponent<Renderer>();
-                if (rend != null)
-                {
-                    bounds = rend.bounds;
-                    hasBounds = true;
-                }
-                else
-                {
-                    Renderer[] rends = GetComponentsInChildren<Renderer>();
-                    if (rends.Length > 0)
-                    {
-                        bounds = rends[0].bounds;
-                        for (int i = 1; i < rends.Length; i++) bounds.Encapsulate(rends[i].bounds);
-                        hasBounds = true;
-                    }
-                    else
-                    {
-                        Collider[] cols = GetComponentsInChildren<Collider>();
-                        if (cols.Length > 0)
-                        {
-                            bounds = cols[0].bounds;
-                            for (int i = 1; i < cols.Length; i++) bounds.Encapsulate(cols[i].bounds);
-                            hasBounds = true;
-                        }
-                    }
-                }
-            }
-
-            if (!hasBounds) return;
-
-            Gizmos.color = gizmoColor;
-            Gizmos.DrawWireCube(bounds.center, bounds.size);
-
-            // Optionally draw a filled semi-transparent cube for clarity in editor (uncomment if wanted)
-            // Color prev = Gizmos.color;
-            // Gizmos.color = new Color(gizmoColor.r, gizmoColor.g, gizmoColor.b, 0.05f);
-            // Gizmos.DrawCube(bounds.center, bounds.size);
-            // Gizmos.color = prev;
-        }
     }
 
     // Start is called before the first frame update
@@ -131,84 +61,49 @@ public class VisibilityArea : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // Update the angle in radians
-        Theta = ThetaDegrees * Mathf.Deg2Rad; // Convert angle to radians
-        // Check for collisions
-        // CheckCollisions();
     }
 
-    // Method to check for collisions
-    // void CheckCollisions()
-    // {
-    //     Collider[] colliders = Physics.OverlapSphere(transform.position, ViewingDistance);
-    //     foreach (Collider collider in colliders)
-    //     {
-    //         if (collider.gameObject.CompareTag("eye"))
-    //         {
-    //             Vector3 vi = collider.transform.position;
-    //             Vector3 direction = (vi - transform.position).normalized;
-    //             float dotProduct = Vector3.Dot(direction, transform.forward.normalized);
-    //             float angle = Mathf.Acos(dotProduct);
-    //             float distance = Vector3.Distance(vi, transform.position);
-
-    //             // Check if the collider is within the cone and sphere
-    //             if (angle <= Theta / 2 && distance <= ViewingDistance)
-    //             {
-    //                 GameObject target = collider.gameObject;
-    //                 // Debug.Log("Collision detected with: " + target.name);
-    //             }
-    //         }
-    //     }
-    // }
-
-    // Method to visualize the volume in the Scene view
-    void OnDrawGizmos()
+    private void OnDrawGizmos()
     {
-        Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(transform.position, ViewingDistance);
+        Gizmos.color = Color.cyan;
+        Vector3 origin = transform.position;
+        Vector3 normal = transform.forward.normalized;
+        float halfThetaRad = Mathf.Deg2Rad * ThetaDegrees * 0.5f;
 
-        // Draw the cone
-        Vector3 right = Vector3.Cross(Vector3.up, transform.forward.normalized).normalized;
-        Vector3 up = Vector3.Cross(transform.forward.normalized, right).normalized;
+        // Draw sphere boundary
+        Gizmos.DrawWireSphere(origin, ViewingDistance);
 
-        float halfAngle = Theta / 2;
-        float coneHeight = ViewingDistance * Mathf.Cos(halfAngle);
-        float coneRadius = ViewingDistance * Mathf.Sin(halfAngle);
+        // Build orthonormal basis u,v perpendicular to n
+        Vector3 u = Vector3.Cross(normal, Vector3.up);
+        if (u.sqrMagnitude < 1e-6f) u = Vector3.Cross(normal, Vector3.right);
+        u.Normalize();
+        Vector3 v = Vector3.Cross(normal, u);
 
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawLine(transform.position, transform.position + transform.forward.normalized * coneHeight);
-        Gizmos.DrawLine(transform.position, transform.position + (transform.forward.normalized * coneHeight + right * coneRadius));
-        Gizmos.DrawLine(transform.position, transform.position + (transform.forward.normalized * coneHeight - right * coneRadius));
-        Gizmos.DrawLine(transform.position, transform.position + (transform.forward.normalized * coneHeight + up * coneRadius));
-        Gizmos.DrawLine(transform.position, transform.position + (transform.forward.normalized * coneHeight - up * coneRadius));
+        // draw cone rim (circle at angle on sphere)
+        DrawConeGizmo(ViewingDistance, halfThetaRad, origin, normal, u, v);
+        DrawConeGizmo(-ViewingDistance, halfThetaRad, origin, normal, u, v);
+    }
 
-        Gizmos.DrawLine(transform.position, transform.position - transform.forward.normalized * coneHeight);
-        Gizmos.DrawLine(transform.position, transform.position - (transform.forward.normalized * coneHeight + right * coneRadius));
-        Gizmos.DrawLine(transform.position, transform.position - (transform.forward.normalized * coneHeight - right * coneRadius));
-        Gizmos.DrawLine(transform.position, transform.position - (transform.forward.normalized * coneHeight + up * coneRadius));
-        Gizmos.DrawLine(transform.position, transform.position - (transform.forward.normalized * coneHeight - up * coneRadius));
+    void DrawConeGizmo(float radius, float halfThetaRad, Vector3 p, Vector3 n, Vector3 u, Vector3 v)
+    {
+        int circleSteps = 36;
+        float cosHalf = Mathf.Cos(halfThetaRad);
+        Vector3 prev = Vector3.zero;
 
-        // Draw the base of the cone
-        int segments = 20;
-        Vector3 previousPoint = transform.position + transform.forward.normalized * coneHeight + right * coneRadius;
-        for (int i = 1; i <= segments; i++)
+        for (int i = 0; i <= circleSteps; i++)
         {
-            float angle = i * Mathf.PI * 2 / segments;
-            Vector3 point = transform.position + transform.forward.normalized * coneHeight + right * Mathf.Cos(angle) * coneRadius + up * Mathf.Sin(angle) * coneRadius;
-            Gizmos.DrawLine(previousPoint, point);
-            previousPoint = point;
-        }
-        Gizmos.DrawLine(previousPoint, transform.position + transform.forward.normalized * coneHeight + right * coneRadius);
+            float theta = i / (float)circleSteps * Mathf.PI * 2f;
+            // direction: rotate from axis by half-angle
+            // point direction = cos(half)*n + sin(half)*(cos(theta)*u + sin(theta)*v)
+            Vector3 pointDir = cosHalf * n + Mathf.Sin(halfThetaRad) * (Mathf.Cos(theta) * u + Mathf.Sin(theta) * v);
+            Vector3 rim = p + pointDir * radius;
+            if (i > 0)
+                Gizmos.DrawLine(prev, rim);
+            prev = rim;
 
-        previousPoint = transform.position - transform.forward.normalized * coneHeight + right * coneRadius;
-        for (int i = 1; i <= segments; i++)
-        {
-            float angle = i * Mathf.PI * 2 / segments;
-            Vector3 point = transform.position - transform.forward.normalized * coneHeight + right * Mathf.Cos(angle) * coneRadius + up * Mathf.Sin(angle) * coneRadius;
-            Gizmos.DrawLine(previousPoint, point);
-            previousPoint = point;
+            // draw lines from apex to rim (sparse)
+            if (i % (circleSteps / 8 == 0 ? 1 : circleSteps / 8) == 0)
+                Gizmos.DrawLine(p, rim);
         }
-        Gizmos.DrawLine(previousPoint, transform.position - transform.forward.normalized * coneHeight + right * coneRadius);
-
     }
 }

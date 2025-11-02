@@ -6,7 +6,7 @@ using UnityEngine;
 public class Vision : MonoBehaviour
 {
     private GameObject sign; // Reference to the target GameObject (the sign)
-    private VisibilityArea vca; // Reference to the Visibility Area (VCA) component
+    private VisibilityVolume vca; // Reference to the Visibility Volume component
     private static int nextAgentId = 0; // Static counter for unique IDs
     private int agentId; // Unique identifier for the agent
     private bool hasSeenSign = false; // Track if agent has already seen the sign
@@ -24,6 +24,12 @@ public class Vision : MonoBehaviour
 
     // TODO_ANTON: Let each agent hold a data collector for its own data!
 
+    public Vector3 axis = Vector3.forward;
+    [Range(0f, 180f)] public float angle = 60f; // full angle in degrees
+    public float radius = 5f;
+    public int circleSteps = 36;
+    public Color gizmoColor = Color.cyan;
+
     public bool IsVisible
     {
         get { return isVisible; }
@@ -38,7 +44,7 @@ public class Vision : MonoBehaviour
         if (sign == null)
             sign = GameObject.FindWithTag("sign");
         if (vca == null)
-            vca = FindObjectOfType<VisibilityArea>();
+            vca = FindObjectOfType<VisibilityVolume>();
 
         dataCollector = FindObjectOfType<DataCollector>();
     }
@@ -83,7 +89,7 @@ public class Vision : MonoBehaviour
         }
 
         // Get the VisibilityArea component
-        vca = sign.GetComponent<VisibilityArea>();
+        vca = sign.GetComponent<VisibilityVolume>();
 
         if (vca == null)
         {
@@ -155,40 +161,10 @@ public class Vision : MonoBehaviour
             isVisible = false;
             hasSeenSign = false;
             timesInVCACounter++;
-            // TODO_ANTON: Count the number of times the agent has been in the VCA
+            agentData.timesInVCA = timesInVCACounter; // Store the number of times in VCA in the AgentData
             // Debug.Log(agentType + ", ID: " + agentId + ", has been in the VCA " + timesInVCACounter + " times.");
         }
     }
-
-    // Method to check if the target point is visible from the agent's position
-    // public bool IfInVcaAndSignIsVisible(Vector3 origin)
-    // {
-    //     RaycastHit hit;
-    //     Vector3 direction = sign.transform.position - origin;
-
-
-    //     int mask = LayerMask.GetMask("Obstacle"); // TODO_ANTON: Add later to test whit agent collision
-
-    //     if (IsWithinVolume(origin))
-    //     {
-    //         Debug.Log(agentType + ", ID: " + agentId + ", is within the Visibility Area (VCA) of the sign.");
-    //         if (Physics.Raycast(origin, direction, out hit, vca.ViewingDistance, mask))
-    //         {
-    //             // Draw the ray if agent is within the Visibility Area (VCA) but not hitting the sign
-    //             Debug.DrawRay(origin, direction, Color.red);
-
-    //             if (hit.collider.gameObject == sign)
-    //             {
-    //                 // Log the hit information
-    //                 Debug.Log(agentType + ", ID: " + agentId + ", raycast hit: " + hit.collider.gameObject.name);
-    //                 // Check if the ray is within the Visibility Area (VCA) and hitting the sign
-    //                 Debug.DrawRay(origin, direction, Color.green);
-    //                 return true; // Ray hit the target within the volume
-    //             }
-    //         }
-    //     }
-    //     return false; // Ray did not hit the target or was outside the volume
-    // }
 
     // Method to check if the target point is visible from the agent's position
     public bool IfInVcaAndSignIsVisible(Vector3 origin)
@@ -262,7 +238,7 @@ public class Vision : MonoBehaviour
 
         // angle check (support double-sided if you want)
         Vector3 dir = (origin - vca.transform.position).normalized;
-        float halfThetaRad = vca.ThetaDegrees * Mathf.Deg2Rad / 2f;
+        float halfThetaRad = vca.ThetaDegrees * Mathf.Deg2Rad * 0.5f;
         float angle = Vector3.Angle(vca.transform.forward, dir) * Mathf.Deg2Rad;
         if (angle <= halfThetaRad) return true;
 

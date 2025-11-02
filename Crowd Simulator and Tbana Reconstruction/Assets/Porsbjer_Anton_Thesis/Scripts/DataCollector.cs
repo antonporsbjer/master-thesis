@@ -37,6 +37,7 @@ public class AgentData
     public float height;
     public float eyeHeight;
     public float timeInVCA;
+    public int timesInVCA;
     public bool sawSign;
 
     public AgentData(int id, string agentType, int start, int goal, float agentHeight, float agentEyeHeight)
@@ -48,6 +49,7 @@ public class AgentData
         height = agentHeight;
         eyeHeight = agentEyeHeight;
         timeInVCA = 0f; // Initialize time in VCA
+        timesInVCA = 0; // Initialize times in VCA
         sawSign = false; // Initialize as not seeing the sign
     }
 }
@@ -105,9 +107,8 @@ public class DataCollector : MonoBehaviour
 
         // clear agent list and reset globals
         dataRecord.agents.Clear();
-        dataRecord.global = new GlobalData();
-        dataRecord.global.scenarioId = scenario;
-    }
+        dataRecord.global = new GlobalData { scenarioId = scenario };
+  }
 
     private void SaveToJSON()
     {
