@@ -47,6 +47,7 @@ public class Vision : MonoBehaviour
             vca = FindObjectOfType<VisibilityVolume>();
 
         dataCollector = FindObjectOfType<DataCollector>();
+        dataCollector.dataRecord.global.totalAgents++; // Increment total agents in DataCollector
     }
 
     // Start is called before the first frame update
