@@ -9,7 +9,6 @@ public class VisibilityVolume : MonoBehaviour
     public float ThetaDegrees = 90f; // Angle in degrees
     private float Theta; // Angle in radians
     public float ViewingDistance = 15.0f; // View distance (in meters)
-    public GameObject signPositionBoundary; // Boundary object to define the area within which the sign can be placed
     public bool RandomPosition = false; // If true, the sign will be placed at a random position within the volume
     private DataCollector dataCollector; // Reference to the DataCollector
 
