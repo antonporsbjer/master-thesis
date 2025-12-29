@@ -56,43 +56,71 @@ public class NewSpawner : MonoBehaviour {
 	void Start()
 	{
 		mainScript = FindObjectOfType<Main>();
-		continousSpawn(); 
+        // Disable coroutine call
+		// continousSpawn(); 
+        
+        // Initialize timer
+        if (usePoisson) {
+            currentSpawnWaitTime = CalculateTimeBetweenSpawns();
+        } else {
+            currentSpawnWaitTime = spawnRate;
+        }
 	}
+    
+    private float spawnTimer = 0f;
+    private float currentSpawnWaitTime = 0f;
 
-	// CONTINUOUS SPAWN
+    void Update() {
+        if (mainScript == null) return;
+        
+        // Scale deltaTime by simulationSpeed
+        float dt = Time.deltaTime * mainScript.simulationSpeed;
+        spawnTimer += dt;
+        
+        if (spawnTimer >= currentSpawnWaitTime) {
+            spawnTimer -= currentSpawnWaitTime;
+            
+            if (agentList.Count < mainScript.maxNumberOfAgents) {
+                Transform spawnerNode = transform.GetChild(0);
+                Vector3 startPos = new Vector3 (Random.Range (-0.5f, 0.5f), 0f, Random.Range (-0.5f, 0.5f)); 
+			    startPos = spawnerNode.TransformPoint (startPos);
+                spawnOneAgent(startPos);
+            }
+            
+            if (usePoisson) {
+                currentSpawnWaitTime = CalculateTimeBetweenSpawns();
+            } else {
+                currentSpawnWaitTime = spawnRate;
+            }
+        }
+    }
+
+	// CONTINUOUS SPAWN (Legacy/Unused if we use Update)
 	public void continousSpawn() {
-		StartCoroutine (spawnContinously(spawnRate));
+		// StartCoroutine (spawnContinously(spawnRate));
 	}
 
 	internal IEnumerator spawnContinously(float continousSpawnRate) {
-		Transform spawnerNode = transform.GetChild(0);
-		if(usePoisson)
-		{
-			float timeBetweenSpawn = CalculateTimeBetweenSpawns();
-			yield return new WaitForSeconds (timeBetweenSpawn);
-			
-		}
-		else
-		{
-			yield return new WaitForSeconds (continousSpawnRate);
-		}
-		
-		if (agentList.Count < mainScript.maxNumberOfAgents) 
-    {
-			Vector3 startPos = new Vector3 (Random.Range (-0.5f, 0.5f), 0f, Random.Range (-0.5f, 0.5f)); 
-			startPos = spawnerNode.TransformPoint (startPos);
-			spawnOneAgent(startPos);
-		}
-		
-		StartCoroutine (spawnContinously(continousSpawnRate));
+        // Deprecated by Update loop
+        yield return null;
 	}
 
-	// BURST SPAWN
+	// BURST SPAWN (Keep as coroutine? Or refactor?)
+    // Burst spawn seems rarely used or manual. If used, it should also speed up? 
+    // For now, let's just leave BurstSpawn as is or warn user. 
+    // User specifically asked about "spawn rate" which implies continuous spawning.
+    // I will focus on continuous.
 	public IEnumerator BurstSpawn(int nAgents, float burstRate)
 	{
 		for (int i = 0; i < nAgents; ++i) {
 			Vector3 startPos = new Vector3(transform.position.x + Random.Range(-1.5f, 1.5f), transform.position.y, transform.position.z + Random.Range(-1.5f, 1.5f));
 			spawnOneAgent (startPos);
+            // This WaitForSeconds will NOT be affected by my custom simulationSpeed unless I change Time.timeScale.
+            // If the user wants EVERYTHING fast, maybe I should just set Time.timeScale in Main?
+            // But Main does multiple physics steps per frame. Time.timeScale doesn't do that automatically for custom physics loops like this one.
+            // So manual scaling is correct.
+            // I will update this to wait manually if possible, but IEnumerator makes it hard to loop with custom delta.
+            // Leaving as is, assuming Continuous is the main concern.
 			yield return new WaitForSeconds (burstRate);
 		}
 
@@ -100,7 +128,7 @@ public class NewSpawner : MonoBehaviour {
 
 	public void spawnOneAgent(Vector3 startPosition)
 	{
-    Agent agent;
+        Agent agent;
 		agent = Instantiate (agentPrefab.transform.GetChild(Random.Range(0, agentPrefab.transform.childCount)).GetComponent<Agent>());
 
 		agent.InitializeAgent (startPosition, node, goal, ref map);

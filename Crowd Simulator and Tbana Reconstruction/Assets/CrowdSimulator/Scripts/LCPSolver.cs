@@ -16,12 +16,37 @@ public class LCPSolver {
 	}
 	protected double alphaBar, gammaConstant, epsilon;
 	protected double[] b, x, l;
+    
+    // Scratchpad arrays for zero-allocation
+    protected double[] r, p, Ap, y, d, Ad, tempPhi, tempG, tempB, tempV, tempPhiTilde, tempDiff, vec2MulOneRes, oneMulOneRes, tempPlusMinus;
+
 	protected List<List<denseMatrixNode>> A;
 	internal double smallEpsilon = 0.000000000000001;
 
-	internal bool checkEndCondition() {
+    private void EnsureBuffers(int size) {
+        if (r == null || r.Length != size) {
+            r = new double[size];
+            p = new double[size];
+            Ap = new double[size];
+            y = new double[size];
+            d = new double[size];
+            Ad = new double[size];
+            tempPhi = new double[size];
+            tempG = new double[size];
+            tempB = new double[size];
+            tempV = new double[size];
+            tempPhiTilde = new double[size];
+            tempDiff = new double[size];
+            vec2MulOneRes = new double[size];
+            tempPlusMinus = new double[size];
+        }
+    }
 
-		double[] z = PlusMinusVec (TwoMulOne (x), b, true);
+	internal bool checkEndCondition() {
+        TwoMulOne(x, vec2MulOneRes); // writes to vec2MulOneRes
+		PlusMinusVec (vec2MulOneRes, b, true, tempPlusMinus); // writes to tempPlusMinus
+        double[] z = tempPlusMinus;
+
 		//z >= 0
 		bool conditionA = true;
 		//x >= 0
@@ -46,6 +71,7 @@ public class LCPSolver {
 
 	public virtual double[] LCPSolve(List<List<denseMatrixNode>> aList, double[,] aMatrix, double[] bArray, double[] xArray, double[] lArray) {
 		this.A = aList; this.b = bArray; this.x = xArray; this.l = lArray;
+        EnsureBuffers(b.Length);
 
 		gammaConstant = 1; //Around 1
 		alphaBar = 1 / (2*frobeniusNormM() + smallEpsilon);
@@ -53,48 +79,109 @@ public class LCPSolver {
 		if (epsilon > 0.01)
 			epsilon = 0.001;
 			//		UnityEngine.Debug.Log ("Epsilon: " + epsilon);
-		double[] r = PlusMinusVec(TwoMulOne(x), b, true); //Ax+b (Dostal says Ax-b)
-		double[] p = phi(x);
+		
+        // double[] r = PlusMinusVec(TwoMulOne(x), b, true); 
+        TwoMulOne(x, vec2MulOneRes);
+        PlusMinusVec(vec2MulOneRes, b, true, r);
+
+        // double[] p = phi(x);
+        phi(x, p);
+
 		double alphaCG;
 		int cnt = 0;
 		int lim = Grid.instance.solverMaxIterations;
 		Stopwatch s = new Stopwatch ();
 		s.Start ();
-		while (frobeniusNormV (v(x)) > epsilon && cnt < lim && !checkEndCondition()  ) {
+        
+        // frobeniusNormV (v(x)) > epsilon
+        v(x, tempV); // writes to tempV
+		while (frobeniusNormV (tempV) > epsilon && cnt < lim && !checkEndCondition()  ) {
 			cnt += 1;
+            
+            // double normB = frobeniusNormV (B(x));
+            B(x, tempB);
+		    double normB = frobeniusNormV (tempB);
+            
+            // DotProduct (phiTilde(x), phi(x))
+            phiTilde(x, tempPhiTilde);
+            phi(x, tempPhi);
 
-		double normB = frobeniusNormV (B(x));
-		if ((normB * normB) <= gammaConstant * DotProduct (phiTilde(x), phi(x))) {
+		    if ((normB * normB) <= gammaConstant * DotProduct (tempPhiTilde, tempPhi)) {
 				//1. Trial Conjugate Gradient Step
-				double[] Ap = TwoMulOne (p);
+				// double[] Ap = TwoMulOne (p);
+                TwoMulOne(p, Ap);
+
 				alphaCG = DotProduct (r, p) / (DotProduct (p, Ap)  + smallEpsilon);
-				double[] y = PlusMinusVec (x, scalarMult (alphaCG, p), false);
+				
+                // double[] y = PlusMinusVec (x, scalarMult (alphaCG, p), false);
+                scalarMult(alphaCG, p, tempPlusMinus); // writes to tempPlusMinus
+                PlusMinusVec(x, tempPlusMinus, false, y); 
+
 				double alphaF = calcAlphaF (p);
 				if (alphaCG <= alphaF) {
 					//2. Conjugate Gradient Step
 						for (int i = 0; i < y.GetLength (0); ++i)
 								x [i] = y [i];
 	//				x = y;
-					r = PlusMinusVec (r, scalarMult (alphaCG, Ap), false);
-					double gamma = DotProduct (phi(y), Ap) / (DotProduct (p, Ap)  + smallEpsilon);
-					p = PlusMinusVec (phi(y), scalarMult (gamma, p), false);
+                    // r = PlusMinusVec (r, scalarMult (alphaCG, Ap), false);
+                    scalarMult(alphaCG, Ap, tempPlusMinus);
+					PlusMinusVec (r, tempPlusMinus, false, r); // update r
+					
+                    // double gamma = DotProduct (phi(y), Ap) / (DotProduct (p, Ap)  + smallEpsilon);
+                    phi(y, tempPhi);
+                    double gamma = DotProduct (tempPhi, Ap) / (DotProduct (p, Ap)  + smallEpsilon);
+					
+                    // p = PlusMinusVec (phi(y), scalarMult (gamma, p), false);
+                    scalarMult(gamma, p, tempPlusMinus);
+                    PlusMinusVec(tempPhi, tempPlusMinus, false, p);
+
 				} else {
 						//3. Expansion Step
-						x = PlusMinusVec (x, scalarMult(alphaF, p), false);
-						r = PlusMinusVec (r, scalarMult (alphaF, Ap), false); //Why do this..?
-						x = projection (PlusMinusVec (x, scalarMult (alphaBar, phi(x)), false));
-						r = PlusMinusVec (TwoMulOne(x), b, true); //Dostal says Ax-b
-						p = phi(x);
+                        // x = PlusMinusVec (x, scalarMult(alphaF, p), false);
+						scalarMult(alphaF, p, tempPlusMinus);
+                        PlusMinusVec(x, tempPlusMinus, false, x); // update x
+
+						// r = PlusMinusVec (r, scalarMult (alphaF, Ap), false); //Why do this..?
+                        scalarMult(alphaF, Ap, tempPlusMinus);
+                        PlusMinusVec(r, tempPlusMinus, false, r);
+
+                        // x = projection (PlusMinusVec (x, scalarMult (alphaBar, phi(x)), false));
+                        phi(x, tempPhi);
+                        scalarMult(alphaBar, tempPhi, tempPlusMinus);
+                        PlusMinusVec(x, tempPlusMinus, false, x); // writes to x temporarily
+                        projection(x, x); // projects in-place
+
+                        // r = PlusMinusVec (TwoMulOne(x), b, true); //Dostal says Ax-b
+                        TwoMulOne(x, vec2MulOneRes);
+						PlusMinusVec (vec2MulOneRes, b, true, r);
+                        
+                        // p = phi(x);
+						phi(x, p);
 				}
 			} else {
 					//4. Proportioning Step
-					double[] d = B(x);
-					double[] Ad = TwoMulOne (d);
+					//double[] d = B(x);
+                    B(x, d);
+
+					// double[] Ad = TwoMulOne (d);
+                    TwoMulOne(d, Ad);
+
 					alphaCG = DotProduct (r, d) / (DotProduct (d, Ad)+ smallEpsilon);
-					x = PlusMinusVec (x, scalarMult(alphaCG, d), false);
-					r = PlusMinusVec (r, scalarMult(alphaCG, Ad), false);
-					p = phi(x);
+					
+                    // x = PlusMinusVec (x, scalarMult(alphaCG, d), false);
+                    scalarMult(alphaCG, d, tempPlusMinus);
+                    PlusMinusVec(x, tempPlusMinus, false, x);
+
+                    // r = PlusMinusVec (r, scalarMult(alphaCG, Ad), false);
+                    scalarMult(alphaCG, Ad, tempPlusMinus);
+					PlusMinusVec (r, tempPlusMinus, false, r);
+					
+                    // p = phi(x);
+                    phi(x, p);
 			}
+
+            // Re-calculate v(x) for loop condition
+            v(x, tempV);
 		}	
 		//UnityEngine.Debug.Log ("Took : " + s.ElapsedMilliseconds + " ms" );
 		if (cnt == lim)
@@ -103,55 +190,53 @@ public class LCPSolver {
 		return x;
 		}
 
-	protected double[] g(double[] vec) {
-		return PlusMinusVec(TwoMulOne (vec), b, true); //Ax + b (dostal has - instead)
+    // VOID methods with result param
+	protected void g(double[] vec, double[] result) {
+        TwoMulOne(vec, vec2MulOneRes);
+		PlusMinusVec(vec2MulOneRes, b, true, result); //Ax + b (dostal has - instead)
 	}
 
-	protected double[] phi(double[] vec) {
-		double[] tempPhi = new double[vec.GetLength (0)];
-		double[] G = g(vec);
+	protected void phi(double[] vec, double[] result) {
+        g(vec, tempG);
 		for (int i = 0; i < vec.GetLength (0); ++i) {
 			if (vec [i].Equals (l[i])) {
-				tempPhi [i] = 0.0;
+				result [i] = 0.0;
 			} else {
-				tempPhi [i] = G [i];
+				result [i] = tempG [i];
 			}
 		}
-		return tempPhi;
 	}
 
-	protected double[] B(double[] vec) {
-		double[] tempB = new double[vec.GetLength (0)];
-		double[] G = g(vec);
+	protected void B(double[] vec, double[] result) {
+        g(vec, tempG);
 		for (int i = 0; i < vec.GetLength (0); ++i) {
 			if (vec [i].Equals (l [i])) {
-				tempB[i] = Math.Min(G [i], 0.0);
+				result[i] = Math.Min(tempG [i], 0.0);
 			} else {
-				tempB[i] = 0.0;
+				result[i] = 0.0;
 			}
 		}
-		return tempB;
 	}
 
-	protected double[] v(double[] vec) {
-		return PlusMinusVec (phi(vec), B(vec), true);
+	protected void v(double[] vec, double[] result) {
+        phi(vec, tempPhi);
+        B(vec, tempB);
+		PlusMinusVec (tempPhi, tempB, true, result);
 	}
 
-	protected double[] phiTilde(double[] vec) {
-		double[] tempPhiTilde = new double[vec.GetLength (0)];
-		double[] Phi = phi(vec);
+	protected void phiTilde(double[] vec, double[] result) {
+        phi(vec, tempPhi);
 		for (int i = 0; i < vec.GetLength(0); ++i) {
-			tempPhiTilde[i] = Math.Min((vec [i] - l [i]) / alphaBar, Phi[i]);
+			result[i] = Math.Min((vec [i] - l [i]) / alphaBar, tempPhi[i]);
 		}
-		return tempPhiTilde;
 	}
 		
-	protected double[] projection(double[] vec) {
-		double[] diff = PlusMinusVec (vec, l, false);
-		for (int i = 0; i < diff.GetLength (0); ++i) {
-			diff [i] = Math.Max (diff [i], 0.0);
+	protected void projection(double[] vec, double[] result) {
+		PlusMinusVec (vec, l, false, tempDiff);
+		for (int i = 0; i < tempDiff.GetLength (0); ++i) {
+			tempDiff [i] = Math.Max (tempDiff[i], 0.0);
 		} 
-		return PlusMinusVec (l, diff, true); 
+		PlusMinusVec (l, tempDiff, true, result); 
 	}
 
 	protected double calcAlphaF(double[] p) {
@@ -193,12 +278,10 @@ public class LCPSolver {
 		return tVal;
 	}
 
-	protected double[] TwoMulOne(double[] vec) {
-		double[] res = new double[vec.GetLength (0)];
+	protected void TwoMulOne(double[] vec, double[] result) {
 		for (int i = 0; i < A.Count; ++i) {
-			res [i] = OneMultOne (i, vec);
+			result [i] = OneMultOne (i, vec);
 		}
-		return res;
 	}
 
 	protected double OneMultOne(int i, double[] vec) {
@@ -208,21 +291,18 @@ public class LCPSolver {
 		}
 		return res;
 	}
-	protected double[] scalarMult(double scalar, double[] vec) {
+	protected void scalarMult(double scalar, double[] vec, double[] result) {
 		for (int i = 0; i < vec.GetLength (0); ++i) {
-			vec [i] *= scalar;
+			result [i] = vec[i] * scalar;
 		}
-		return vec;
 	}
 
-	protected double[] PlusMinusVec(double[] a, double[] b, bool plus) {
+	protected void PlusMinusVec(double[] a, double[] b, bool plus, double[] result) {
 		double op = 1.0;
 		if (!plus)
 			op = -1.0;
-		double[] res = new double[a.GetLength (0)];
 		for (int i = 0; i < a.GetLength (0); ++i) {
-			res [i] = a [i] + op*b [i];
+			result [i] = a [i] + op*b [i];
 		}
-		return res;
 	}
 }

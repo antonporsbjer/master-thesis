@@ -10,6 +10,7 @@ public class PropertyHolderEditor : Editor {
 		alpha_Prop,
 		avoidanceRadius_Prop,
 		customTimeStep_Prop,
+        simulationSpeed_Prop,
 		gridPrefab_Prop,
 		handleCollison_Prop,
 		lcpsolver_Prop,
@@ -43,6 +44,7 @@ public class PropertyHolderEditor : Editor {
 		alpha_Prop = serializedObject.FindProperty ("alpha");
 		avoidanceRadius_Prop = serializedObject.FindProperty ("agentAvoidanceRadius");
 		customTimeStep_Prop = serializedObject.FindProperty ("customTimeStep");
+        simulationSpeed_Prop = serializedObject.FindProperty("simulationSpeed");
 		gridPrefab_Prop = serializedObject.FindProperty ("gridPrefab");
 		handleCollison_Prop = serializedObject.FindProperty ("handleCollision");
 		lcpsolver_Prop = serializedObject.FindProperty ("solver");
@@ -81,6 +83,7 @@ public class PropertyHolderEditor : Editor {
 			EditorGUILayout.Slider(timeStep_Prop, 0.01f, 0.05f);
 		}
 		EditorGUILayout.PropertyField(alpha_Prop);
+        EditorGUILayout.PropertyField(simulationSpeed_Prop);
 		EditorGUILayout.Space();
 		EditorGUILayout.PropertyField(lcpsolver_Prop);
 		EditorGUILayout.PropertyField (solverIterations_Prop);

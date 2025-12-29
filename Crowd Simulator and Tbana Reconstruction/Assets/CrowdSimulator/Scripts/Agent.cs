@@ -37,10 +37,12 @@ public class Agent : MonoBehaviour {
 	public bool boarding = false;
 	public bool isAlighting = false;
 
-	internal void Start() {
-		animator = transform.gameObject.GetComponent<Animator> ();
-		rbody = transform.gameObject.GetComponent<Rigidbody> ();
+	internal void Awake() {
+		animator = GetComponent<Animator> ();
+		rbody = GetComponent<Rigidbody> ();
+    }
 
+	internal void Start() {
 		if (rbody != null)
 		{
 			rbody.isKinematic = false;
@@ -59,7 +61,11 @@ public class Agent : MonoBehaviour {
 
 		//Which cell am i in currently?
 		calculateRowAndColumn();
-		if (!Grid.instance.colHandler && rbody != null) {
+        
+        // Grid.instance should be ready now if Main initialized it.
+        // For existing agents, Grid might be init in Start/OnEnable of Main.
+        // Try/Catch or check instance? Reference code assumed it works.
+		if (Grid.instance != null && !Grid.instance.colHandler && rbody != null) {
 			Destroy (rbody);
 		}
 

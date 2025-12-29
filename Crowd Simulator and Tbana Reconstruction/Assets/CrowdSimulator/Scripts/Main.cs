@@ -113,12 +113,14 @@ public class Main : MonoBehaviour {
     /**
 	 * Main simulation loop which is called every frame
 	**/
-    void Update () {
-		Grid.instance.solver = solver;
-		Grid.instance.solverEpsilon = epsilon;
-		Grid.instance.solverMaxIterations = solverMaxIterations;
+	[Range(0.1f, 10f)]
+    public float simulationSpeed = 1.0f;
+    private float accumulatedTime = 0f;
 
-		// Update grid with new density and velocity values
+    void StepSimulation(float dt) {
+        Grid.instance.dt = dt;
+        
+        // Update grid with new density and velocity values
 		Grid.instance.updateCellDensity ();
 		Grid.instance.updateVelocityNodes ();
 		//Solve linear constraint problem
@@ -155,8 +157,10 @@ public class Main : MonoBehaviour {
 				continue;
 			}
 			agent.move(ref roadmap);
-			agent.rbody.velocity = Vector3.zero;
-			agent.rbody.angularVelocity = Vector3.zero;
+            if (agent.rbody != null) {
+			    agent.rbody.velocity = Vector3.zero;
+			    agent.rbody.angularVelocity = Vector3.zero;
+            }
 			
 		}
 		//Pair-wise collision handling between agents
@@ -168,10 +172,44 @@ public class Main : MonoBehaviour {
 		Grid.instance.walkBack = walkBack;
 		Grid.instance.skipNodeIfSeeNext = skipNodeIfSeeNext;
 		Grid.instance.smoothTurns = smoothTurns;
+    }
 
-		Grid.instance.dt = customTimeStep ? timeStep : Time.deltaTime;
+    void Update() {
+        Grid.instance.solver = solver;
+		Grid.instance.solverEpsilon = epsilon;
+		Grid.instance.solverMaxIterations = solverMaxIterations;
 
-	}
+        float baseStep = customTimeStep ? timeStep : Time.deltaTime;
+        if (customTimeStep) {
+            // If custom time step is used, we just run once with that step? 
+            // Or do we want to scale it? 
+            // Assuming simulationSpeed helps multiply the effectiveness or frequency:
+            // Let's treat simulationSpeed as a multiplier for wall-clock time accumulation.
+            
+            accumulatedTime += Time.deltaTime * simulationSpeed;
+            while (accumulatedTime >= timeStep) {
+                StepSimulation(timeStep);
+                accumulatedTime -= timeStep;
+            }
+        } else {
+            // Using Time.deltaTime variable steps.
+            // If speed is 2.0, we pass 2*dt ? Or run update twice? 
+            // Running update twice is more stable for physics than passing a huge dt.
+            
+            // Current CrowdSim implementation uses `Grid.instance.dt` in calculations.
+            // If dt is too large, LCP might become unstable.
+            // Safe approach: accumulate time and step with a fixed maximum dt (e.g. 0.02s)
+            
+            accumulatedTime += Time.deltaTime * simulationSpeed;
+            float maxStep = 0.033f; // 30 fps min
+            
+            while(accumulatedTime > 0) {
+                 float step = Mathf.Min(accumulatedTime, maxStep);
+                 StepSimulation(step);
+                 accumulatedTime -= step;
+            }
+        }
+    }
 	public void AddToAgentList(Agent agent)
 	{
 		agentList.Add(agent);
