@@ -24,6 +24,14 @@ public class Vision : MonoBehaviour
 
     // TODO_ANTON: Let each agent hold a data collector for its own data!
 
+    [Header("Settings")]
+    public float checkInterval = 0.2f; // Check 5 times per second by default
+    public string targetTag = "sign";
+    public LayerMask obstacleMask; // Set this in Inspector!
+
+    private float nextCheckTime = 0f;
+    private Agent parentAgent; // specific reference to the Agent script
+
     public Vector3 axis = Vector3.forward;
     [Range(0f, 180f)] public float angle = 60f; // full angle in degrees
     public float radius = 5f;
@@ -40,67 +48,90 @@ public class Vision : MonoBehaviour
         // ensure agentId assigned
         agentId = nextAgentId++;
 
+        // Robustly find parent agent
+        parentAgent = GetComponentInParent<Agent>();
+        if (parentAgent == null) {
+            Debug.LogError($"Vision component on {gameObject.name} could not find an Agent in parent hierarchy!");
+        }
+
         // try to find components if not assigned
         if (sign == null)
-            sign = GameObject.FindWithTag("sign");
+            sign = GameObject.FindWithTag(targetTag);
         if (vca == null)
             vca = FindObjectOfType<VisibilityVolume>();
 
         dataCollector = FindObjectOfType<DataCollector>();
-        dataCollector.dataRecord.global.totalAgents++; // Increment total agents in DataCollector
+        if(dataCollector != null)
+             dataCollector.dataRecord.global.totalAgents++;
     }
 
     // Start is called before the first frame update
     void Start()
     {
         // Get the agent type from the GameObject's name
-        // Get the parent GameObject's name (or root if you want the topmost parent)
-        agentType = transform.parent != null ? transform.parent.gameObject.name : gameObject.name;
-        // Debug.Log("Agent Type: " + agentType + ", ID: " + agentId);
+        // Use robust reference
+        if (parentAgent != null) {
+            agentType = parentAgent.gameObject.name;
+        } else {
+             agentType = transform.parent != null ? transform.parent.gameObject.name : gameObject.name;
+        }
 
         // Set the agent ID in the DataCollector
-        if (dataCollector != null)
+        if (dataCollector != null && parentAgent != null)
         {
             dataCollector.dataRecord.global.signComprehensionTime = comprehensionTime; // Set the comprehension time in the global data
-            int startNode = transform.parent.GetComponent<Agent>().path[0]; // Assuming the first node in the path is the start node
-            int goalNode = transform.parent.GetComponent<Agent>().path[^1]; // Assuming the last node in the path is the goal node
-            float agentHeight = transform.parent.GetComponent<CapsuleCollider>().height; // Get the agent's height
-            float agentEyeHeight = transform.transform.position.y; // Get the agent's eye height
+            
+            // Safe access to path
+            int startNode = -1;
+            int goalNode = -1;
+            if (parentAgent.path != null && parentAgent.path.Count > 0) {
+                startNode = parentAgent.path[0]; 
+                goalNode = parentAgent.path[^1];
+            }
+            
+            float agentHeight = 0f;
+            var collider = parentAgent.GetComponent<CapsuleCollider>();
+            if (collider != null) agentHeight = collider.height;
+
+            float agentEyeHeight = transform.position.y; // Get the agent's eye height
+            
             agentData = new AgentData(agentId, agentType, startNode, goalNode, agentHeight, agentEyeHeight);
             dataCollector.dataRecord.agents.Add(agentData);
+            
+            // Set name for debugging
+            parentAgent.gameObject.name = agentType + "_" + agentId;
         }
         else
         {
-            Debug.LogError("DataCollector not found in the scene!");
+            if (dataCollector == null) Debug.LogError("DataCollector not found in the scene!");
         }
 
-        // Set the parent GameObject's name as the agent type and ID
-        if (transform.parent != null)
-        {
-            transform.parent.gameObject.name = agentType + "_" + agentId;
-        }
-
-
-        // Find the GameObject with the tag "sign" and set it as the target
-        sign = GameObject.FindWithTag("sign");
+        // Find the GameObject with the tag and set it as the target
+        if (sign == null) // might have been found in Awake
+             sign = GameObject.FindWithTag(targetTag);
 
         if (sign == null)
         {
-            Debug.LogError("No GameObject with tag 'sign' found!");
+            Debug.LogError($"No GameObject with tag '{targetTag}' found!");
         }
-
-        // Get the VisibilityArea component
-        vca = sign.GetComponent<VisibilityVolume>();
-
-        if (vca == null)
+        else 
         {
-            Debug.LogError("No VisibilityArea component found on the target!");
+            // Get the VisibilityArea component
+            vca = sign.GetComponent<VisibilityVolume>();
+            if (vca == null) Debug.LogError("No VisibilityVolume component found on the target!");
         }
+        
+        // Randomize start check time slightly to spread load across frames for thousands of agents
+        nextCheckTime = Time.time + Random.Range(0f, checkInterval);
     }
 
     // Update is called once per frame
     void Update()
     {        
+        // THROTTLING: Only run logic if interval has passed
+        if (Time.time < nextCheckTime) return;
+        nextCheckTime = Time.time + checkInterval;
+
         bool currentlyInVCA = IsWithinVolume(transform.position);
 
         // Check for VCA entry
@@ -108,22 +139,17 @@ public class Vision : MonoBehaviour
         {
             timeStampEnteredVCA = Time.time; // Record the time when the agent enters the VCA
             isInVCA = true; // Mark as currently in VCA
-            dataCollector.dataRecord.global.inVcaCount++; // Increment the inVCA count in the DataCollector
-            // Debug.Log(agentType + ", ID: " + agentId + ", entered VCA at: " + timeStampEnteredVCA);
+            if (dataCollector != null) dataCollector.dataRecord.global.inVcaCount++; 
         }
 
         // Check if the agent is currently in the VCA
         if (currentlyInVCA && isInVCA)
         {
-            // Time spent in VCA
-            //Debug.Log(agentType + ", ID: " + agentId + ", time in VCA: " + (Time.time - timeStampEnteredVCA));
-
             // Check if the sign is visible
             if (!hasSeenSign && IfInVcaAndSignIsVisible(transform.position))
             {
                 isVisible = true; // Mark as visible
                 hasSeenSign = true; // Mark as seen so it won't count again
-                // Debug.Log(agentType + ", ID: " + agentId + ", can see the sign.");
             }
 
             // If the agent has seen the sign, check if it remains visible
@@ -133,8 +159,7 @@ public class Vision : MonoBehaviour
                 if (timeStampEnteredVCA > 0 && Time.time - timeStampEnteredVCA >= comprehensionTime)
                 {
                     isVisible = true; // Mark as visible after comprehension time
-                    agentData.sawSign = true; // Mark that the agent saw the sign
-                    // Debug.Log(agentType + ", ID: " + agentId + ", can see the sign after comprehension time.");
+                    if (agentData != null) agentData.sawSign = true; 
                 }
             }
 
@@ -142,7 +167,6 @@ public class Vision : MonoBehaviour
             if (hasSeenSign && !IfInVcaAndSignIsVisible(transform.position))
             {
                 isVisible = false; // Mark as not visible if the sign is not in view
-                // Debug.Log(agentType + ", ID: " + agentId + ", cannot see the sign anymore.");
             }
         }
 
@@ -151,19 +175,16 @@ public class Vision : MonoBehaviour
         {
             timeStampExitedVCA = Time.time;
             isInVCA = false;
-            // Debug.Log(agentType + ", ID: " + agentId + ", exited VCA at: " + timeStampExitedVCA);
 
             // Calculate time spent in VCA
             timeInVCA = timeStampExitedVCA - timeStampEnteredVCA;
-            agentData.timeInVCA = timeInVCA; // Store the time spent in VCA in the AgentData
-            // Debug.Log(agentType + ", ID: " + agentId + ", time spent in VCA: " + timeInVCA);
+            if (agentData != null) agentData.timeInVCA = timeInVCA; 
 
             // Reset visibility and counters
             isVisible = false;
             hasSeenSign = false;
             timesInVCACounter++;
-            agentData.timesInVCA = timesInVCACounter; // Store the number of times in VCA in the AgentData
-            // Debug.Log(agentType + ", ID: " + agentId + ", has been in the VCA " + timesInVCACounter + " times.");
+            if (agentData != null) agentData.timesInVCA = timesInVCACounter; 
         }
     }
 
@@ -173,7 +194,6 @@ public class Vision : MonoBehaviour
         // Defensive checks
         if (sign == null || vca == null)
         {
-            // missing required objects, treat as not visible
             return false;
         }
 
@@ -181,49 +201,41 @@ public class Vision : MonoBehaviour
         Vector3 directionToSign = (sign.transform.position - origin).normalized;
 
         // Field of View check (120 degrees)
-        bool toggleFov = true; // Toggle for Field of View (FoV)
-        float fovAngle = 120f; // Field of View angle in degrees
+        // ... (FoV visualization removed/reduced for performance in production, or kept if needed)
+        // bool toggleFov = true; 
+        float fovAngle = 120f; 
         float halfFov = fovAngle / 2f;
         float angleToSign = Vector3.Angle(transform.forward, directionToSign);
 
-        // Visualize the Field of View (FoV) cone
-        if (toggleFov)
+        if (angleToSign > halfFov)
         {
-            Debug.DrawRay(origin, transform.forward * vca.ViewingDistance, Color.blue);
-            Debug.DrawRay(origin, Quaternion.Euler(0, -halfFov, 0) * transform.forward * vca.ViewingDistance, Color.blue);
-            Debug.DrawRay(origin, Quaternion.Euler(0, halfFov, 0) * transform.forward * vca.ViewingDistance, Color.blue);
-            Debug.DrawRay(origin, directionToSign * vca.ViewingDistance, Color.red);
-        }
-
-        if (toggleFov && angleToSign > halfFov)
-        {
-            // Sign is outside the FoV cone
-            // Debug.Log(agentType + ", ID: " + agentId + ", sign is outside FoV.");
             return false;
         }
 
-        string[] layerNames = { "Obstacle", "Agent" };
-        int mask = LayerMask.GetMask(layerNames);
+        // Use the mask from Inspector
+        // Automatically default to Default+Obstacle+Agent if nothing set? 
+        // LayerMask defaults to 0 (Nothing) which is bad. 
+        // If 0, let's fallback or assume user set it. 
+        // Actually LayerMask value 0 is "Default" layer usually? No, it's bitmask. 
+        // If mask.value == 0, it means NO layers. We should probably set a default in Awake or use hardcoded if 0.
+        int mask = obstacleMask.value;
+        if (mask == 0) {
+             string[] layerNames = { "Obstacle", "Agent", "Default" };
+             mask = LayerMask.GetMask(layerNames);
+        }
 
         if (IsWithinVolume(origin))
         {
-            // Debug.Log(agentType + ", ID: " + agentId + ", is within the Visibility Area (VCA) of the sign.");
             if (Physics.Raycast(origin, directionToSign, out hit, vca.ViewingDistance, mask))
             {
-                // Draw the ray if agent is within the Visibility Area (VCA) but not hitting the sign
-                Debug.DrawRay(origin, directionToSign * vca.ViewingDistance, Color.red);
-
                 if (hit.collider.gameObject == sign)
                 {
-                    // Log the hit information
-                    // Debug.Log(agentType + ", ID: " + agentId + ", raycast hit: " + hit.collider.gameObject.name);
-                    // Check if the ray is within the Visibility Area (VCA) and hitting the sign
-                    Debug.DrawRay(origin, directionToSign * vca.ViewingDistance, Color.green);
-                    return true; // Ray hit the target within the volume
+                    //Debug.DrawRay(origin, directionToSign * vca.ViewingDistance, Color.green);
+                    return true; 
                 }
             }
         }
-        return false; // Ray did not hit the target or was outside the volume
+        return false; 
     }
 
     // Method to check if a point is within the Visibility Area (VCA)
