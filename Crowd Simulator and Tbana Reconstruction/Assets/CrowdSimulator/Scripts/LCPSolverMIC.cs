@@ -7,7 +7,7 @@ using System;
 public class LCPSolverMIC : LCPSolver {
 
 
-	public double[] LCPSolver(List<List<LCPSolver.denseMatrixNode>> aList, double[,] matrixA, double[] bArray, double[] xArray, double[] lArray) {
+	public override double[] LCPSolve(List<List<LCPSolver.denseMatrixNode>> aList, double[,] matrixA, double[] bArray, double[] xArray, double[] lArray) {
 		this.A = aList; this.b = bArray; this.x = xArray; this.l = lArray;
 		double[,] M = getM (matrixA);
 
