@@ -122,22 +122,23 @@ public class Vision : MonoBehaviour
         }
         
         // Randomize start check time slightly to spread load across frames for thousands of agents
-        nextCheckTime = Time.time + Random.Range(0f, checkInterval);
+        nextCheckTime = Main.SimulationTime + Random.Range(0f, checkInterval);
     }
 
     // Update is called once per frame
     void Update()
     {        
         // THROTTLING: Only run logic if interval has passed
-        if (Time.time < nextCheckTime) return;
-        nextCheckTime = Time.time + checkInterval;
+        // Use Main.SimulationTime instead of Time.time
+        if (Main.SimulationTime < nextCheckTime) return;
+        nextCheckTime = Main.SimulationTime + checkInterval;
 
         bool currentlyInVCA = IsWithinVolume(transform.position);
 
         // Check for VCA entry
         if (currentlyInVCA && !isInVCA)
         {
-            timeStampEnteredVCA = Time.time; // Record the time when the agent enters the VCA
+            timeStampEnteredVCA = Main.SimulationTime; // Record the time when the agent enters the VCA
             isInVCA = true; // Mark as currently in VCA
             if (dataCollector != null) dataCollector.dataRecord.global.inVcaCount++; 
         }
@@ -156,7 +157,7 @@ public class Vision : MonoBehaviour
             if (hasSeenSign && IfInVcaAndSignIsVisible(transform.position))
             {
                 // If the sign is visible, check if comprehension time has passed
-                if (timeStampEnteredVCA > 0 && Time.time - timeStampEnteredVCA >= comprehensionTime)
+                if (timeStampEnteredVCA > 0 && Main.SimulationTime - timeStampEnteredVCA >= comprehensionTime)
                 {
                     isVisible = true; // Mark as visible after comprehension time
                     if (agentData != null) agentData.sawSign = true; 
@@ -173,7 +174,7 @@ public class Vision : MonoBehaviour
         // Detect exit (transition from inside to outside)
         if (!currentlyInVCA && isInVCA)
         {
-            timeStampExitedVCA = Time.time;
+            timeStampExitedVCA = Main.SimulationTime;
             isInVCA = false;
 
             // Calculate time spent in VCA

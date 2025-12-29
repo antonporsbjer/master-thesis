@@ -1255,6 +1255,14 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2135039682}
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
+      propertyPath: solver
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
+      propertyPath: timeStep
+      value: 0.01
+      objectReference: {fileID: 0}
+    - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: walkBack
       value: 0
       objectReference: {fileID: 0}
@@ -1287,6 +1295,10 @@ PrefabInstance:
       value: 1.25
       objectReference: {fileID: 0}
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
+      propertyPath: customTimeStep
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: roadNodeAmount
       value: 0
       objectReference: {fileID: 0}
@@ -1295,16 +1307,20 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
+      propertyPath: simulationSpeed
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: groupAgentPrefabs
       value: 
       objectReference: {fileID: 1000010616678136, guid: e9b1880a2e8ae91459ca6d4c7033802e, type: 3}
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: maxNumberOfAgents
-      value: 1000
+      value: 5000
       objectReference: {fileID: 0}
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: skipNodeIfSeeNext
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: showSplattedDensity
@@ -2914,8 +2930,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ccf3a484255ace48a2dff8a02383d1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  totalRuns: 1
-  agentsPerRun: 1500
+  totalRuns: 4
+  agentsPerRun: 500
   extraWaitAfterSpawnSeconds: 5
   dataCollector: {fileID: 1321634896}
 --- !u!4 &1669032649
@@ -3848,7 +3864,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8265780763492419663, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -10.69
+      value: -3.38
       objectReference: {fileID: 0}
     - target: {fileID: 8265780763492419663, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
       propertyPath: m_LocalPosition.y
@@ -3856,7 +3872,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8265780763492419663, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 8.67
+      value: 9.74
       objectReference: {fileID: 0}
     - target: {fileID: 8265780763492419663, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
       propertyPath: m_LocalRotation.w
@@ -3898,10 +3914,11 @@ SceneRoots:
   - {fileID: 1808245539}
   - {fileID: 737229108}
   - {fileID: 688376840}
+  - {fileID: 1669032649}
+  - {fileID: 1321634897}
   - {fileID: 357933059}
   - {fileID: 7897709650830437546}
   - {fileID: 677361117}
-  - {fileID: 1321634897}
   - {fileID: 1530378654}
   - {fileID: 84406676}
   - {fileID: 1245241151}
@@ -3916,4 +3933,3 @@ SceneRoots:
   - {fileID: 924775401}
   - {fileID: 143663864}
   - {fileID: 342249468}
-  - {fileID: 1669032649}

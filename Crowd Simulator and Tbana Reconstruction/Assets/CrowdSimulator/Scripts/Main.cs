@@ -115,9 +115,14 @@ public class Main : MonoBehaviour {
 	**/
 	[Range(0.1f, 10f)]
     public float simulationSpeed = 1.0f;
+    
+    // Global simulation time tracker
+    public static float SimulationTime = 0f;
+
     private float accumulatedTime = 0f;
 
     void StepSimulation(float dt) {
+        SimulationTime += dt;
         Grid.instance.dt = dt;
         
         // Update grid with new density and velocity values
