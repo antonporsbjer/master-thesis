@@ -20,6 +20,18 @@ public class VisibilityVolume : MonoBehaviour
     public float randomYawMin = 0f;
     public float randomYawMax = 90f;
 
+    // Discretization parameters
+    [Header("Signage Discretization")]
+    public bool useDiscretization = true;
+    public float signWidth = 2.0f;
+    public float signHeight = 0.5f;
+    public float gridStep = 0.1f; // 0.01f is too fine for real-time raycasting
+    public float comprehensionTime = 1.0f; // Minimum required human comprehension time (t)
+    public bool showDiscreteNodesGizmo = true;
+    
+    [HideInInspector]
+    public List<Vector3> discreteNodes = new List<Vector3>();
+
     void Awake()
     {
         // Find the DataCollector in the scene
@@ -52,9 +64,47 @@ public class VisibilityVolume : MonoBehaviour
         dataCollector.dataRecord.global.signPositionZ = transform.position.z; // Set the sign Z position in the global data
         dataCollector.dataRecord.global.vcaDistance = ViewingDistance; // Set the viewing distance in the global data
         dataCollector.dataRecord.global.vcaAngle = ThetaDegrees; // Set the viewing angle in the global data
+        dataCollector.dataRecord.global.signComprehensionTime = comprehensionTime; // Set the comprehension time
 
         // Initialize the volume parameters
         Theta = ThetaDegrees * Mathf.Deg2Rad; // Convert angle to radians
+        
+        // Generate discrete nodes for raycasting
+        if (useDiscretization)
+        {
+            GenerateDiscreteNodes();
+        }
+    }
+
+    private void GenerateDiscreteNodes()
+    {
+        discreteNodes.Clear();
+        
+        // Ensure strictly positive step to avoid infinite loops
+        if (gridStep <= 0.001f) gridStep = 0.01f;
+
+        // Calculate half dimensions
+        float halfWidth = signWidth * 0.5f;
+        float halfHeight = signHeight * 0.5f;
+
+        // Determine step count
+        int numStepsX = Mathf.CeilToInt(signWidth / gridStep);
+        int numStepsY = Mathf.CeilToInt(signHeight / gridStep);
+        
+        // To precisely center the grid, we will distribute nodes evenly
+        // but if width/height is exactly divisible by gridStep, we might need numSteps+1 points to cover the edges
+        // Let's iterate from -half to +half
+        for (float x = -halfWidth; x <= halfWidth + 0.001f; x += gridStep)
+        {
+            for (float y = -halfHeight; y <= halfHeight + 0.001f; y += gridStep)
+            {
+                // Local position
+                Vector3 localPos = new Vector3(x, y, 0f);
+                // Convert to world position using the sign's transform
+                Vector3 worldPos = transform.TransformPoint(localPos);
+                discreteNodes.Add(worldPos);
+            }
+        }
     }
 
     // Update is called once per frame
@@ -81,6 +131,43 @@ public class VisibilityVolume : MonoBehaviour
         // draw cone rim (circle at angle on sphere)
         DrawConeGizmo(ViewingDistance, halfThetaRad, origin, normal, u, v);
         DrawConeGizmo(-ViewingDistance, halfThetaRad, origin, normal, u, v);
+
+        // Draw discrete nodes grid if enabled
+        if (useDiscretization && showDiscreteNodesGizmo)
+        {
+            Gizmos.color = Color.yellow;
+            // Draw a boundary box representing the sign surface
+            Matrix4x4 oldGizmosMatrix = Gizmos.matrix;
+            Gizmos.matrix = transform.localToWorldMatrix;
+            Gizmos.DrawWireCube(Vector3.zero, new Vector3(signWidth, signHeight, 0.01f));
+            Gizmos.matrix = oldGizmosMatrix;
+
+            // Draw individual nodes
+            Gizmos.color = Color.red;
+            if (Application.isPlaying)
+            {
+                // If playing, use the generated world-space list
+                foreach (var node in discreteNodes)
+                {
+                    Gizmos.DrawSphere(node, 0.02f);
+                }
+            }
+            else
+            {
+                // In editor mode (not playing), calculate them dynamically so they update in real-time
+                float hw = signWidth * 0.5f;
+                float hh = signHeight * 0.5f;
+                float step = gridStep > 0.01f ? gridStep : 0.1f;
+                for (float x = -hw; x <= hw + 0.001f; x += step)
+                {
+                    for (float y = -hh; y <= hh + 0.001f; y += step)
+                    {
+                        Vector3 wPos = transform.TransformPoint(new Vector3(x, y, 0f));
+                        Gizmos.DrawSphere(wPos, 0.02f);
+                    }
+                }
+            }
+        }
     }
 
     void DrawConeGizmo(float radius, float halfThetaRad, Vector3 p, Vector3 n, Vector3 u, Vector3 v)

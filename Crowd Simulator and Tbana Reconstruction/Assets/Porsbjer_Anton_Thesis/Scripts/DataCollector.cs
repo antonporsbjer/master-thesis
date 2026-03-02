@@ -39,6 +39,9 @@ public class AgentData
     public float timeInVCA;
     public int timesInVCA;
     public bool sawSign;
+    public int totalNodesNavigated;
+    public int nodesWithDetection;
+    public float rdEffective => totalNodesNavigated > 0 ? (float)nodesWithDetection / totalNodesNavigated : 0f;
 
     public AgentData(int id, string agentType, int start, int goal, float agentHeight, float agentEyeHeight)
     {
@@ -51,6 +54,8 @@ public class AgentData
         timeInVCA = 0f; // Initialize time in VCA
         timesInVCA = 0; // Initialize times in VCA
         sawSign = false; // Initialize as not seeing the sign
+        totalNodesNavigated = 0;
+        nodesWithDetection = 0;
     }
 }
 
@@ -81,18 +86,66 @@ public class DataCollector : MonoBehaviour
             string folderPath = Application.persistentDataPath;
             string timePart = dataRecord.global != null ? dataRecord.global.timestamp.ToString("yyyy-MM-dd_HH.mm.ss") : DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
             string runPart = runIndex > 0 ? $"_run{runIndex}" : "";
-            string fileName = $"visibility_data_{timePart}{runPart}.json";
-            string filePath = Path.Combine(folderPath, fileName);
+            
+            // File names
+            string jsonFileName = $"visibility_data_{timePart}{runPart}.json";
+            string csvFileName  = $"visibility_data_{timePart}{runPart}.csv";
+            
+            string jsonFilePath = Path.Combine(folderPath, jsonFileName);
+            string csvFilePath  = Path.Combine(folderPath, csvFileName);
 
             if (!Directory.Exists(folderPath))
                 Directory.CreateDirectory(folderPath);
 
-            File.WriteAllText(filePath, json);
-            Debug.Log($"[DataCollector] Run saved to {filePath}");
+            // Save JSON
+            File.WriteAllText(jsonFilePath, json);
+            
+            // Build and Save CSV
+            System.Text.StringBuilder csv = new System.Text.StringBuilder();
+            
+            // Header
+            csv.AppendLine("Timestamp,RunIndex,ScenarioID,TotalAgents,VisibleSignCount,SignHeight,SignPositionX,SignPositionZ,VcaAngle,VcaDistance,SignComprehensionTime,AgentID,AgentType,StartNode,GoalNode,Height,EyeHeight,TimeInVCA,TimesInVCA,SawSign,TotalNodesNavigated,NodesWithDetection,RDEffective");
+            
+            if (dataRecord.agents != null)
+            {
+                foreach (var agent in dataRecord.agents)
+                {
+                    csv.AppendLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                        "{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22}",
+                        timePart,
+                        runIndex > 0 ? runIndex.ToString() : "N/A",
+                        dataRecord.global.scenarioId,
+                        dataRecord.global.totalAgents,
+                        dataRecord.global.visibleSignCount,
+                        dataRecord.global.signHeight,
+                        dataRecord.global.signPositionX,
+                        dataRecord.global.signPositionZ,
+                        dataRecord.global.vcaAngle,
+                        dataRecord.global.vcaDistance,
+                        dataRecord.global.signComprehensionTime,
+                        agent.agentId,
+                        agent.type,
+                        agent.startNode,
+                        agent.goalNode,
+                        agent.height,
+                        agent.eyeHeight,
+                        agent.timeInVCA,
+                        agent.timesInVCA,
+                        agent.sawSign,
+                        agent.totalNodesNavigated,
+                        agent.nodesWithDetection,
+                        agent.rdEffective
+                    ));
+                }
+            }
+            
+            File.WriteAllText(csvFilePath, csv.ToString());
+
+            Debug.Log($"[DataCollector] Run saved to {jsonFilePath} and {csvFilePath}");
         }
         catch (Exception ex)
         {
-            Debug.LogError($"[DataCollector] Failed to save JSON: {ex.Message}");
+            Debug.LogError($"[DataCollector] Failed to save JSON/CSV: {ex.Message}");
         }
     }
 
@@ -108,7 +161,7 @@ public class DataCollector : MonoBehaviour
         // clear agent list and reset globals
         dataRecord.agents.Clear();
         dataRecord.global = new GlobalData { scenarioId = scenario };
-  }
+    }
     
     private void Awake()
     {

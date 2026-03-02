@@ -15,9 +15,14 @@ public class Vision : MonoBehaviour
     private float timeStampEnteredVCA = 0.0f; // Timestamp when the VCA was entered
     private float timeStampExitedVCA = 0.0f; // Timestamp when the VCA was exited
     private float timeInVCA = 0.0f; // Time spent in the Visibility Area (VCA)
-    private readonly float comprehensionTime = 1.0f; // Comprehension time to consider the sign visible
+    private float comprehensionTime = 1.0f; // Comprehension time to consider the sign visible
     private bool isVisible = false; // Flag to check if the sign is visible
     private string agentType; // Type of agent (e.g., "WheelchairAgent", "AdultFemaleAgent", etc.)
+    private HashSet<int> nodesSeenSign = new HashSet<int>(); // Specific subset of nodes where effective signage detection occurred
+
+    // Discretization parameters
+    public float criticalThreshold = 0.23f; // 23% Detection Area Ratio
+    private float continuousExposureTime = 0f; // Time the DA ratio constraint is met continuously
 
     DataCollector dataCollector; // Reference to the DataCollector
     AgentData agentData; // Reference to the AgentData for this agent
@@ -56,6 +61,14 @@ public class Vision : MonoBehaviour
         // Get the agent type from the GameObject's name
         // Get the parent GameObject's name (or root if you want the topmost parent)
         agentType = transform.parent != null ? transform.parent.gameObject.name : gameObject.name;
+        
+        // Demographic specific eye level definitions
+        float defaultEyeLevel = transform.localPosition.y;
+        if (agentType.Contains("Male")) defaultEyeLevel = 1.58f;
+        else if (agentType.Contains("Female")) defaultEyeLevel = 1.45f;
+        else if (agentType.Contains("Wheelchair")) defaultEyeLevel = 1.17f;
+        
+        transform.localPosition = new Vector3(transform.localPosition.x, defaultEyeLevel, transform.localPosition.z);
         // Debug.Log("Agent Type: " + agentType + ", ID: " + agentId);
 
         // Set the agent ID in the DataCollector
@@ -96,6 +109,10 @@ public class Vision : MonoBehaviour
         {
             Debug.LogError("No VisibilityArea component found on the target!");
         }
+        else
+        {
+            comprehensionTime = vca.comprehensionTime;
+        }
     }
 
     // Update is called once per frame
@@ -119,23 +136,46 @@ public class Vision : MonoBehaviour
             //Debug.Log(agentType + ", ID: " + agentId + ", time in VCA: " + (Time.time - timeStampEnteredVCA));
 
             // Check if the sign is visible
-            if (!hasSeenSign && IfInVcaAndSignIsVisible(transform.position))
+            if (!hasSeenSign)
             {
-                isVisible = true; // Mark as visible
-                hasSeenSign = true; // Mark as seen so it won't count again
-                // Debug.Log(agentType + ", ID: " + agentId + ", can see the sign.");
+                bool canSeeSign = false;
+                
+                // If using discretization, check DARatio. Otherwise, fall back to single raycast
+                if (vca.useDiscretization)
+                {
+                    float daRatio = CalculateDARatio(transform.position);
+                    if (daRatio >= criticalThreshold)
+                    {
+                        canSeeSign = true;
+                    }
+                }
+                else
+                {
+                    canSeeSign = IfInVcaAndSignIsVisible(transform.position);
+                }
+
+                if (canSeeSign)
+                {
+                    isVisible = true; // Mark as visible
+                    continuousExposureTime += Time.deltaTime; // Increment exposure timer
+                    // Debug.Log(agentType + ", ID: " + agentId + ", can see the sign.");
+                }
+                else
+                {
+                    // Reset continuous exposure time if the sight is broken
+                    continuousExposureTime = 0f; 
+                    isVisible = false;
+                }
             }
 
-            // If the agent has seen the sign, check if it remains visible
-            if (hasSeenSign && IfInVcaAndSignIsVisible(transform.position))
+            // If the sign is visible, check if comprehension time has passed
+            // We use the new continuousExposureTime variable
+            if (!hasSeenSign && continuousExposureTime >= comprehensionTime)
             {
-                // If the sign is visible, check if comprehension time has passed
-                if (timeStampEnteredVCA > 0 && Time.time - timeStampEnteredVCA >= comprehensionTime)
-                {
-                    isVisible = true; // Mark as visible after comprehension time
-                    agentData.sawSign = true; // Mark that the agent saw the sign
-                    // Debug.Log(agentType + ", ID: " + agentId + ", can see the sign after comprehension time.");
-                }
+                isVisible = true; // Mark as visible after comprehension time
+                hasSeenSign = true; // Mark as seen so it won't count again
+                agentData.sawSign = true; // Mark that the agent saw the sign
+                // Debug.Log(agentType + ", ID: " + agentId + ", can see the sign after comprehension time.");
             }
 
             // If the agent has seen the sign but it is no longer visible
@@ -144,6 +184,18 @@ public class Vision : MonoBehaviour
                 isVisible = false; // Mark as not visible if the sign is not in view
                 // Debug.Log(agentType + ", ID: " + agentId + ", cannot see the sign anymore.");
             }
+        }
+
+        // Trace Path Analytics: Nodes Navigated & Effective Detection Nodes
+        Agent myAgent = transform.parent != null ? transform.parent.GetComponent<Agent>() : null;
+        if (myAgent != null && agentData != null)
+        {
+            agentData.totalNodesNavigated = myAgent.path != null ? myAgent.path.Count : 0;
+            if (isVisible && myAgent.path != null && myAgent.pathIndex < myAgent.path.Count)
+            {
+                nodesSeenSign.Add(myAgent.path[myAgent.pathIndex]);
+            }
+            agentData.nodesWithDetection = nodesSeenSign.Count;
         }
 
         // Detect exit (transition from inside to outside)
@@ -160,11 +212,73 @@ public class Vision : MonoBehaviour
 
             // Reset visibility and counters
             isVisible = false;
-            hasSeenSign = false;
+            // hasSeenSign = false; <- Keep this true if we want to log if they EVER saw it
+            continuousExposureTime = 0f; // Reset exposure timer upon exiting VCA
             timesInVCACounter++;
             agentData.timesInVCA = timesInVCACounter; // Store the number of times in VCA in the AgentData
             // Debug.Log(agentType + ", ID: " + agentId + ", has been in the VCA " + timesInVCACounter + " times.");
         }
+    }
+
+    // Method to calculate the Detection Area Ratio based on discrete nodes
+    public float CalculateDARatio(Vector3 origin)
+    {
+        if (sign == null || vca == null || vca.discreteNodes == null || vca.discreteNodes.Count == 0)
+        {
+            return 0f;
+        }
+
+        Vector3 directionToSign = (sign.transform.position - origin).normalized;
+
+        // Field of View check (120 degrees)
+        float fovAngle = 120f; 
+        float halfFov = fovAngle / 2f;
+        float angleToSign = Vector3.Angle(transform.forward, directionToSign);
+
+        if (angleToSign > halfFov)
+        {
+            return 0f; // Outside Field of View
+        }
+
+        if (!IsWithinVolume(origin))
+        {
+            return 0f; // Outside VCA
+        }
+
+        string[] layerNames = { "Obstacle", "Agent" };
+        int mask = LayerMask.GetMask(layerNames);
+
+        int totalNodes = vca.discreteNodes.Count;
+        int visibleNodes = 0;
+
+        foreach (var node in vca.discreteNodes)
+        {
+            Vector3 directionToNode = (node - origin).normalized;
+            
+            // Re-check FOV for the specific node just in case the sign is wide 
+            // and the edges fall out of the FOV.
+            if (Vector3.Angle(transform.forward, directionToNode) > halfFov)
+            {
+                continue; 
+            }
+
+            RaycastHit hit;
+            if (Physics.Raycast(origin, directionToNode, out hit, vca.ViewingDistance, mask))
+            {
+                if (hit.collider.gameObject == sign)
+                {
+                    visibleNodes++;
+                    Debug.DrawRay(origin, directionToNode * hit.distance, Color.green);
+                }
+                else
+                {
+                     // Debug.DrawRay(origin, directionToNode * hit.distance, Color.red); // Hit an obstacle/agent
+                }
+            }
+        }
+
+        float daRatio = (float)visibleNodes / totalNodes;
+        return daRatio;
     }
 
     // Method to check if the target point is visible from the agent's position

@@ -121,7 +121,7 @@ public class Main : MonoBehaviour {
 		// Update grid with new density and velocity values
 		Grid.instance.updateCellDensity ();
 		Grid.instance.updateVelocityNodes ();
-		//Solve linear constraint problem
+        //Solve linear constraint problem
 		Grid.instance.PsolveRenormPsolve ();
 		//Move agents
 		for (int i = agentList.Count - 1; i >= 0; i--)
