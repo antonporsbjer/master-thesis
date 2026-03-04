@@ -15,6 +15,7 @@ public class GlobalData
     public float signHeight;
     public float signPositionX;
     public float signPositionZ;
+    public float signOrientation;
     public float vcaAngle;
     public float vcaDistance;
     public float signComprehensionTime;
@@ -104,14 +105,14 @@ public class DataCollector : MonoBehaviour
             System.Text.StringBuilder csv = new System.Text.StringBuilder();
             
             // Header
-            csv.AppendLine("Timestamp,RunIndex,ScenarioID,TotalAgents,VisibleSignCount,SignHeight,SignPositionX,SignPositionZ,VcaAngle,VcaDistance,SignComprehensionTime,AgentID,AgentType,StartNode,GoalNode,Height,EyeHeight,TimeInVCA,TimesInVCA,SawSign,TotalNodesNavigated,NodesWithDetection,RDEffective");
+            csv.AppendLine("Timestamp,RunIndex,ScenarioID,TotalAgents,VisibleSignCount,SignHeight,SignPositionX,SignPositionZ,SignOrientation,VcaAngle,VcaDistance,SignComprehensionTime,AgentID,AgentType,StartNode,GoalNode,Height,EyeHeight,TimeInVCA,TimesInVCA,SawSign,TotalNodesNavigated,NodesWithDetection,RDEffective");
             
             if (dataRecord.agents != null)
             {
                 foreach (var agent in dataRecord.agents)
                 {
                     csv.AppendLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,
-                        "{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22}",
+                        "{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22},{23}",
                         timePart,
                         runIndex > 0 ? runIndex.ToString() : "N/A",
                         dataRecord.global.scenarioId,
@@ -120,6 +121,7 @@ public class DataCollector : MonoBehaviour
                         dataRecord.global.signHeight,
                         dataRecord.global.signPositionX,
                         dataRecord.global.signPositionZ,
+                        dataRecord.global.signOrientation,
                         dataRecord.global.vcaAngle,
                         dataRecord.global.vcaDistance,
                         dataRecord.global.signComprehensionTime,

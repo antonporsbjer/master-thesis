@@ -2914,8 +2914,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ccf3a484255ace48a2dff8a02383d1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  totalRuns: 1
-  agentsPerRun: 1000
+  totalRuns: 20
+  agentsPerRun: 200
   extraWaitAfterSpawnSeconds: 5
   dataCollector: {fileID: 1321634896}
 --- !u!4 &1669032649
@@ -3848,7 +3848,7 @@ PrefabInstance:
       objectReference: {fileID: 1321634896}
     - target: {fileID: 4909905871076182431, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
       propertyPath: RandomPosition
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4909905871076182431, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
       propertyPath: comprehensionTime

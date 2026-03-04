@@ -41,6 +41,13 @@ public class VisibilityVolume : MonoBehaviour
         RandomizePosition();
     }
 
+    // Helper to snap a value to a given step size (centered around 0 or snapped to nearest interval)
+    private float SnapToGrid(float value, float step)
+    {
+        if (step <= 0f) return value;
+        return Mathf.Round(value / step) * step;
+    }
+
     // public helper to (re)randomize sign position & yaw
     public void RandomizePosition()
     {
@@ -50,8 +57,16 @@ public class VisibilityVolume : MonoBehaviour
         float yaw = (Random.value < 0.5f) ? 0f : 90f;
 
         // random position within bounds
-        float x = Random.Range(signMinX, signMaxX);
-        float z = Random.Range(signMinZ, signMaxZ);
+        float randomX = Random.Range(signMinX, signMaxX);
+        float randomZ = Random.Range(signMinZ, signMaxZ);
+
+        // Snap to grid if discretization is enabled
+        float x = useDiscretization ? SnapToGrid(randomX, gridStep) : randomX;
+        float z = useDiscretization ? SnapToGrid(randomZ, gridStep) : randomZ;
+
+        // Ensure snapped values stay within bounds (just in case)
+        x = Mathf.Clamp(x, signMinX, signMaxX);
+        z = Mathf.Clamp(z, signMinZ, signMaxZ);
 
         transform.SetPositionAndRotation(new Vector3(x, transform.position.y, z), Quaternion.Euler(0f, yaw, 0f));
     }
@@ -62,6 +77,7 @@ public class VisibilityVolume : MonoBehaviour
         dataCollector.dataRecord.global.signHeight = transform.position.y; // Set the sign height in the global data
         dataCollector.dataRecord.global.signPositionX = transform.position.x; // Set the sign X position in the global data
         dataCollector.dataRecord.global.signPositionZ = transform.position.z; // Set the sign Z position in the global data
+        dataCollector.dataRecord.global.signOrientation = transform.rotation.eulerAngles.y; // Set the sign orientation in the global data
         dataCollector.dataRecord.global.vcaDistance = ViewingDistance; // Set the viewing distance in the global data
         dataCollector.dataRecord.global.vcaAngle = ThetaDegrees; // Set the viewing angle in the global data
         dataCollector.dataRecord.global.signComprehensionTime = comprehensionTime; // Set the comprehension time
@@ -76,7 +92,7 @@ public class VisibilityVolume : MonoBehaviour
         }
     }
 
-    private void GenerateDiscreteNodes()
+    public void GenerateDiscreteNodes()
     {
         discreteNodes.Clear();
         
