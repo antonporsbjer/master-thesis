@@ -3851,8 +3851,12 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4909905871076182431, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
-      propertyPath: useDiscretization
+      propertyPath: comprehensionTime
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4909905871076182431, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
+      propertyPath: useDiscretization
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4909905871076182431, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
       propertyPath: signPositionBoundary

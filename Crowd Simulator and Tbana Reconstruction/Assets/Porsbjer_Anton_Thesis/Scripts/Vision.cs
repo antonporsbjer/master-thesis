@@ -268,7 +268,8 @@ public class Vision : MonoBehaviour
                 if (hit.collider.gameObject == sign)
                 {
                     visibleNodes++;
-                    Debug.DrawRay(origin, directionToNode * hit.distance, Color.green);
+                    Color rayColor = hasSeenSign ? Color.green : Color.yellow;
+                    Debug.DrawRay(origin, directionToNode * hit.distance, rayColor);
                 }
                 else
                 {
@@ -306,7 +307,10 @@ public class Vision : MonoBehaviour
             Debug.DrawRay(origin, transform.forward * vca.ViewingDistance, Color.blue);
             Debug.DrawRay(origin, Quaternion.Euler(0, -halfFov, 0) * transform.forward * vca.ViewingDistance, Color.blue);
             Debug.DrawRay(origin, Quaternion.Euler(0, halfFov, 0) * transform.forward * vca.ViewingDistance, Color.blue);
-            Debug.DrawRay(origin, directionToSign * vca.ViewingDistance, Color.red);
+            
+            // Draw a red ray specifically to the sign (stops at the sign)
+            float distToSign = Vector3.Distance(origin, sign.transform.position);
+            Debug.DrawRay(origin, directionToSign * distToSign, Color.red);
         }
 
         if (toggleFov && angleToSign > halfFov)
@@ -324,16 +328,19 @@ public class Vision : MonoBehaviour
             // Debug.Log(agentType + ", ID: " + agentId + ", is within the Visibility Area (VCA) of the sign.");
             if (Physics.Raycast(origin, directionToSign, out hit, vca.ViewingDistance, mask))
             {
-                // Draw the ray if agent is within the Visibility Area (VCA) but not hitting the sign
-                Debug.DrawRay(origin, directionToSign * vca.ViewingDistance, Color.red);
-
                 if (hit.collider.gameObject == sign)
                 {
                     // Log the hit information
                     // Debug.Log(agentType + ", ID: " + agentId + ", raycast hit: " + hit.collider.gameObject.name);
                     // Check if the ray is within the Visibility Area (VCA) and hitting the sign
-                    Debug.DrawRay(origin, directionToSign * vca.ViewingDistance, Color.green);
+                    Color rayColor = hasSeenSign ? Color.green : Color.yellow;
+                    Debug.DrawRay(origin, directionToSign * hit.distance, rayColor);
                     return true; // Ray hit the target within the volume
+                }
+                else
+                {
+                    // Draw the ray if agent is within the Visibility Area (VCA) but hits something else
+                    Debug.DrawRay(origin, directionToSign * hit.distance, Color.red);
                 }
             }
         }
