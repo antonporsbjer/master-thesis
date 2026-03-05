@@ -99,6 +99,10 @@ def plot_heatmaps(df_subset, title_prefix, filename_prefix):
         ax.set_xlabel('X')
         if i == 0:
             ax.set_ylabel('Y (SignPositionZ)')
+            
+        # Hardcode the specific axis limits requested by the user
+        ax.set_xlim(-12, 5)
+        ax.set_ylim(-8, 8)
         ax.set_aspect('equal')
 
     # Add a global colorbar

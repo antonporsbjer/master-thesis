@@ -2363,11 +2363,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   runBatchSimulation: 1
-  simulationDurationPerRun: 30
+  simulationDurationPerRun: 1
   timeScaleMultiplier: 5
   minX: -12
-  maxX: 8
-  minZ: -5
+  maxX: 5
+  minZ: -8
   maxZ: 8
   stepSize: 1
   orientations:
@@ -3926,7 +3926,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8265780763492419663, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -13.05
+      value: -3.68
       objectReference: {fileID: 0}
     - target: {fileID: 8265780763492419663, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
       propertyPath: m_LocalPosition.y
@@ -3934,7 +3934,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8265780763492419663, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -5
+      value: 1.62
       objectReference: {fileID: 0}
     - target: {fileID: 8265780763492419663, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
       propertyPath: m_LocalRotation.w
