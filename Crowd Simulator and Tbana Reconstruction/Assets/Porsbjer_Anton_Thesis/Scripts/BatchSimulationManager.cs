@@ -9,6 +9,10 @@ public class BatchSimulationManager : MonoBehaviour
     public float simulationDurationPerRun = 30f; // Seconds to run each scenario
     public float timeScaleMultiplier = 5f; // Run faster than real-time
     
+    [Header("Run Limits")]
+    [Tooltip("If greater than 0, the batch will stop after this many complete runs. Useful for chunking tests overnight.")]
+    public int maxRunsToExecute = 0;
+    
     [Header("Grid Configuration")]
     public float minX = -5f;
     public float maxX = 5f;
@@ -73,6 +77,8 @@ public class BatchSimulationManager : MonoBehaviour
         float currentZ = minZ;
 
         // Iterate Orientations
+        int processedRunsCount = 0;
+
         foreach (float yaw in orientations)
         {
             // Iterate Z
@@ -81,6 +87,13 @@ public class BatchSimulationManager : MonoBehaviour
                 // Iterate X
                 for (currentX = minX; currentX <= maxX; currentX += stepSize)
                 {
+                    // Check if we hit the user-specified limit
+                    if (maxRunsToExecute > 0 && processedRunsCount >= maxRunsToExecute)
+                    {
+                        Debug.Log($"[BatchSimulationManager] Reached the maximum run limit of {maxRunsToExecute}. Ending batch early.");
+                        goto BatchFinished; // Jump out of all nested loops
+                    }
+
                     Debug.Log($"[BatchSimulationManager] Run {runCounter}: Placing sign at ({currentX}, {currentZ}) Yaw: {yaw}");
                     
                     // 1. Reset Global Data
@@ -135,14 +148,16 @@ public class BatchSimulationManager : MonoBehaviour
                     // 6. Save Data
                     dataCollector.SaveRun(runCounter);
                     runCounter++;
+                    processedRunsCount++;
                 }
             }
         }
 
+        BatchFinished:
         // Cleanup
         Time.timeScale = 1f;
         isBatching = false;
-        Debug.Log("[BatchSimulationManager] Batch simulation completed.");
+        Debug.Log($"[BatchSimulationManager] BATCH COMPLETE! Processed {processedRunsCount} runs in total.");
         
         #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
