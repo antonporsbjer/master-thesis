@@ -20,9 +20,10 @@ public class BatchSimulationManager : MonoBehaviour
     public float maxZ = 5f;
     public float stepSize = 1f;
     
-    [Header("Simulated Orientations (Degrees)")]
-    public float[] orientations = { 0f, 90f }; // Horizontal and Vertical
-
+    [Header("Simulated Sign Orientations (Degrees)")]
+    public OrientationType orientationType = OrientationType.Horizontal;
+    public enum OrientationType { Horizontal = 0, Vertical = 90 }
+    
     [Header("References")]
     public GameObject signObject;
     public DataCollector dataCollector;
@@ -75,81 +76,79 @@ public class BatchSimulationManager : MonoBehaviour
 
         float currentX = minX;
         float currentZ = minZ;
+        float yaw = (float)orientationType;
 
         // Iterate Orientations
         int processedRunsCount = 0;
 
-        foreach (float yaw in orientations)
+        // Iterate Z
+        for (currentZ = minZ; currentZ <= maxZ; currentZ += stepSize)
         {
-            // Iterate Z
-            for (currentZ = minZ; currentZ <= maxZ; currentZ += stepSize)
+            // Iterate X
+            for (currentX = minX; currentX <= maxX; currentX += stepSize)
             {
-                // Iterate X
-                for (currentX = minX; currentX <= maxX; currentX += stepSize)
+                // Check if we hit the user-specified limit
+                if (maxRunsToExecute > 0 && processedRunsCount >= maxRunsToExecute)
                 {
-                    // Check if we hit the user-specified limit
-                    if (maxRunsToExecute > 0 && processedRunsCount >= maxRunsToExecute)
-                    {
-                        Debug.Log($"[BatchSimulationManager] Reached the maximum run limit of {maxRunsToExecute}. Ending batch early.");
-                        goto BatchFinished; // Jump out of all nested loops
-                    }
-
-                    Debug.Log($"[BatchSimulationManager] Run {runCounter}: Placing sign at ({currentX}, {currentZ}) Yaw: {yaw}");
-                    
-                    // 1. Reset Global Data
-                    dataCollector.ResetForNextRun();
-                    
-                    // 2. Clear out any existing agents from the previous run
-                    ClearExistingAgents();
-
-                    // 3. Move the sign
-                    Vector3 targetPosition = new Vector3(currentX, signObject.transform.position.y, currentZ);
-                    Quaternion targetRotation = Quaternion.Euler(0, yaw, 0);
-
-                    // If the sign relies on physics, move its rigidbody directly so it doesn't fight our Transform updates
-                    Rigidbody signRb = signObject.GetComponent<Rigidbody>();
-                    if (signRb != null)
-                    {
-                        signRb.MovePosition(targetPosition);
-                        signRb.MoveRotation(targetRotation);
-                        
-                        // Force it to sleep to kill lingering physics forces
-                        signRb.velocity = Vector3.zero;
-                        signRb.angularVelocity = Vector3.zero;
-                    }
-                    else
-                    {
-                        signObject.transform.position = targetPosition;
-                        signObject.transform.rotation = targetRotation;
-                    }
-
-                    // 4. Force global data capture for this new sign position
-                    VisibilityVolume vca = signObject.GetComponent<VisibilityVolume>();
-                    if (vca != null)
-                    {
-                        // Update discrete nodes position!
-                        if (vca.useDiscretization)
-                        {
-                            vca.GenerateDiscreteNodes();
-                        }
-
-                        dataCollector.dataRecord.global.signHeight = signObject.transform.position.y;
-                        dataCollector.dataRecord.global.signPositionX = currentX;
-                        dataCollector.dataRecord.global.signPositionZ = currentZ;
-                        dataCollector.dataRecord.global.signOrientation = yaw;
-                        dataCollector.dataRecord.global.vcaDistance = vca.ViewingDistance;
-                        dataCollector.dataRecord.global.vcaAngle = vca.ThetaDegrees;
-                        dataCollector.dataRecord.global.signComprehensionTime = vca.comprehensionTime;
-                    }
-
-                    // 5. Let the simulation run for the specified duration (scaled time)
-                    yield return new WaitForSeconds(simulationDurationPerRun);
-
-                    // 6. Save Data
-                    dataCollector.SaveRun(runCounter);
-                    runCounter++;
-                    processedRunsCount++;
+                    Debug.Log($"[BatchSimulationManager] Reached the maximum run limit of {maxRunsToExecute}. Ending batch early.");
+                    goto BatchFinished; // Jump out of all nested loops
                 }
+
+                Debug.Log($"[BatchSimulationManager] Run {runCounter}: Placing sign at ({currentX}, {currentZ}) Yaw: {yaw}");
+                
+                // 1. Reset Global Data
+                dataCollector.ResetForNextRun();
+                
+                // 2. Clear out any existing agents from the previous run
+                ClearExistingAgents();
+
+                // 3. Move the sign
+                Vector3 targetPosition = new Vector3(currentX, signObject.transform.position.y, currentZ);
+                Quaternion targetRotation = Quaternion.Euler(0, yaw, 0);
+
+                // If the sign relies on physics, move its rigidbody directly so it doesn't fight our Transform updates
+                Rigidbody signRb = signObject.GetComponent<Rigidbody>();
+                if (signRb != null)
+                {
+                    signRb.MovePosition(targetPosition);
+                    signRb.MoveRotation(targetRotation);
+                    
+                    // Force it to sleep to kill lingering physics forces
+                    signRb.velocity = Vector3.zero;
+                    signRb.angularVelocity = Vector3.zero;
+                }
+                else
+                {
+                    signObject.transform.position = targetPosition;
+                    signObject.transform.rotation = targetRotation;
+                }
+
+                // 4. Force global data capture for this new sign position
+                VisibilityVolume vca = signObject.GetComponent<VisibilityVolume>();
+                if (vca != null)
+                {
+                    // Update discrete nodes position!
+                    if (vca.useDiscretization)
+                    {
+                        vca.GenerateDiscreteNodes();
+                    }
+
+                    dataCollector.dataRecord.global.signHeight = signObject.transform.position.y;
+                    dataCollector.dataRecord.global.signPositionX = currentX;
+                    dataCollector.dataRecord.global.signPositionZ = currentZ;
+                    dataCollector.dataRecord.global.signOrientation = yaw;
+                    dataCollector.dataRecord.global.vcaDistance = vca.ViewingDistance;
+                    dataCollector.dataRecord.global.vcaAngle = vca.ThetaDegrees;
+                    dataCollector.dataRecord.global.signComprehensionTime = vca.comprehensionTime;
+                }
+
+                // 5. Let the simulation run for the specified duration (scaled time)
+                yield return new WaitForSeconds(simulationDurationPerRun);
+
+                // 6. Save Data
+                dataCollector.SaveRun(runCounter);
+                runCounter++;
+                processedRunsCount++;
             }
         }
 

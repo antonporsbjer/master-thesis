@@ -8,8 +8,8 @@ from scipy.interpolate import griddata
 
 # Directory containing the generated visibility CSV files
 script_dir = os.path.dirname(os.path.abspath(__file__))
-data_dir = os.path.join(script_dir, 'data')
-output_dir = os.path.join(script_dir, 'results')
+data_dir = os.path.join(script_dir, 'data/horizontal-vertical/Test1')
+output_dir = os.path.join(script_dir, 'results/horizontal-vertical')
 
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
@@ -102,7 +102,7 @@ def plot_heatmaps(df_subset, title_prefix, filename_prefix):
             
         # Hardcode the specific axis limits requested by the user
         ax.set_xlim(-12, 5)
-        ax.set_ylim(-8, 8)
+        ax.set_ylim(-8, 7)
         ax.set_aspect('equal')
 
     # Add a global colorbar
