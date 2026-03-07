@@ -2079,7 +2079,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4000011914076574, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -12.66
+      value: -11.96
       objectReference: {fileID: 0}
     - target: {fileID: 4000011914076574, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2896,8 +2896,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   runBatchSimulation: 1
-  simulationDurationPerRun: 30
-  timeScaleMultiplier: 10
+  simulationDurationPerRun: 60
+  timeScaleMultiplier: 1
   maxRunsToExecute: 288
   minX: -12
   maxX: 5
@@ -4501,6 +4501,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3206969301440980000, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4183606223468821888, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
       propertyPath: m_Name
       value: Sign

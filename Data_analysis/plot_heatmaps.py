@@ -101,8 +101,8 @@ def plot_heatmaps(df_subset, title_prefix, filename_prefix):
             ax.set_ylabel('Y (SignPositionZ)')
             
         # Hardcode the specific axis limits requested by the user
-        ax.set_xlim(-12, 5)
-        ax.set_ylim(-8, 7)
+        ax.set_xlim(5, -12)
+        ax.set_ylim(7, -8)
         ax.set_aspect('equal')
 
     # Add a global colorbar
