@@ -8,8 +8,8 @@ from scipy.interpolate import griddata
 
 # Directory containing the generated visibility CSV files
 script_dir = os.path.dirname(os.path.abspath(__file__))
-data_dir = os.path.join(script_dir, 'data/horizontal-vertical')
-output_dir = os.path.join(script_dir, 'results/horizontal-vertical')
+data_dir = os.path.join(script_dir, 'data/vertical-1sec')
+output_dir = os.path.join(script_dir, 'results/vertical-1sec')
 
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
