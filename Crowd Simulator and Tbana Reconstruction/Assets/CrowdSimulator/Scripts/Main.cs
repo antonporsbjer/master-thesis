@@ -69,6 +69,7 @@ public class Main : MonoBehaviour {
 	public bool skipNodeIfSeeNext = false;
 	public bool smoothTurns = false;
 	public bool handleCollision = false;
+	private SimulationGrid simulationGrid;
 
 	/**
 	 * Initialize simulation by taking the user's options into consideration and spawn agents.
@@ -113,6 +114,24 @@ public class Main : MonoBehaviour {
 			roadmap.spawns[i].spawner.InitializeSpawner (ref agentPrefabs, ref groupAgentPrefabs, ref shirtColorPrefab, ref roadmap, 
 											 ref agentList, xMinMax, zMinMax, agentAvoidanceRadius);
 		}
+
+		if(customTimeStep)
+		{
+			Physics.simulationMode = SimulationMode.Script;
+			Debug.Log("Simulation mode set to Script");
+		}
+
+		simulationGrid = SimulationGrid.instance;
+
+		simulationGrid.solver = solver;
+		simulationGrid.solverEpsilon = epsilon;
+		simulationGrid.solverMaxIterations = solverMaxIterations;
+		//flags
+		simulationGrid.showSplattedDensity = showSplattedDensity;
+		simulationGrid.showSplattedVelocity = showSplattedVelocity;
+		simulationGrid.walkBack = walkBack;
+		simulationGrid.skipNodeIfSeeNext = skipNodeIfSeeNext;
+		simulationGrid.smoothTurns = smoothTurns;
 	}
 	
 
@@ -120,15 +139,14 @@ public class Main : MonoBehaviour {
 	 * Main simulation loop which is called every frame
 	**/
 	void Update () {
-		SimulationGrid.instance.solver = solver;
-		SimulationGrid.instance.solverEpsilon = epsilon;
-		SimulationGrid.instance.solverMaxIterations = solverMaxIterations;
+
+		simulationGrid.dt = customTimeStep ? timeStep : Time.deltaTime;
 
 		// Update grid with new density and velocity values
-		SimulationGrid.instance.updateCellDensity ();
-		SimulationGrid.instance.updateVelocityNodes ();
+		simulationGrid.updateCellDensity ();
+		simulationGrid.updateVelocityNodes ();
 		//Solve linear constraint problem
-		SimulationGrid.instance.PsolveRenormPsolve ();
+		simulationGrid.PsolveRenormPsolve ();
 		//Move agents
 		for (int i = agentList.Count - 1; i >= 0; i--)
 		{
@@ -142,16 +160,11 @@ public class Main : MonoBehaviour {
 			agent.move(ref roadmap);
 		}
 		//Pair-wise collision handling between agents
-		SimulationGrid.instance.collisionHandling(agentList);
+		simulationGrid.collisionHandling(agentList);
 
-		//flags
-		SimulationGrid.instance.showSplattedDensity = showSplattedDensity;
-		SimulationGrid.instance.showSplattedVelocity = showSplattedVelocity;
-		SimulationGrid.instance.walkBack = walkBack;
-		SimulationGrid.instance.skipNodeIfSeeNext = skipNodeIfSeeNext;
-		SimulationGrid.instance.smoothTurns = smoothTurns;
-
-		SimulationGrid.instance.dt = customTimeStep ? timeStep : Time.deltaTime;
-
+		if(customTimeStep)
+		{
+			Physics.Simulate(simulationGrid.dt);
+		}
 	}
 }

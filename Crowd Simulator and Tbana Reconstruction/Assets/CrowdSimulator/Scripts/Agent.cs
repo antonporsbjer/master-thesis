@@ -60,7 +60,7 @@ public class Agent : MonoBehaviour {
 
 		//Which cell am i in currently?
 		calculateRowAndColumn();
-		if (!SimulationGrid.instance.colHandler && rbody != null) {
+		if (!grid.colHandler && rbody != null) {
 			Destroy (rbody);
 		}
 
@@ -82,7 +82,7 @@ public class Agent : MonoBehaviour {
 		pathIndex = 1;
 		preferredVelocity = (map.allNodes [path [pathIndex]].getTargetPoint (transform.position) - transform.position).normalized;
 		grid = SimulationGrid.instance;
-		cachedCellSize = SimulationGrid.instance.cellSize;
+		cachedCellSize = grid.cellSize;
     	cachedCellSizeSquared = cachedCellSize * cachedCellSize;
 	}
 
@@ -154,7 +154,7 @@ public class Agent : MonoBehaviour {
 	bool change = false;
 	internal void calculatePreferredVelocityMap(ref MapGen.map map) {
 		previousDirection = preferredVelocity.normalized;
-		if ((transform.position - map.allNodes[path[pathIndex]].transform.position).magnitude < map.allNodes[path[pathIndex]].getThreshold() || (SimulationGrid.instance.skipNodeIfSeeNext && canSeeNext(ref map, 1))) {
+		if ((transform.position - map.allNodes[path[pathIndex]].transform.position).magnitude < map.allNodes[path[pathIndex]].getThreshold() || (grid.skipNodeIfSeeNext && canSeeNext(ref map, 1))) {
 			//New node reached
 			collision = false;
 			pathIndex += 1;
@@ -163,20 +163,20 @@ public class Agent : MonoBehaviour {
 				done = true;
 			} else {
 				Vector3 nextDirection = ((map.allNodes [path [pathIndex]].getTargetPoint(transform.position)) - transform.position).normalized;
-				if (Vector3.Angle (previousDirection, nextDirection) > 20.0f && SimulationGrid.instance.smoothTurns) {
-					preferredVelocity = Vector3.RotateTowards (velocity.normalized, nextDirection, SimulationGrid.instance.dt*((35.0f - 400*SimulationGrid.instance.dt) * Mathf.PI / 180.0f), 15.0f).normalized;
+				if (Vector3.Angle (previousDirection, nextDirection) > 20.0f && grid.smoothTurns) {
+					preferredVelocity = Vector3.RotateTowards (velocity.normalized, nextDirection, grid.dt*((35.0f - 400*grid.dt) * Mathf.PI / 180.0f), 15.0f).normalized;
 					change = true;
 				}
 			}
-		} else if(pathIndex > 0 && SimulationGrid.instance.walkBack && !canSeeNext(ref map, 0)) { //Can we see current heading? Are we trapped?
+		} else if(pathIndex > 0 && grid.walkBack && !canSeeNext(ref map, 0)) { //Can we see current heading? Are we trapped?
 			//No. We want to go back
 			preferredVelocity = (map.allNodes[path[pathIndex-1]].getTargetPoint(transform.position) - transform.position).normalized;
 			change = false;
 		} else {
 			collision = false;
 			Vector3 nextDirection = (map.allNodes [path [pathIndex]].getTargetPoint(transform.position) - transform.position).normalized;
-			if (change && Vector3.Angle (previousDirection, nextDirection) > 20.0f && SimulationGrid.instance.smoothTurns) {
-				preferredVelocity = Vector3.RotateTowards(velocity.normalized, nextDirection, SimulationGrid.instance.dt*((35.0f - 400*SimulationGrid.instance.dt) * Mathf.PI / 180.0f),  15.0f).normalized;
+			if (change && Vector3.Angle (previousDirection, nextDirection) > 20.0f && grid.smoothTurns) {
+				preferredVelocity = Vector3.RotateTowards(velocity.normalized, nextDirection, grid.dt*((35.0f - 400*grid.dt) * Mathf.PI / 180.0f),  15.0f).normalized;
 			} else {
 				change = false;
 				preferredVelocity = (map.allNodes [path [pathIndex]].getTargetPoint(transform.position) - transform.position).normalized;
@@ -223,7 +223,7 @@ public class Agent : MonoBehaviour {
 
 		prevPos = transform.position;
 
-		Vector3 newPosition = transform.position + velocity * SimulationGrid.instance.dt;
+		Vector3 newPosition = transform.position + velocity * grid.dt;
 		newPosition.y = 0.0f;	// Lock Y position
 		transform.position = newPosition;
 
@@ -235,7 +235,7 @@ public class Agent : MonoBehaviour {
 
 	void Animate(Vector3 previousPosition)
 	{
-		float realSpeed = Vector3.Distance (transform.position, previousPosition) / Mathf.Max(SimulationGrid.instance.dt, Time.deltaTime);
+		float realSpeed = Vector3.Distance (transform.position, previousPosition) / Mathf.Max(grid.dt, grid.dt);
 		if (animator != null) {
 	
 			if (realSpeed < 0.05f) {
@@ -316,8 +316,8 @@ public class Agent : MonoBehaviour {
 		changePosition (ref map);
 		calculateRowAndColumn ();
 		setWeights ();
-		SimulationGrid.instance.cellMatrix[row, column].addVelocity(this);
-		SimulationGrid.instance.cellMatrix[row, column].addDensity (this);
+		grid.cellMatrix[row, column].addVelocity(this);
+		grid.cellMatrix[row, column].addDensity (this);
 	}
 
 
