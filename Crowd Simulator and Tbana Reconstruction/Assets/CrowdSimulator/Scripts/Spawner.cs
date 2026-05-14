@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -127,10 +127,10 @@ public class Spawner : MonoBehaviour {
 			spawnAreaAgents(rows, rowLength, node);
 			break;
 		case Method.circleSpawn:
-			agentList.AddRange(circleSpawn(numberOfAgents, circleRadius, mainScript.planeSize));
+			agentList.AddRange(circleSpawn(numberOfAgents, circleRadius, mainScript.planeSizeX, mainScript.planeSizeZ));
 			break;
 		case Method.discSpawn:
-			agentList.AddRange(discSpawn(mainScript.planeSize, circleRadius, numberOfDiscRows));
+			agentList.AddRange(discSpawn(mainScript.planeSizeX, mainScript.planeSizeZ, circleRadius, numberOfDiscRows));
 			break;
 		case Method.continuousSpawn:
 				continousSpawn(); 
@@ -229,9 +229,10 @@ public class Spawner : MonoBehaviour {
 	}
 
 	// CIRCLE SPAWN
-	internal List<Agent> circleSpawn(int numberOfAgents, float r, float planeScale){
+	internal List<Agent> circleSpawn(int numberOfAgents, float r, float planeScaleX, float planeScaleZ){
 		Color[] colors = {Color.green, Color.yellow, Color.red, Color.magenta, 0.15f*Color.white+Color.blue, Color.cyan};
 		Vector3 agentPos = new Vector3(0f, 0f, 0f);
+		float planeScale = Mathf.Min(planeScaleX, planeScaleZ);
 		if (r > planeScale* 5 - agentAvoidanceRadius) 
 		{
 			r = planeScale * 5 - agentAvoidanceRadius;
@@ -264,7 +265,7 @@ public class Spawner : MonoBehaviour {
 	}
 
 	// DISC SPAWN
-	internal List<Agent> discSpawn(float planeScale, float startRadius, int numberOfRows) {
+	internal List<Agent> discSpawn(float planeScaleX, float planeScaleZ, float startRadius, int numberOfRows) {
 		float r;
 		int numberOfAgents;
 		float d = 0.4f + agentAvoidanceRadius * 2f;
@@ -272,7 +273,7 @@ public class Spawner : MonoBehaviour {
 		for (int n = 0; n < numberOfRows; n++) {
 			r = startRadius+n*agentAvoidanceRadius*2f;
 			numberOfAgents = (int)((2*Mathf.PI*r)/d);
-			li.AddRange(circleSpawn(numberOfAgents, r, planeScale));
+			li.AddRange(circleSpawn(numberOfAgents, r, planeScaleX, planeScaleZ));
 		}
 		return li;
 	}
@@ -366,7 +367,7 @@ public class Spawner : MonoBehaviour {
 		leader.transform.position = pos;
 		List<Vector3> followerPositions = new List<Vector3> (3); 
 		followerPositions.Add (pos);
-		float usedValue = 0.6f;//Grid.instance.agentAvoidanceRadius;
+		float usedValue = 0.6f;//SimulationGrid.instance.agentAvoidanceRadius;
 		followerPositions.Add (leader.transform.TransformPoint (0.0f, 0.0f, usedValue));
 		followerPositions.Add (leader.transform.TransformPoint (0.0f, 0.0f, -usedValue));	
 		followerPositions.Add (leader.transform.TransformPoint (0.0f, 0.0f, 2*usedValue));
