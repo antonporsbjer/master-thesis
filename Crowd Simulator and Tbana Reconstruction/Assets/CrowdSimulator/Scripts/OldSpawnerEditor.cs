@@ -1,8 +1,8 @@
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(Spawner)), CanEditMultipleObjects]
-public class SpawnerEditor : Editor {
+[CustomEditor(typeof(OldSpawner)), CanEditMultipleObjects]
+public class OldSpawnerEditor : Editor {
 
     private Main mainScript;
     private SerializedObject mainSerializedObject;

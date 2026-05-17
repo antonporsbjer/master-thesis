@@ -76,7 +76,7 @@ public class Agent : MonoBehaviour {
 		
 	}
 
-	public void InitializeAgent(Vector3 pos, int start, int goal, ref MapGen.map map) {
+	public void InitializeAgent(Vector3 pos, int start, int goal, MapGen.map map) {
 		transform.position = pos;
 		path = map.shortestPaths [start] [goal]; 
 		pathIndex = 1;
@@ -137,7 +137,7 @@ public class Agent : MonoBehaviour {
 		velocity = velocity + collisionAvoidanceVelocity;
 	}
 
-	internal bool canSeeNext(ref MapGen.map map, int modifier) {
+	internal bool canSeeNext(MapGen.map map, int modifier) {
 		if (pathIndex + modifier< path.Count && pathIndex + modifier >= 0 && pathIndex + modifier < map.allNodes.Count) {
 			//Can we see next goal?
 			Vector3 next = map.allNodes[path[pathIndex+modifier]].getTargetPoint(transform.position);
@@ -151,10 +151,13 @@ public class Agent : MonoBehaviour {
 	/**
 	 * Calculate the preferred velocity by looking at desired path
 	 **/ 
-	bool change = false;
 	internal void calculatePreferredVelocityMap(ref MapGen.map map) {
+
+		bool change = false;
 		previousDirection = preferredVelocity.normalized;
-		if ((transform.position - map.allNodes[path[pathIndex]].transform.position).magnitude < map.allNodes[path[pathIndex]].getThreshold() || (grid.skipNodeIfSeeNext && canSeeNext(ref map, 1))) {
+		Vector3 pos = tr.position;
+
+		if (map.allNodes[path[pathIndex]].IsAgentInsideArea(pos) || (grid.skipNodeIfSeeNext && canSeeNext(map, 1))) {
 			//New node reached
 			collision = false;
 			pathIndex += 1;
@@ -168,7 +171,7 @@ public class Agent : MonoBehaviour {
 					change = true;
 				}
 			}
-		} else if(pathIndex > 0 && grid.walkBack && !canSeeNext(ref map, 0)) { //Can we see current heading? Are we trapped?
+		} else if(pathIndex > 0 && grid.walkBack && !canSeeNext(map, 0)) { //Can we see current heading? Are we trapped?
 			//No. We want to go back
 			preferredVelocity = (map.allNodes[path[pathIndex-1]].getTargetPoint(transform.position) - transform.position).normalized;
 			change = false;

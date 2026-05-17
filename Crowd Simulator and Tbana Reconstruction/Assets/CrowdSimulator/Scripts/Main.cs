@@ -41,7 +41,6 @@ public class Main : MonoBehaviour {
 
 
 	public SimulationGrid gridPrefab;
-	public Spawner spawnerPrefab;
 	public MapGen mapGen;
 	public Plane plane;
 	internal static Vector2 xMinMax;
@@ -60,7 +59,7 @@ public class Main : MonoBehaviour {
 	[Range(0.01f, 1f)]
 	public float alpha; 
 
-	List<Agent> agentList = new List<Agent>();
+	internal List<Agent> agentList = new List<Agent>();
 	public int maxNumberOfAgents = 1000; // Maximum number of agents when spawning continuously
 
 	public bool showSplattedDensity = false;
@@ -111,8 +110,7 @@ public class Main : MonoBehaviour {
 
 		for (int i = 0; i < roadmap.spawns.Count; ++i)
 		{
-			roadmap.spawns[i].spawner.InitializeSpawner (ref agentPrefabs, ref groupAgentPrefabs, ref shirtColorPrefab, ref roadmap, 
-											 ref agentList, xMinMax, zMinMax, agentAvoidanceRadius);
+			roadmap.spawns[i].spawner.InitializeSpawner(roadmap, xMinMax, zMinMax);
 		}
 
 		if(customTimeStep)
@@ -161,6 +159,11 @@ public class Main : MonoBehaviour {
 		}
 		//Pair-wise collision handling between agents
 		simulationGrid.collisionHandling(agentList);
+
+		for (int i = 0; i < roadmap.spawns.Count; ++i)
+			{
+				roadmap.spawns[i].spawner.UpdateSpawner();
+			}
 
 		if(customTimeStep)
 		{

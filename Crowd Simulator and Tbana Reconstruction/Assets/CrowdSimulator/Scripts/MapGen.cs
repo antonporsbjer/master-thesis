@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -97,29 +97,28 @@ public class MapGen : MonoBehaviour {
 		foreach(CustomNode c in Object.FindObjectsOfType<CustomNode> ()) {
 			map.Add (c.transform.position);
 			m.allNodes.Add (c); //Assume a circle threshold
-			if (c.gameObject.GetComponent<CustomNode> ().isSpawn) {
-				spawnNode sn = new spawnNode ();
+			if (c.gameObject.GetComponent<CustomNode>().isSpawn) {
+				spawnNode sn = new spawnNode();
 				sn.node = map.Count - 1;
 				sn.spawner = c.gameObject.transform.parent.gameObject.GetComponent<Spawner>();
 				sn.spawner.SetNode(sn.node);
 				m.spawns.Add (sn);
-				//	c.gameObject.transform.parent.gameObject.GetComponent<Renderer> ().enabled = false;
 			} 
-			if (c.gameObject.GetComponent<CustomNode> ().isGoal) {
+			if (c.gameObject.GetComponent<CustomNode>().isGoal) {
 				m.goals.Add (map.Count-1);
 			} 
+
+			c.index = map.Count - 1;
+
 			Renderer r = c.GetComponent<Renderer> ();
 			if (r != null) {
-				if (!visibleMap) {
-					r.enabled = false;
-					for(int k = 0; k < c.transform.childCount; ++k) {
-						Renderer child = c.transform.GetChild (k).GetComponent<Renderer> ();
-						if (child != null)
-							child.enabled = false;
-					}
+				r.enabled = visibleMap;
+				for(int k = 0; k < c.transform.childCount; ++k) {
+					Renderer child = c.transform.GetChild (k).GetComponent<Renderer> ();
+					if (child != null)
+						child.enabled = visibleMap;
 				}
 			}
-			c.transform.parent = graph.transform;
 		}
 
 		/**
@@ -186,13 +185,11 @@ public class MapGen : MonoBehaviour {
 			m.allNodes.Add (g.GetComponent<CustomNode>());
 			Renderer r = g.GetComponent<Renderer> ();
 			if (r != null) {
-				if (!visibleMap) {
-					r.enabled = false;
-					for(int k = 0; k < g.transform.childCount; ++k) {
-						Renderer child = g.transform.GetChild (k).GetComponent<Renderer> ();
-						if (child != null)
-							child.enabled = false;
-					}
+				r.enabled = visibleMap;
+				for(int k = 0; k < g.transform.childCount; ++k) {
+					Renderer child = g.transform.GetChild (k).GetComponent<Renderer> ();
+					if (child != null)
+						child.enabled = visibleMap;
 				}
 			}
 		}
