@@ -211,10 +211,13 @@ public class MapGen : MonoBehaviour {
 		for (int i = 0; i < map.Count; ++i) {
 			for (int j = 0; j < map.Count; ++j) {
 				if (i != j) {
-					if (!Physics.Raycast (map [j], map [i] - map [j], (map [i] - map [j]).magnitude)) {
-						dist [i].Add ((map [i] - map [j]).magnitude);
-					} else {
-						dist [i].Add (float.MaxValue);
+					if (!Physics.SphereCast(map[j], 0.2f, map[i] - map[j], out RaycastHit hit, (map[i] - map[j]).magnitude)) 
+					{
+						dist[i].Add((map[i] - map[j]).magnitude);
+					} 
+					else 
+					{
+						dist[i].Add(float.MaxValue);
 					}
 				} else {
 					dist [i].Add(0);
