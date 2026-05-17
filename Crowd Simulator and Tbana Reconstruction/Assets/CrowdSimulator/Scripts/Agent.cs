@@ -32,15 +32,38 @@ public class Agent : MonoBehaviour {
 	private float cachedCellSize;
 	private float cachedCellSizeSquared;
 
+	private static int agentLayerMask = -1;
+	private float colliderRadius;
+	internal Renderer agentRenderer;
+	private Main mainScript;
+	internal int goal;
+	internal Vector3 targetPoint;
+
 	void Awake()
 	{
 		tr = transform;
 	}
 
+	internal void CheckPositionAndRotation()
+	{
+		Vector3 pos = tr.position;
+    	Quaternion rot = tr.rotation;
+    
+		if (pos.y > 0.1f ||
+			pos.y < -0.1f ||
+			rot.x < -0.1 ||
+			rot.x > 0.1 ||
+			rot.z > 0.1 ||
+			rot.z < -0.1)
+			{
+				Reset();
+			}
+	}
+
 	
 	internal void Start() {
-		animator = transform.gameObject.GetComponent<Animator> ();
-		rbody = transform.gameObject.GetComponent<Rigidbody> ();
+		animator = tr.gameObject.GetComponent<Animator> ();
+		rbody = tr.gameObject.GetComponent<Rigidbody> ();
 
 		if (rbody != null)
 		{
@@ -52,10 +75,14 @@ public class Agent : MonoBehaviour {
 			Debug.LogError("No Rigidbody found!");
 		}
 
-		Collider col = GetComponent<Collider>();
+		CapsuleCollider col = GetComponent<CapsuleCollider>();
 		if (col == null)
 		{
-			Debug.LogError("No Collider found!");
+			Debug.LogError("No CapsuleCollider found!");
+		}
+		else
+		{
+			colliderRadius = col.radius;
 		}
 
 		//Which cell am i in currently?
@@ -64,7 +91,7 @@ public class Agent : MonoBehaviour {
 			Destroy (rbody);
 		}
 
-		Main mainScript = FindObjectOfType<Main>();
+		mainScript = Main.instance;
 		if(this is SubgroupAgent)
 		{
 			walkingSpeed = mainScript.agentMaxSpeed;
@@ -76,28 +103,35 @@ public class Agent : MonoBehaviour {
 		
 	}
 
-	public void InitializeAgent(Vector3 pos, int start, int goal, MapGen.map map) {
-		transform.position = pos;
-		path = map.shortestPaths [start] [goal]; 
+	public void InitializeAgent(Vector3 pos, int start, int goal, MapGen.map map)
+	{
+		tr.position = pos;
+		this.goal = goal;
+		path = map.shortestPaths[start][goal];
+
 		pathIndex = 1;
-		preferredVelocity = (map.allNodes [path [pathIndex]].getTargetPoint (transform.position) - transform.position).normalized;
+		targetPoint = map.allNodes[path[pathIndex]].getTargetPoint(pos, gameObject.GetInstanceID());
+		preferredVelocity = (targetPoint - pos).normalized;
+		agentRenderer = GetComponentInChildren<Renderer>();
+
 		grid = SimulationGrid.instance;
-		cachedCellSize = grid.cellSize;
+
+		cachedCellSize = SimulationGrid.instance.cellSize;
     	cachedCellSizeSquared = cachedCellSize * cachedCellSize;
 	}
 
 	public void ApplyMaterials(Material materialColor, ref Dictionary<string, int> skins, Material argMat = null)
 	{
 		if (tag == "original") {
-			if (transform.childCount > 1) {
-				//transform.GetChild(1).GetComponent<SkinnedMeshRenderer> ().sharedMaterial = materialColor;
+			if (tr.childCount > 1) {
+				//tr.GetChild(1).GetComponent<SkinnedMeshRenderer> ().sharedMaterial = materialColor;
 			}
-		} else if (transform.childCount > 0) {
-			Renderer ss = transform.GetChild (0).GetComponent<Renderer> ();
+		} else if (tr.childCount > 0) {
+			Renderer ss = tr.GetChild (0).GetComponent<Renderer> ();
 			if (ss != null)
 				ss.material.mainTexture = (Texture)Resources.Load (tag + "-" + Random.Range (1, skins [tag]+1));
 			else {
-				Renderer ss2 = transform.GetChild (1).GetComponent<Renderer> ();
+				Renderer ss2 = tr.GetChild (1).GetComponent<Renderer> ();
 				if (ss2 != null)
 					ss2.material.mainTexture = (Texture)Resources.Load (tag + "-" + Random.Range (1, skins [tag]+1));
 			}
@@ -137,12 +171,22 @@ public class Agent : MonoBehaviour {
 		velocity = velocity + collisionAvoidanceVelocity;
 	}
 
-	internal bool canSeeNext(MapGen.map map, int modifier) {
-		if (pathIndex + modifier< path.Count && pathIndex + modifier >= 0 && pathIndex + modifier < map.allNodes.Count) {
+	internal bool canSeeNext(MapGen.map map, int modifier)
+	{
+		if (pathIndex + modifier < path.Count && pathIndex + modifier >= 0 && pathIndex + modifier < map.allNodes.Count)
+		{
 			//Can we see next goal?
-			Vector3 next = map.allNodes[path[pathIndex+modifier]].getTargetPoint(transform.position);
-			Vector3 dir = next - transform.position;
-			if(!Physics.Raycast (transform.position, dir.normalized, dir.magnitude)) {
+			Vector3 pos = tr.position;
+			Vector3 next = map.allNodes[path[pathIndex + modifier]].getTargetPoint(pos, gameObject.GetInstanceID());
+			Vector3 targetPosition = pos - tr.forward * colliderRadius;
+			Vector3 dir = next - targetPosition;
+			Vector3 endPosition = targetPosition + (dir.normalized * dir.magnitude);
+			if (agentLayerMask == -1)
+			{
+				agentLayerMask = ~LayerMask.GetMask("Agent");
+			}
+			if (!Physics.Raycast(targetPosition, dir.normalized, out RaycastHit hit, dir.magnitude, agentLayerMask))
+			{
 				return true;
 			}
 		}
@@ -151,41 +195,53 @@ public class Agent : MonoBehaviour {
 	/**
 	 * Calculate the preferred velocity by looking at desired path
 	 **/ 
-	internal void calculatePreferredVelocityMap(ref MapGen.map map) {
-
+	internal void calculatePreferredVelocityMap(MapGen.map map)
+	{
 		bool change = false;
 		previousDirection = preferredVelocity.normalized;
 		Vector3 pos = tr.position;
 
-		if (map.allNodes[path[pathIndex]].IsAgentInsideArea(pos) || (grid.skipNodeIfSeeNext && canSeeNext(map, 1))) {
+		if (map.allNodes[path[pathIndex]].IsAgentInsideArea(pos) || (grid.skipNodeIfSeeNext && canSeeNext(map, 1)))
+		{
 			//New node reached
 			collision = false;
 			pathIndex += 1;
-			if (pathIndex >= path.Count) {
+			if (pathIndex >= path.Count)
+			{
 				//Done
 				done = true;
-			} else {
-				Vector3 nextDirection = ((map.allNodes [path [pathIndex]].getTargetPoint(transform.position)) - transform.position).normalized;
-				if (Vector3.Angle (previousDirection, nextDirection) > 20.0f && grid.smoothTurns) {
-					preferredVelocity = Vector3.RotateTowards (velocity.normalized, nextDirection, grid.dt*((35.0f - 400*grid.dt) * Mathf.PI / 180.0f), 15.0f).normalized;
+			}
+			else
+			{
+				targetPoint = map.allNodes[path[pathIndex]].getTargetPoint(pos, gameObject.GetInstanceID());
+				Vector3 nextDirection = (targetPoint - pos).normalized;
+				if (Vector3.Angle(previousDirection, nextDirection) > 20.0f && grid.smoothTurns)
+				{
+					preferredVelocity = Vector3.RotateTowards(velocity.normalized, nextDirection, grid.dt * ((35.0f - 400 * grid.dt) * Mathf.PI / 180.0f), 15.0f).normalized;
 					change = true;
 				}
 			}
-		} else if(pathIndex > 0 && grid.walkBack && !canSeeNext(map, 0)) { //Can we see current heading? Are we trapped?
-			//No. We want to go back
-			preferredVelocity = (map.allNodes[path[pathIndex-1]].getTargetPoint(transform.position) - transform.position).normalized;
+		}
+		else if (pathIndex > 0 && grid.walkBack && !canSeeNext(map, 0))
+		{ //Can we see current heading? Are we trapped?
+		  //No. We want to go back
+			preferredVelocity = (map.allNodes[path[pathIndex - 1]].getTargetPoint(pos, gameObject.GetInstanceID()) - pos).normalized;
 			change = false;
-		} else {
+		}
+		else
+		{
 			collision = false;
-			Vector3 nextDirection = (map.allNodes [path [pathIndex]].getTargetPoint(transform.position) - transform.position).normalized;
-			if (change && Vector3.Angle (previousDirection, nextDirection) > 20.0f && grid.smoothTurns) {
-				preferredVelocity = Vector3.RotateTowards(velocity.normalized, nextDirection, grid.dt*((35.0f - 400*grid.dt) * Mathf.PI / 180.0f),  15.0f).normalized;
-			} else {
+			Vector3 nextDirection = (targetPoint - pos).normalized;
+			if (change && Vector3.Angle(previousDirection, nextDirection) > 20.0f && grid.smoothTurns)
+			{
+				preferredVelocity = Vector3.RotateTowards(velocity.normalized, nextDirection, grid.dt * ((35.0f - 400 * grid.dt) * Mathf.PI / 180.0f), 15.0f).normalized;
+			}
+			else
+			{
 				change = false;
-				preferredVelocity = (map.allNodes [path [pathIndex]].getTargetPoint(transform.position) - transform.position).normalized;
+				preferredVelocity = (targetPoint - pos).normalized;
 			}
 		}
-		//collision = false;
 		preferredVelocity = preferredVelocity * walkingSpeed;
 		preferredVelocity.y = 0f;
 	}
@@ -193,44 +249,55 @@ public class Agent : MonoBehaviour {
 	/**
 	 * Calculate the preferred velocity of a single uncharted point as a goal 
 	 **/
-	internal void calculatePreferredVelocityNoMap() {
-		if ((transform.position - noMapGoal).magnitude < MapGen.DEFAULT_THRESHOLD) {
+	internal void calculatePreferredVelocityNoMap()
+	{
+		Vector3 pos = tr.position;
+		if ((pos - noMapGoal).magnitude < MapGen.DEFAULT_THRESHOLD)
+		{
 			//New node reached
 			//Done
 			done = true;
-		} else {
-			preferredVelocity = (noMapGoal - transform.position).normalized;
+		}
+		else
+		{
+			preferredVelocity = (noMapGoal - pos).normalized;
 		}
 		preferredVelocity = preferredVelocity * walkingSpeed;
 		preferredVelocity.y = 0f;
 	}
 
-	internal virtual void calculatePreferredVelocity(ref MapGen.map map) {
-		if (noMap) {
-			calculatePreferredVelocityNoMap ();
-		} else {
-			calculatePreferredVelocityMap (ref map);
+	internal virtual void calculatePreferredVelocity(MapGen.map map)
+	{
+		if (noMap)
+		{
+			calculatePreferredVelocityNoMap();
+		}
+		else
+		{
+			calculatePreferredVelocityMap(map);
 		}
 	}
+
 	/**
 	 * Change the position of the agent and reset variables. 
 	 * Do animations.
 	 **/
-	internal void changePosition(ref MapGen.map map) {
-		if (done) {
+	internal void changePosition(MapGen.map map)
+	{
+		if (done)
+		{
 			return; // Don't do anything
-		} 
+		}
 
-		calculatePreferredVelocity(ref map);
-		setCorrectedVelocity ();
+		calculatePreferredVelocity(map);
+		setCorrectedVelocity();
 
-		prevPos = transform.position;
+		prevPos = tr.position;
 
-		Vector3 newPosition = transform.position + velocity * grid.dt;
-		newPosition.y = 0.0f;	// Lock Y position
-		transform.position = newPosition;
+		Vector3 newPosition = prevPos + velocity * grid.dt;
+		newPosition.y = 0.0f;   // Lock Y position
+		tr.position = newPosition;
 
-		if(rbody != null) { rbody.velocity = Vector3.zero; }
 		collisionAvoidanceVelocity = Vector3.zero;
 
 		Animate(prevPos);
@@ -238,7 +305,7 @@ public class Agent : MonoBehaviour {
 
 	void Animate(Vector3 previousPosition)
 	{
-		float realSpeed = Vector3.Distance (transform.position, previousPosition) / Mathf.Max(grid.dt, grid.dt);
+		float realSpeed = Vector3.Distance (tr.position, previousPosition) / Mathf.Max(grid.dt, grid.dt);
 		if (animator != null) {
 	
 			if (realSpeed < 0.05f) {
@@ -315,8 +382,8 @@ public class Agent : MonoBehaviour {
 	 * Move command (and all it includes) for this agent.
 	 * Recalculate weights and contributions to grid after update.
 	 **/
-	internal void move(ref MapGen.map map) {
-		changePosition (ref map);
+	internal void move(MapGen.map map) {
+		changePosition (map);
 		calculateRowAndColumn ();
 		setWeights ();
 		grid.cellMatrix[row, column].addVelocity(this);
@@ -360,5 +427,18 @@ public class Agent : MonoBehaviour {
 		neighbourLeftVelocityWeight = leftShiftedRelXPos * Mathf.Abs(agentRelZPos) / cachedCellSizeSquared;
 		neighbourUpperVelocityWeight = upperShiftedRelZPos * Mathf.Abs(agentRelXPos) / cachedCellSizeSquared;
 		neighbourLowerVelocityWeight = lowerShiftedRelZPos * Mathf.Abs(agentRelXPos) / cachedCellSizeSquared;
+	}
+
+	internal void Reset()
+	{
+		rbody.velocity = Vector3.zero;
+		rbody.angularVelocity = Vector3.zero;
+		velocity = Vector3.zero;
+		preferredVelocity = Vector3.zero;
+		continuumVelocity = Vector3.zero;
+		collisionAvoidanceVelocity = Vector3.zero;
+		Vector3 pos = tr.position;
+		tr.position = new Vector3(pos.x, 0f, pos.z);
+		tr.rotation = Quaternion.identity;
 	}
 }

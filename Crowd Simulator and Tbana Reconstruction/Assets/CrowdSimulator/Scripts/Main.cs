@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 public class Main : MonoBehaviour {
 
+	public static Main instance;
+
 	public enum Method{
 		uniformSpawn,
 		circleSpawn,
@@ -69,6 +71,11 @@ public class Main : MonoBehaviour {
 	public bool smoothTurns = false;
 	public bool handleCollision = false;
 	private SimulationGrid simulationGrid;
+
+	void Awake()
+	{
+		instance = this;
+	}
 
 	/**
 	 * Initialize simulation by taking the user's options into consideration and spawn agents.
@@ -149,13 +156,26 @@ public class Main : MonoBehaviour {
 		for (int i = agentList.Count - 1; i >= 0; i--)
 		{
 			Agent agent = agentList[i];
+
+			agent.CheckPositionAndRotation();
+
+			// remove agent if it is outside the bounds of the plane
+			if (Mathf.Abs(agent.tr.position.x) > planeSizeX * 5f || Mathf.Abs(agent.tr.position.z) > planeSizeZ * 5f || agent.tr.position.y > 0.5f)
+			{
+				Debug.LogWarning("Agent outside of bounds, removing");
+				agentList.RemoveAt(i);
+				Destroy(agent.gameObject);
+			}
+
 			if (agent.done)
 			{
 				Destroy(agent.gameObject);
 				agentList.RemoveAt(i);
 				continue;
 			}
-			agent.move(ref roadmap);
+			agent.move(roadmap);
+			agent.rbody.velocity = Vector3.zero;
+			agent.rbody.angularVelocity = Vector3.zero;
 		}
 		//Pair-wise collision handling between agents
 		simulationGrid.collisionHandling(agentList);
