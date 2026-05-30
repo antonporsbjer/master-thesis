@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 
 public class SimulationGrid : MonoBehaviour {
@@ -68,7 +68,10 @@ public class SimulationGrid : MonoBehaviour {
 	private double cachedCellSizeSquared;
 
 	public void initGrid(Vector2 xMinMax, Vector2 zMinMax, float alpha, float agentAvoidanceRadius) {
-		
+		if (cellSize <= 0f)
+		{
+			cellSize = 1f;
+		}
         nCellsX = Mathf.CeilToInt((xMinMax.y - xMinMax.x) / cellSize);
         nCellsZ = Mathf.CeilToInt((zMinMax.y - zMinMax.x) / cellSize);
         int totalCells = nCellsX * nCellsZ;

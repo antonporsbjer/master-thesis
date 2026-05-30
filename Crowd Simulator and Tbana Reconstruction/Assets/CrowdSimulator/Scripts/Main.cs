@@ -98,7 +98,7 @@ public class Main : MonoBehaviour {
 		SimulationGrid grid = Instantiate(gridPrefab) as SimulationGrid;
 		grid.showSplattedDensity = showSplattedDensity;
 		grid.showSplattedVelocity = showSplattedVelocity;
-		grid.cellSize = cellSize;
+		grid.cellSize = cellSize <= 0 ? 1 : cellSize;
 		grid.agentMaxSpeed = agentMaxSpeed;
 		grid.ringDiameter = ringDiameter;
 		grid.usePresetGroupDistances = usePresetGroupDistances;
