@@ -12,7 +12,7 @@ public class CustomNodeEllipse : CustomNode
 		return (x * x) / (0.5f * 0.5f) + (z * z) / (0.5f * 0.5f) <= 1f;
 	}
     
-    public override Vector3 getTargetPoint(Vector3 origin)
+    public override Vector3 getTargetPoint(Vector3 origin, int agentID = 0)
     {
         float scaleX = transform.lossyScale.x;
         float scaleZ = transform.lossyScale.z;
