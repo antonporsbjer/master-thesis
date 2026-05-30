@@ -116,7 +116,7 @@ public class Main : MonoBehaviour {
 
 		for (int i = 0; i < roadmap.spawns.Count; ++i)
 		{
-			roadmap.spawns[i].spawner.InitializeSpawner(roadmap, xMinMax, zMinMax);
+			roadmap.spawns[i].spawner.InitializeSpawner(ref roadmap, ref agentList, xMinMax, zMinMax, agentAvoidanceRadius);
 		}
 
 		if(customTimeStep)
@@ -179,10 +179,6 @@ public class Main : MonoBehaviour {
 		//Pair-wise collision handling between agents
 		simulationGrid.collisionHandling(agentList);
 
-		for (int i = 0; i < roadmap.spawns.Count; ++i)
-			{
-				roadmap.spawns[i].spawner.UpdateSpawner();
-			}
 
 		if(customTimeStep)
 		{

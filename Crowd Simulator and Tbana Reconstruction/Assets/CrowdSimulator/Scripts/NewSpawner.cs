@@ -103,7 +103,7 @@ public class NewSpawner : MonoBehaviour {
     Agent agent;
 		agent = Instantiate (agentPrefab.transform.GetChild(Random.Range(0, agentPrefab.transform.childCount)).GetComponent<Agent>());
 
-		agent.InitializeAgent (startPosition, node, goal, ref map);
+		agent.InitializeAgent (startPosition, node, goal, map);
 
 		if (agentEditorContainer != null)
 			agent.transform.parent = agentEditorContainer.transform;
