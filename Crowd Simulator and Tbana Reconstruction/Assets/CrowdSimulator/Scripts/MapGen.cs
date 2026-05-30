@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -121,7 +121,6 @@ public class MapGen : MonoBehaviour {
 				sn.spawner = c.gameObject.transform.parent.gameObject.GetComponent<NewSpawner>();
 				sn.spawner.SetNode(sn.node);
 				m.spawns.Add (sn);
-				//	c.gameObject.transform.parent.gameObject.GetComponent<Renderer> ().enabled = false;
 			} 
 			if (c.gameObject.GetComponent<CustomNode>().isGoal) {
 				m.goals.Add (map.Count-1);
@@ -130,16 +129,13 @@ public class MapGen : MonoBehaviour {
 
 			Renderer r = c.GetComponent<Renderer> ();
 			if (r != null) {
-				if (!visibleMap) {
-					r.enabled = false;
-					for(int k = 0; k < c.transform.childCount; ++k) {
-						Renderer child = c.transform.GetChild (k).GetComponent<Renderer> ();
-						if (child != null)
-							child.enabled = false;
-					}
+				r.enabled = visibleMap;
+				for(int k = 0; k < c.transform.childCount; ++k) {
+					Renderer child = c.transform.GetChild (k).GetComponent<Renderer> ();
+					if (child != null)
+						child.enabled = visibleMap;
 				}
 			}
-			//c.transform.parent = graph.transform;
 		}
 
 		/**
@@ -206,13 +202,11 @@ public class MapGen : MonoBehaviour {
 			m.allNodes.Add (g.GetComponent<CustomNode>());
 			Renderer r = g.GetComponent<Renderer> ();
 			if (r != null) {
-				if (!visibleMap) {
-					r.enabled = false;
-					for(int k = 0; k < g.transform.childCount; ++k) {
-						Renderer child = g.transform.GetChild (k).GetComponent<Renderer> ();
-						if (child != null)
-							child.enabled = false;
-					}
+				r.enabled = visibleMap;
+				for(int k = 0; k < g.transform.childCount; ++k) {
+					Renderer child = g.transform.GetChild (k).GetComponent<Renderer> ();
+					if (child != null)
+						child.enabled = visibleMap;
 				}
 			}
 		}
@@ -239,18 +233,13 @@ public class MapGen : MonoBehaviour {
 		for (int i = 0; i < map.Count; ++i) {
 			for (int j = 0; j < map.Count; ++j) {
 				if (i != j) {
-					/**
-					if(roadmap.allNodes[i] is WaitingAreaNode)
+					if (!Physics.SphereCast(map[j], 0.2f, map[i] - map[j], out RaycastHit hit, (map[i] - map[j]).magnitude)) 
 					{
-						// This prevents agents from using waiting areas as nodes in their path
-						// except when their goal is the waiting area
-						dist[i].Add (float.MaxValue);
-					}
-					**/
-					if (!Physics.Raycast (map [j], map [i] - map [j], (map [i] - map [j]).magnitude)) {
-						dist [i].Add ((map [i] - map [j]).magnitude);
-					} else {
-						dist [i].Add (float.MaxValue);
+						dist[i].Add((map[i] - map[j]).magnitude);
+					} 
+					else 
+					{
+						dist[i].Add(float.MaxValue);
 					}
 				} else {
 					dist [i].Add(0);

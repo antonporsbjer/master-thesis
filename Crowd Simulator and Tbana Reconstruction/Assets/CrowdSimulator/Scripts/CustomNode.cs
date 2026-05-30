@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-using System.Collections;
+using UnityEngine;
 
 public class CustomNode : MonoBehaviour {
 
@@ -15,7 +14,7 @@ public class CustomNode : MonoBehaviour {
 		return Vector3.Distance(transform.position, agentPosition) < radius;
 	}
 
-	public virtual Vector3 getTargetPoint(Vector3 origin) {
+	public virtual Vector3 getTargetPoint(Vector3 origin, int agentID = 0) {
 		return transform.position;
 	}
 

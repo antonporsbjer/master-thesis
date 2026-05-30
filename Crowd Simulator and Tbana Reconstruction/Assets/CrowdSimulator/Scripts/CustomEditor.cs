@@ -1,5 +1,4 @@
 ﻿using UnityEditor;
-using UnityEngine;
 
 [CustomEditor(typeof(Main)), CanEditMultipleObjects]
 public class PropertyHolderEditor : Editor {
@@ -16,7 +15,7 @@ public class PropertyHolderEditor : Editor {
 		lcpsolverEpsilon_Prop,
 		mapGen_Prop,
 		neighbourBins_Prop,
-		numberOfCells_Prop,
+		cellSize_Prop,
 		planePrefab_Prop,
 		planeSizeX_Prop,
 		planeSizeZ_Prop,
@@ -49,7 +48,7 @@ public class PropertyHolderEditor : Editor {
 		lcpsolverEpsilon_Prop = serializedObject.FindProperty ("epsilon");
 		mapGen_Prop = serializedObject.FindProperty ("mapGen");
 		neighbourBins_Prop = serializedObject.FindProperty ("neighbourBins");
-		numberOfCells_Prop = serializedObject.FindProperty ("cellsPerRow");
+		cellSize_Prop = serializedObject.FindProperty ("cellSize");
 		planePrefab_Prop = serializedObject.FindProperty ("plane");
 		planeSizeX_Prop = serializedObject.FindProperty ("planeSizeX");
 		planeSizeZ_Prop = serializedObject.FindProperty ("planeSizeZ");
@@ -72,7 +71,7 @@ public class PropertyHolderEditor : Editor {
 		EditorGUILayout.PropertyField(planeSizeX_Prop);
 		EditorGUILayout.PropertyField(planeSizeZ_Prop);
 		EditorGUILayout.PropertyField(roadNode_Prop);
-		EditorGUILayout.PropertyField(numberOfCells_Prop);
+		EditorGUILayout.PropertyField(cellSize_Prop);
 		EditorGUILayout.PropertyField(neighbourBins_Prop);
 		EditorGUILayout.PropertyField(agentMaxSpeed_Prop);
 		EditorGUILayout.PropertyField(agentMinSpeed_Prop);

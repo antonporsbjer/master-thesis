@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Diagnostics;
 using System.Collections.Generic;
@@ -37,9 +37,9 @@ public class LCPSolverProj : LCPSolver {
 		this.b = bArray;
 		this.x = xArray;
 		this.l = lArray;
-		epsilon = Grid.instance.solverEpsilon;
+		epsilon = SimulationGrid.instance.solverEpsilon;
 
-		int maxiter = Grid.instance.solverMaxIterations, cnt = 0;
+		int maxiter = SimulationGrid.instance.solverMaxIterations, cnt = 0;
 		double delta = 1.3; 
 		for (int k = 0; k < maxiter; ++k) {
 			cnt += 1;

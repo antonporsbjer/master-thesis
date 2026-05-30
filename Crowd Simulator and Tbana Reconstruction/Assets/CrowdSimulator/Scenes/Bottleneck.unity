@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028331, g: 0.2257133, b: 0.3069217, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -273,6 +273,28 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &87108166 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1000012215036388, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
+  m_PrefabInstance: {fileID: 517320457}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &87108169
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 87108166}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35468ff400afa894bb52ff3e159ed507, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  agentEditorContainer: {fileID: 8169243}
+  customGoal: {fileID: 1476944145}
+  timeBetweenSpawns: 2
+  usePoisson: 0
+  agentPrefab: {fileID: 114000012423741106, guid: 62fcfdbb183bc094c9e69e041b60eaaf, type: 3}
 --- !u!1 &98785742
 GameObject:
   m_ObjectHideFlags: 0
@@ -609,7 +631,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4000014275702142, guid: e88375e87842b144aa2dda2a80b3b4f3, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 0.01
       objectReference: {fileID: 0}
     - target: {fileID: 4000014275702142, guid: e88375e87842b144aa2dda2a80b3b4f3, type: 3}
       propertyPath: m_LocalPosition.z
@@ -648,6 +670,28 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e88375e87842b144aa2dda2a80b3b4f3, type: 3}
+--- !u!1 &484132378 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1000012215036388, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
+  m_PrefabInstance: {fileID: 998263214}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &484132381
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 484132378}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35468ff400afa894bb52ff3e159ed507, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  agentEditorContainer: {fileID: 8169243}
+  customGoal: {fileID: 1476944145}
+  timeBetweenSpawns: 2
+  usePoisson: 0
+  agentPrefab: {fileID: 114000012423741106, guid: 62fcfdbb183bc094c9e69e041b60eaaf, type: 3}
 --- !u!1001 &517320457
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -714,7 +758,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 114000011514121796, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
       propertyPath: spawnRate
-      value: 0.001
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 114000011514121796, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
       propertyPath: customGoal
@@ -736,11 +780,41 @@ PrefabInstance:
       propertyPath: agentEditorContainer
       value: 
       objectReference: {fileID: 8169243}
-    m_RemovedComponents: []
+    - target: {fileID: 5189029260220175495, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.01
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 114000011514121796, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1000012215036388, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 87108169}
   m_SourcePrefab: {fileID: 100100000, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
+--- !u!1 &597551386 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1000012215036388, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
+  m_PrefabInstance: {fileID: 1248832848}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &597551389
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 597551386}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35468ff400afa894bb52ff3e159ed507, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  agentEditorContainer: {fileID: 8169243}
+  customGoal: {fileID: 1476944145}
+  timeBetweenSpawns: 2
+  usePoisson: 0
+  agentPrefab: {fileID: 114000012423741106, guid: 62fcfdbb183bc094c9e69e041b60eaaf, type: 3}
 --- !u!1 &659277341
 GameObject:
   m_ObjectHideFlags: 0
@@ -912,7 +986,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 114000011514121796, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
       propertyPath: spawnRate
-      value: 0.001
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 114000011514121796, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
       propertyPath: customGoal
@@ -934,11 +1008,41 @@ PrefabInstance:
       propertyPath: agentEditorContainer
       value: 
       objectReference: {fileID: 8169243}
-    m_RemovedComponents: []
+    - target: {fileID: 5189029260220175495, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.01
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 114000011514121796, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1000012215036388, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 972416855}
   m_SourcePrefab: {fileID: 100100000, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
+--- !u!1 &972416852 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1000012215036388, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
+  m_PrefabInstance: {fileID: 968910236}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &972416855
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 972416852}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35468ff400afa894bb52ff3e159ed507, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  agentEditorContainer: {fileID: 8169243}
+  customGoal: {fileID: 1476944145}
+  timeBetweenSpawns: 2
+  usePoisson: 0
+  agentPrefab: {fileID: 114000012423741106, guid: 62fcfdbb183bc094c9e69e041b60eaaf, type: 3}
 --- !u!1001 &998263214
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1005,7 +1109,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 114000011514121796, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
       propertyPath: spawnRate
-      value: 0.001
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 114000011514121796, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
       propertyPath: customGoal
@@ -1027,11 +1131,41 @@ PrefabInstance:
       propertyPath: agentEditorContainer
       value: 
       objectReference: {fileID: 8169243}
-    m_RemovedComponents: []
+    - target: {fileID: 5189029260220175495, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.01
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 114000011514121796, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1000012215036388, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 484132381}
   m_SourcePrefab: {fileID: 100100000, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
+--- !u!1 &1181018145 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1000012215036388, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
+  m_PrefabInstance: {fileID: 1959486341}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1181018148
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1181018145}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35468ff400afa894bb52ff3e159ed507, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  agentEditorContainer: {fileID: 8169243}
+  customGoal: {fileID: 1476944145}
+  timeBetweenSpawns: 2
+  usePoisson: 0
+  agentPrefab: {fileID: 114000012423741106, guid: 62fcfdbb183bc094c9e69e041b60eaaf, type: 3}
 --- !u!1001 &1248832848
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1098,7 +1232,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 114000011514121796, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
       propertyPath: spawnRate
-      value: 0.001
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 114000011514121796, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
       propertyPath: customGoal
@@ -1120,10 +1254,18 @@ PrefabInstance:
       propertyPath: agentEditorContainer
       value: 
       objectReference: {fileID: 8169243}
-    m_RemovedComponents: []
+    - target: {fileID: 5189029260220175495, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.01
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 114000011514121796, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1000012215036388, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 597551389}
   m_SourcePrefab: {fileID: 100100000, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
 --- !u!1 &1272645378
 GameObject:
@@ -1295,8 +1437,12 @@ PrefabInstance:
       value: 0.01
       objectReference: {fileID: 0}
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
+      propertyPath: cellSize
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: timeStep
-      value: 0.035
+      value: 0.02
       objectReference: {fileID: 0}
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: planeSize
@@ -1310,6 +1456,14 @@ PrefabInstance:
       propertyPath: gridPrefab
       value: 
       objectReference: {fileID: 114000012242863314, guid: cd00fafb131578642bd11c30bd1d99a2, type: 3}
+    - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
+      propertyPath: planeSizeX
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
+      propertyPath: planeSizeZ
+      value: 22
+      objectReference: {fileID: 0}
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: visibleMap
       value: 1
@@ -1354,6 +1508,10 @@ PrefabInstance:
       propertyPath: spawnerPrefab
       value: 
       objectReference: {fileID: 114000011514121796, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
+    - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
+      propertyPath: customTimeStep
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: numberOfAgents
       value: 800
@@ -1476,7 +1634,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4000014151629302, guid: 3ec909799a13ee84d9a7d4f665417e89, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 0.01
       objectReference: {fileID: 0}
     - target: {fileID: 4000014151629302, guid: 3ec909799a13ee84d9a7d4f665417e89, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1703,7 +1861,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 114000011514121796, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
       propertyPath: spawnRate
-      value: 0.001
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 114000011514121796, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
       propertyPath: customGoal
@@ -1725,10 +1883,18 @@ PrefabInstance:
       propertyPath: agentEditorContainer
       value: 
       objectReference: {fileID: 8169243}
-    m_RemovedComponents: []
+    - target: {fileID: 5189029260220175495, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.01
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 114000011514121796, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1000012215036388, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1181018148}
   m_SourcePrefab: {fileID: 100100000, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
 --- !u!1 &2121925409
 GameObject:
