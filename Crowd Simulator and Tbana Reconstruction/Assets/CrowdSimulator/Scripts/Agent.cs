@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -26,11 +26,44 @@ public class Agent : MonoBehaviour {
 	public float walkingSpeed;
     public float maxWaitTime = 2f;
 	public float currentSpeed;
+	private SimulationGrid grid;
+
+	internal Transform tr;
+	private float cachedCellSize;
+	private float cachedCellSizeSquared;
+
+	private static int agentLayerMask = -1;
+	private float colliderRadius;
+	internal Renderer agentRenderer;
+	private Main mainScript;
+	internal int goal;
+	internal Vector3 targetPoint;
+
+	void Awake()
+	{
+		tr = transform;
+	}
+
+	internal void CheckPositionAndRotation()
+	{
+		Vector3 pos = tr.position;
+    	Quaternion rot = tr.rotation;
+    
+		if (pos.y > 0.1f ||
+			pos.y < -0.1f ||
+			rot.x < -0.1 ||
+			rot.x > 0.1 ||
+			rot.z > 0.1 ||
+			rot.z < -0.1)
+			{
+				Reset();
+			}
+	}
 
 	
 	internal void Start() {
-		animator = transform.gameObject.GetComponent<Animator> ();
-		rbody = transform.gameObject.GetComponent<Rigidbody> ();
+		animator = tr.gameObject.GetComponent<Animator> ();
+		rbody = tr.gameObject.GetComponent<Rigidbody> ();
 
 		if (rbody != null)
 		{
@@ -42,19 +75,23 @@ public class Agent : MonoBehaviour {
 			Debug.LogError("No Rigidbody found!");
 		}
 
-		Collider col = GetComponent<Collider>();
+		CapsuleCollider col = GetComponent<CapsuleCollider>();
 		if (col == null)
 		{
-			Debug.LogError("No Collider found!");
+			Debug.LogError("No CapsuleCollider found!");
+		}
+		else
+		{
+			colliderRadius = col.radius;
 		}
 
 		//Which cell am i in currently?
 		calculateRowAndColumn();
-		if (!Grid.instance.colHandler && rbody != null) {
+		if (!grid.colHandler && rbody != null) {
 			Destroy (rbody);
 		}
 
-		Main mainScript = FindObjectOfType<Main>();
+		mainScript = Main.instance;
 		if(this is SubgroupAgent)
 		{
 			walkingSpeed = mainScript.agentMaxSpeed;
@@ -66,70 +103,90 @@ public class Agent : MonoBehaviour {
 		
 	}
 
-	public void InitializeAgent(Vector3 pos, int start, int goal, ref MapGen.map map) {
-		transform.position = pos;
-		transform.right = transform.right;
-		path = map.shortestPaths [start] [goal]; 
+	public void InitializeAgent(Vector3 pos, int start, int goal, MapGen.map map)
+	{
+		tr.position = pos;
+		this.goal = goal;
+		path = map.shortestPaths[start][goal];
+
 		pathIndex = 1;
-		preferredVelocity = (map.allNodes [path [pathIndex]].getTargetPoint (transform.position) - transform.position).normalized;
-		transform.localScale = new Vector3(1.0f, 1.0f, 1.0f); // Modify this to change the size of characters new Vector3(2.0f, 2.0f, 2.0f) is normal size
+		targetPoint = map.allNodes[path[pathIndex]].getTargetPoint(pos, gameObject.GetInstanceID());
+		preferredVelocity = (targetPoint - pos).normalized;
+		agentRenderer = GetComponentInChildren<Renderer>();
+
+		grid = SimulationGrid.instance;
+
+		cachedCellSize = SimulationGrid.instance.cellSize;
+    	cachedCellSizeSquared = cachedCellSize * cachedCellSize;
 	}
 
 	public void ApplyMaterials(Material materialColor, ref Dictionary<string, int> skins, Material argMat = null)
 	{
 		if (tag == "original") {
-			if (transform.childCount > 1) {
-				//transform.GetChild(1).GetComponent<SkinnedMeshRenderer> ().sharedMaterial = materialColor;
+			if (tr.childCount > 1) {
+				//tr.GetChild(1).GetComponent<SkinnedMeshRenderer> ().sharedMaterial = materialColor;
 			}
-		} else if (transform.childCount > 0) {
-			Renderer ss = transform.GetChild (0).GetComponent<Renderer> ();
+		} else if (tr.childCount > 0) {
+			Renderer ss = tr.GetChild (0).GetComponent<Renderer> ();
 			if (ss != null)
 				ss.material.mainTexture = (Texture)Resources.Load (tag + "-" + Random.Range (1, skins [tag]+1));
 			else {
-				Renderer ss2 = transform.GetChild (1).GetComponent<Renderer> ();
+				Renderer ss2 = tr.GetChild (1).GetComponent<Renderer> ();
 				if (ss2 != null)
 					ss2.material.mainTexture = (Texture)Resources.Load (tag + "-" + Random.Range (1, skins [tag]+1));
 			}
 		}
 	}
 
-	internal void calculateRowAndColumn() {
-		row = (int)((transform.position.z - Main.zMinMax.x)/Grid.instance.cellLength); 
-		column = (int)((transform.position.x - Main.xMinMax.x)/Grid.instance.cellLength); 
-		if (row < 0)
-			row = 0; 
-		if (column < 0)
-			column = 0;
-		if (row > Grid.instance.cellsPerRow - 1) {
-			row = Grid.instance.cellsPerRow - 1;
-		}
-		if (column > Grid.instance.cellsPerRow - 1) {
-			column = Grid.instance.cellsPerRow - 1;
-		}
-		agentRelXPos = transform.position.x - Grid.instance.cellMatrix [row, column].transform.position.x;
-		agentRelZPos = transform.position.z - Grid.instance.cellMatrix [row, column].transform.position.z;
+	internal void calculateRowAndColumn()
+	{
+		Vector3 pos = tr.position;
+		row = (int)((pos.z - Main.zMinMax.x) / grid.cellSize);
+		column = (int)((pos.x - Main.xMinMax.x) / grid.cellSize);
+
+		row = Mathf.Clamp(row, 0, grid.nCellsZ - 1);
+    	column = Mathf.Clamp(column, 0, grid.nCellsX - 1);
+
+		Vector3 cellCenter = grid.cellCenters[row, column];
+		agentRelXPos = pos.x - cellCenter.x;
+		agentRelZPos = pos.z - cellCenter.z;
 	}
 
 	/**
 	 * Calculate the actual velocity of this agent, based on continuum, preferred and collision avoidance velocities
 	 **/ 
-	internal void setCorrectedVelocity() {
-		calculateDensityAtPosition ();
-		calculateContinuumVelocity ();
+	internal void setCorrectedVelocity()
+	{
+		calculateDensityAtPosition();
+		calculateContinuumVelocity();
 		//-1 since we subtract this agents density at position
-		velocity = preferredVelocity + (densityAtAgentPosition - 1 / Mathf.Pow (Grid.instance.cellLength, 2)) / Grid.maxDensity
+
+		velocity = preferredVelocity + (densityAtAgentPosition - 1 / Mathf.Pow(grid.cellSize, 2)) / SimulationGrid.maxDensity
 		* (continuumVelocity - preferredVelocity);
 		velocity.y = 0f;
-		transform.forward = velocity.normalized;
+		if (velocity != Vector3.zero)
+		{
+			tr.forward = velocity.normalized;
+		}
 		velocity = velocity + collisionAvoidanceVelocity;
 	}
 
-	internal bool canSeeNext(ref MapGen.map map, int modifier) {
-		if (pathIndex + modifier< path.Count && pathIndex + modifier >= 0 && pathIndex + modifier < map.allNodes.Count) {
+	internal bool canSeeNext(MapGen.map map, int modifier)
+	{
+		if (pathIndex + modifier < path.Count && pathIndex + modifier >= 0 && pathIndex + modifier < map.allNodes.Count)
+		{
 			//Can we see next goal?
-			Vector3 next = map.allNodes[path[pathIndex+modifier]].getTargetPoint(transform.position);
-			Vector3 dir = next - transform.position;
-			if(!Physics.Raycast (transform.position, dir.normalized, dir.magnitude)) {
+			Vector3 pos = tr.position;
+			Vector3 next = map.allNodes[path[pathIndex + modifier]].getTargetPoint(pos, gameObject.GetInstanceID());
+			Vector3 targetPosition = pos - tr.forward * colliderRadius;
+			Vector3 dir = next - targetPosition;
+			Vector3 endPosition = targetPosition + (dir.normalized * dir.magnitude);
+			if (agentLayerMask == -1)
+			{
+				agentLayerMask = ~LayerMask.GetMask("Agent");
+			}
+			if (!Physics.Raycast(targetPosition, dir.normalized, out RaycastHit hit, dir.magnitude, agentLayerMask))
+			{
 				return true;
 			}
 		}
@@ -138,38 +195,53 @@ public class Agent : MonoBehaviour {
 	/**
 	 * Calculate the preferred velocity by looking at desired path
 	 **/ 
-	bool change = false;
-	internal void calculatePreferredVelocityMap(ref MapGen.map map) {
+	internal void calculatePreferredVelocityMap(MapGen.map map)
+	{
+		bool change = false;
 		previousDirection = preferredVelocity.normalized;
-		if ((transform.position - map.allNodes[path[pathIndex]].transform.position).magnitude < map.allNodes[path[pathIndex]].getThreshold() || (Grid.instance.skipNodeIfSeeNext && canSeeNext(ref map, 1))) {
+		Vector3 pos = tr.position;
+
+		if (map.allNodes[path[pathIndex]].IsAgentInsideArea(pos) || (grid.skipNodeIfSeeNext && canSeeNext(map, 1)))
+		{
 			//New node reached
 			collision = false;
 			pathIndex += 1;
-			if (pathIndex >= path.Count) {
+			if (pathIndex >= path.Count)
+			{
 				//Done
 				done = true;
-			} else {
-				Vector3 nextDirection = ((map.allNodes [path [pathIndex]].getTargetPoint(transform.position)) - transform.position).normalized;
-				if (Vector3.Angle (previousDirection, nextDirection) > 20.0f && Grid.instance.smoothTurns) {
-					preferredVelocity = Vector3.RotateTowards (velocity.normalized, nextDirection, Grid.instance.dt*((35.0f - 400*Grid.instance.dt) * Mathf.PI / 180.0f), 15.0f).normalized;
+			}
+			else
+			{
+				targetPoint = map.allNodes[path[pathIndex]].getTargetPoint(pos, gameObject.GetInstanceID());
+				Vector3 nextDirection = (targetPoint - pos).normalized;
+				if (Vector3.Angle(previousDirection, nextDirection) > 20.0f && grid.smoothTurns)
+				{
+					preferredVelocity = Vector3.RotateTowards(velocity.normalized, nextDirection, grid.dt * ((35.0f - 400 * grid.dt) * Mathf.PI / 180.0f), 15.0f).normalized;
 					change = true;
 				}
 			}
-		} else if(pathIndex > 0 && Grid.instance.walkBack && !canSeeNext(ref map, 0)) { //Can we see current heading? Are we trapped?
-			//No. We want to go back
-			preferredVelocity = (map.allNodes[path[pathIndex-1]].getTargetPoint(transform.position) - transform.position).normalized;
+		}
+		else if (pathIndex > 0 && grid.walkBack && !canSeeNext(map, 0))
+		{ //Can we see current heading? Are we trapped?
+		  //No. We want to go back
+			preferredVelocity = (map.allNodes[path[pathIndex - 1]].getTargetPoint(pos, gameObject.GetInstanceID()) - pos).normalized;
 			change = false;
-		} else {
+		}
+		else
+		{
 			collision = false;
-			Vector3 nextDirection = (map.allNodes [path [pathIndex]].getTargetPoint(transform.position) - transform.position).normalized;
-			if (change && Vector3.Angle (previousDirection, nextDirection) > 20.0f && Grid.instance.smoothTurns) {
-				preferredVelocity = Vector3.RotateTowards(velocity.normalized, nextDirection, Grid.instance.dt*((35.0f - 400*Grid.instance.dt) * Mathf.PI / 180.0f),  15.0f).normalized;
-			} else {
+			Vector3 nextDirection = (targetPoint - pos).normalized;
+			if (change && Vector3.Angle(previousDirection, nextDirection) > 20.0f && grid.smoothTurns)
+			{
+				preferredVelocity = Vector3.RotateTowards(velocity.normalized, nextDirection, grid.dt * ((35.0f - 400 * grid.dt) * Mathf.PI / 180.0f), 15.0f).normalized;
+			}
+			else
+			{
 				change = false;
-				preferredVelocity = (map.allNodes [path [pathIndex]].getTargetPoint(transform.position) - transform.position).normalized;
+				preferredVelocity = (targetPoint - pos).normalized;
 			}
 		}
-		//collision = false;
 		preferredVelocity = preferredVelocity * walkingSpeed;
 		preferredVelocity.y = 0f;
 	}
@@ -177,44 +249,55 @@ public class Agent : MonoBehaviour {
 	/**
 	 * Calculate the preferred velocity of a single uncharted point as a goal 
 	 **/
-	internal void calculatePreferredVelocityNoMap() {
-		if ((transform.position - noMapGoal).magnitude < MapGen.DEFAULT_THRESHOLD) {
+	internal void calculatePreferredVelocityNoMap()
+	{
+		Vector3 pos = tr.position;
+		if ((pos - noMapGoal).magnitude < MapGen.DEFAULT_THRESHOLD)
+		{
 			//New node reached
 			//Done
 			done = true;
-		} else {
-			preferredVelocity = (noMapGoal - transform.position).normalized;
+		}
+		else
+		{
+			preferredVelocity = (noMapGoal - pos).normalized;
 		}
 		preferredVelocity = preferredVelocity * walkingSpeed;
 		preferredVelocity.y = 0f;
 	}
 
-	internal virtual void calculatePreferredVelocity(ref MapGen.map map) {
-		if (noMap) {
-			calculatePreferredVelocityNoMap ();
-		} else {
-			calculatePreferredVelocityMap (ref map);
+	internal virtual void calculatePreferredVelocity(MapGen.map map)
+	{
+		if (noMap)
+		{
+			calculatePreferredVelocityNoMap();
+		}
+		else
+		{
+			calculatePreferredVelocityMap(map);
 		}
 	}
+
 	/**
 	 * Change the position of the agent and reset variables. 
 	 * Do animations.
 	 **/
-	internal void changePosition(ref MapGen.map map) {
-		if (done) {
+	internal void changePosition(MapGen.map map)
+	{
+		if (done)
+		{
 			return; // Don't do anything
-		} 
+		}
 
-		calculatePreferredVelocity(ref map);
-		setCorrectedVelocity ();
+		calculatePreferredVelocity(map);
+		setCorrectedVelocity();
 
-		prevPos = transform.position;
+		prevPos = tr.position;
 
-		Vector3 newPosition = transform.position + velocity * Grid.instance.dt;
-		newPosition.y = 0.0f;	// Lock Y position
-		transform.position = newPosition;
+		Vector3 newPosition = prevPos + velocity * grid.dt;
+		newPosition.y = 0.0f;   // Lock Y position
+		tr.position = newPosition;
 
-		if(rbody != null) { rbody.velocity = Vector3.zero; }
 		collisionAvoidanceVelocity = Vector3.zero;
 
 		Animate(prevPos);
@@ -222,7 +305,7 @@ public class Agent : MonoBehaviour {
 
 	void Animate(Vector3 previousPosition)
 	{
-		float realSpeed = Vector3.Distance (transform.position, previousPosition) / Mathf.Max(Grid.instance.dt, Time.deltaTime);
+		float realSpeed = Vector3.Distance (tr.position, previousPosition) / Mathf.Max(grid.dt, grid.dt);
 		if (animator != null) {
 	
 			if (realSpeed < 0.05f) {
@@ -236,23 +319,27 @@ public class Agent : MonoBehaviour {
 	/**
 	 * Do a bilinear interpolation of surrounding densities and come up with a density at this agents position.
 	 **/
-	internal float calculateDensityAtPosition() {
+	internal float calculateDensityAtPosition()
+	{
 		densityAtAgentPosition = 0.0f;
-		int xNeighbour = (int)(column + neighbourXWeight/Mathf.Abs(neighbourXWeight));	//Column for the neighbour which the agent contributes to
-		int zNeighbour = (int)(row + neighbourZWeight/Mathf.Abs(neighbourZWeight));		//Row for the neighbour which the agent contributes to
+		int xNeighbour = column + (int)Mathf.Sign(neighbourXWeight);    //Column for the neighbour which the agent contributes to
+		int zNeighbour = row + (int)Mathf.Sign(neighbourZWeight);       //Row for the neighbour which the agent contributes to
 
-		densityAtAgentPosition += Mathf.Abs(selfWeight)*Grid.instance.density[row, column];
+		densityAtAgentPosition += Mathf.Abs(selfWeight) * grid.density[row, column];
 
-		if (!((xNeighbour) < 0) & !((xNeighbour) > Grid.instance.cellsPerRow - 1)){	//As long as the cell exists
-			densityAtAgentPosition += Mathf.Abs(neighbourXWeight)*Grid.instance.density[row, xNeighbour];
+		if (xNeighbour >= 0 && xNeighbour < grid.nCellsX)
+		{   //As long as the cell exists
+			densityAtAgentPosition += Mathf.Abs(neighbourXWeight) * grid.density[row, xNeighbour];
 		}
 
-		if (!((zNeighbour) < 0) & !((zNeighbour) > Grid.instance.cellsPerRow - 1)){			//As long as the cell exists
-			densityAtAgentPosition += Mathf.Abs(neighbourZWeight)*Grid.instance.density[zNeighbour, column];
+		if (zNeighbour >= 0 && zNeighbour < grid.nCellsZ)
+		{           //As long as the cell exists
+			densityAtAgentPosition += Mathf.Abs(neighbourZWeight) * grid.density[zNeighbour, column];
 		}
 
-		if (!((zNeighbour) < 0) & !((zNeighbour) > Grid.instance.cellsPerRow - 1) & !((xNeighbour) < 0) & !((xNeighbour) > Grid.instance.cellsPerRow - 1)){	//As long as the cell exists
-			densityAtAgentPosition += Mathf.Abs(neighbourXZWeight)*Grid.instance.density[zNeighbour, xNeighbour];
+		if (zNeighbour >= 0 && zNeighbour < grid.nCellsZ && xNeighbour >= 0 && xNeighbour < grid.nCellsX)
+		{   //As long as the cell exists
+			densityAtAgentPosition += Mathf.Abs(neighbourXZWeight) * grid.density[zNeighbour, xNeighbour];
 		}
 		return densityAtAgentPosition;
 	}
@@ -260,38 +347,34 @@ public class Agent : MonoBehaviour {
 	/**
 	 * Calculate the continuum velocity caused by pressure from the grid
 	 **/
-	internal void calculateContinuumVelocity() {
-		Vector3 tempContinuumVelocity = new Vector3(0,0,0);
+	internal void calculateContinuumVelocity()
+	{
+		Vector3 tempContinuumVelocity = Vector3.zero;
 
-		int xNeighbour = (int)(column + neighbourXWeight/Mathf.Abs(neighbourXWeight));	//Column for the neighbour which the agent contributes to
-		int zNeighbour = (int)(row + neighbourZWeight/Mathf.Abs(neighbourZWeight));		//Row for the neighbour which the agent contributes to
+		int xNeighbour = column + (int)Mathf.Sign(neighbourXWeight);    //Column for the neighbour which the agent contributes to
+		int zNeighbour = row + (int)Mathf.Sign(neighbourZWeight);       //Row for the neighbour which the agent contributes to
 
 		// Sides in current cell
-		tempContinuumVelocity.x += selfLeftVelocityWeight*Grid.instance.cellMatrix[row, column].leftVelocityNode.velocity;
+		tempContinuumVelocity.x += selfLeftVelocityWeight * grid.cellMatrix[row, column].leftVelocityNode.velocity;
+		tempContinuumVelocity.x += selfRightVelocityWeight * grid.cellMatrix[row, column].rightVelocityNode.velocity;
+		tempContinuumVelocity.z += selfUpperVelocityWeight * grid.cellMatrix[row, column].upperVelocityNode.velocity;
+		tempContinuumVelocity.z += selfLowerVelocityWeight * grid.cellMatrix[row, column].lowerVelocityNode.velocity;
 
-		tempContinuumVelocity.x += selfRightVelocityWeight*Grid.instance.cellMatrix[row, column].rightVelocityNode.velocity;
-
-		tempContinuumVelocity.z += selfUpperVelocityWeight*Grid.instance.cellMatrix[row, column].upperVelocityNode.velocity;
-
-		tempContinuumVelocity.z += selfLowerVelocityWeight*Grid.instance.cellMatrix[row, column].lowerVelocityNode.velocity;
-
-		if (!((zNeighbour) < 0) & !((zNeighbour) > Grid.instance.cellsPerRow - 1)){	//As long as the cell exists
-			tempContinuumVelocity.x += neighbourLeftVelocityWeight*Grid.instance.cellMatrix[zNeighbour, column].leftVelocityNode.velocity;
-			tempContinuumVelocity.x += neighbourRightVelocityWeight*Grid.instance.cellMatrix[zNeighbour, column].rightVelocityNode.velocity;
+		if (zNeighbour >= 0 && zNeighbour < grid.nCellsZ)
+		{   //As long as the cell exists
+			tempContinuumVelocity.x += neighbourLeftVelocityWeight * grid.cellMatrix[zNeighbour, column].leftVelocityNode.velocity;
+			tempContinuumVelocity.x += neighbourRightVelocityWeight * grid.cellMatrix[zNeighbour, column].rightVelocityNode.velocity;
 		}
 
-		if (!((xNeighbour) < 0) & !((xNeighbour) > Grid.instance.cellsPerRow - 1)){			//As long as the cell exists
-			tempContinuumVelocity.z += neighbourUpperVelocityWeight*Grid.instance.cellMatrix[row, xNeighbour].upperVelocityNode.velocity;
-			tempContinuumVelocity.z += neighbourLowerVelocityWeight*Grid.instance.cellMatrix[row, xNeighbour].lowerVelocityNode.velocity;
+		if (xNeighbour >= 0 && xNeighbour < grid.nCellsX)
+		{           //As long as the cell exists
+			tempContinuumVelocity.z += neighbourUpperVelocityWeight * grid.cellMatrix[row, xNeighbour].upperVelocityNode.velocity;
+			tempContinuumVelocity.z += neighbourLowerVelocityWeight * grid.cellMatrix[row, xNeighbour].lowerVelocityNode.velocity;
 		}
 
-		if (float.IsNaN(tempContinuumVelocity.x)){
-			tempContinuumVelocity.Set (0, tempContinuumVelocity.y, tempContinuumVelocity.z);
-		}
+		if (float.IsNaN(tempContinuumVelocity.x)) tempContinuumVelocity.x = 0;
+		if (float.IsNaN(tempContinuumVelocity.z)) tempContinuumVelocity.z = 0;
 
-		if(float.IsNaN(continuumVelocity.z)){
-			tempContinuumVelocity.Set (tempContinuumVelocity.x, tempContinuumVelocity.y, 0);
-		}
 		continuumVelocity = tempContinuumVelocity;
 	}
 
@@ -299,54 +382,63 @@ public class Agent : MonoBehaviour {
 	 * Move command (and all it includes) for this agent.
 	 * Recalculate weights and contributions to grid after update.
 	 **/
-	internal void move(ref MapGen.map map) {
-		changePosition (ref map);
+	internal void move(MapGen.map map) {
+		changePosition (map);
 		calculateRowAndColumn ();
 		setWeights ();
-		Grid.instance.cellMatrix[row, column].addVelocity(this);
-		Grid.instance.cellMatrix[row, column].addDensity (this);
+		grid.cellMatrix[row, column].addVelocity(this);
+		grid.cellMatrix[row, column].addDensity (this);
 	}
 
 
 	/**
 	 * Set weight contributions to current cell radius. (Inverse bilinear interpolation)
 	 **/
-	public void setWeights(){
-		float cellLength = Grid.instance.cellLength;
-		float clSquared = Mathf.Pow (cellLength, 2);
-
+	public void setWeights()
+	{
 		//An area the size of a cell is surrounded by each point.
 		//AgentRelXPos: Side length of supposed area, outside current cell of agent - x direction
 		//AgentRelZPos: Side length of supposed area, outside current cell of agent - z direction
-		float sideOne = cellLength - Mathf.Abs(agentRelXPos); //Side length of supposed area of this agents position, x - direction
-		float sideTwo = cellLength - Mathf.Abs(agentRelZPos); //Side length of supposed area of this agents position, z - direction
+		float sideOne = cachedCellSize  - Mathf.Abs(agentRelXPos); //Side length of supposed area of this agents position, x - direction
+		float sideTwo = cachedCellSize  - Mathf.Abs(agentRelZPos); //Side length of supposed area of this agents position, z - direction
 
 		// Weights on smaller areas inside and outside current cell
 		//Area weight of neighboring cell in..
-		neighbourXWeight = sideTwo*agentRelXPos/clSquared; // x direction
-		neighbourZWeight = sideOne*agentRelZPos/clSquared; //z direction
-		neighbourXZWeight = agentRelXPos*agentRelZPos/clSquared; //both x and z direction (diagonal from this agent's cell)
-
-		//Own cell weight
-		selfWeight = sideOne*sideTwo/clSquared; 
-
+		neighbourXWeight = sideTwo * agentRelXPos / cachedCellSizeSquared; // x direction
+		neighbourZWeight = sideOne * agentRelZPos / cachedCellSizeSquared; //z direction
+		neighbourXZWeight = agentRelXPos * agentRelZPos / cachedCellSizeSquared; //both x and z direction (diagonal from this agent's cell)
+																	 //Own cell weight
+		selfWeight = sideOne * sideTwo / cachedCellSizeSquared;
 
 		//Now checking velocityNodes contribution
 		//Offsets from each velocity node's center (also seen as a cell on each node)
-		float rightShiftedRelXPos = cellLength / 2 + agentRelXPos;
-		float leftShiftedRelXPos  = cellLength / 2 - agentRelXPos;
-		float upperShiftedRelZPos = cellLength / 2 + agentRelZPos;
-		float lowerShiftedRelZPos = cellLength / 2 - agentRelZPos;
+		float rightShiftedRelXPos = cachedCellSize / 2 + agentRelXPos;
+		float leftShiftedRelXPos = cachedCellSize / 2 - agentRelXPos;
+		float upperShiftedRelZPos = cachedCellSize / 2 + agentRelZPos;
+		float lowerShiftedRelZPos = cachedCellSize / 2 - agentRelZPos;
 
 		//Weight contributions to different velocityNodes (area / totalCellArea)
-		selfRightVelocityWeight = rightShiftedRelXPos * sideTwo / clSquared;
-		selfLeftVelocityWeight  = leftShiftedRelXPos  * sideTwo / clSquared;
-		selfUpperVelocityWeight = upperShiftedRelZPos * sideOne / clSquared;
-		selfLowerVelocityWeight = lowerShiftedRelZPos * sideOne / clSquared;
+		selfRightVelocityWeight = rightShiftedRelXPos * sideTwo / cachedCellSizeSquared;
+		selfLeftVelocityWeight = leftShiftedRelXPos * sideTwo / cachedCellSizeSquared;
+		selfUpperVelocityWeight = upperShiftedRelZPos * sideOne / cachedCellSizeSquared;
+		selfLowerVelocityWeight = lowerShiftedRelZPos * sideOne / cachedCellSizeSquared;
 
-		neighbourRightVelocityWeight = rightShiftedRelXPos * Mathf.Abs(agentRelZPos) / clSquared;
-		neighbourLeftVelocityWeight  = leftShiftedRelXPos  * Mathf.Abs(agentRelZPos) / clSquared;
-		neighbourUpperVelocityWeight = upperShiftedRelZPos * Mathf.Abs(agentRelXPos) / clSquared;
-		neighbourLowerVelocityWeight = lowerShiftedRelZPos * Mathf.Abs(agentRelXPos) / clSquared;
+		neighbourRightVelocityWeight = rightShiftedRelXPos * Mathf.Abs(agentRelZPos) / cachedCellSizeSquared;
+		neighbourLeftVelocityWeight = leftShiftedRelXPos * Mathf.Abs(agentRelZPos) / cachedCellSizeSquared;
+		neighbourUpperVelocityWeight = upperShiftedRelZPos * Mathf.Abs(agentRelXPos) / cachedCellSizeSquared;
+		neighbourLowerVelocityWeight = lowerShiftedRelZPos * Mathf.Abs(agentRelXPos) / cachedCellSizeSquared;
+	}
+
+	internal void Reset()
+	{
+		rbody.velocity = Vector3.zero;
+		rbody.angularVelocity = Vector3.zero;
+		velocity = Vector3.zero;
+		preferredVelocity = Vector3.zero;
+		continuumVelocity = Vector3.zero;
+		collisionAvoidanceVelocity = Vector3.zero;
+		Vector3 pos = tr.position;
+		tr.position = new Vector3(pos.x, 0f, pos.z);
+		tr.rotation = Quaternion.identity;
 	}
 }

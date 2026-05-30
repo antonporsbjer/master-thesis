@@ -1,8 +1,10 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
 public class Main : MonoBehaviour {
+
+	public static Main instance;
 
 	public enum Method{
 		uniformSpawn,
@@ -22,7 +24,8 @@ public class Main : MonoBehaviour {
 	public LCPSolutioner solver;
 	
 
-	public float planeSize;
+	public float planeSizeX;
+	public float planeSizeZ;
 	
 
 	
@@ -39,15 +42,14 @@ public class Main : MonoBehaviour {
 	public Agent shirtColorPrefab;
 
 
-	public Grid gridPrefab;
-	public Spawner spawnerPrefab;
+	public SimulationGrid gridPrefab;
 	public MapGen mapGen;
 	public Plane plane;
 	internal static Vector2 xMinMax;
 	internal static Vector2 zMinMax;
 	internal MapGen.map roadmap;
 
-	public int cellsPerRow;
+	public int cellSize;
 	public int neighbourBins;
 	public int roadNodeAmount; // Number of nodes that are placed automatically
 	public bool visibleMap; // Show or hide the nodes in the world
@@ -59,7 +61,7 @@ public class Main : MonoBehaviour {
 	[Range(0.01f, 1f)]
 	public float alpha; 
 
-	List<Agent> agentList = new List<Agent>();
+	internal List<Agent> agentList = new List<Agent>();
 	public int maxNumberOfAgents = 1000; // Maximum number of agents when spawning continuously
 
 	public bool showSplattedDensity = false;
@@ -68,21 +70,23 @@ public class Main : MonoBehaviour {
 	public bool skipNodeIfSeeNext = false;
 	public bool smoothTurns = false;
 	public bool handleCollision = false;
+	private SimulationGrid simulationGrid;
+
+	void Awake()
+	{
+		instance = this;
+	}
 
 	/**
 	 * Initialize simulation by taking the user's options into consideration and spawn agents.
-	 * Then create the Staggered Grid along with all cells and velocity nodes.
+	 * Then create the Staggered SimulationGrid along with all cells and velocity nodes.
 	**/
 	void OnEnable () {
-		bool error = false; 
-		if (error)
-			return;
-		
-		plane.transform.localScale = new Vector3 (planeSize, 1.0f, planeSize);
-		Vector3 planeLength = plane.getLengths (); //Staggered grid length
-		xMinMax = new Vector2 (plane.transform.position.x - planeLength.x / 2, 
-			                   plane.transform.position.x + planeLength.x / 2);
-		zMinMax = new Vector2 (plane.transform.position.z - planeLength.z / 2, 
+		plane.transform.localScale = new Vector3(planeSizeX, 1.0f, planeSizeZ);
+		Vector3 planeLength = plane.getLengths(); //Staggered grid length
+		xMinMax = new Vector2(plane.transform.position.x - planeLength.x / 2,
+							   plane.transform.position.x + planeLength.x / 2);
+		zMinMax = new Vector2(plane.transform.position.z - planeLength.z / 2,
 							  plane.transform.position.z + planeLength.z / 2);
 
 		ringDiameter = agentAvoidanceRadius * 2; //Prefered distance between two agents
@@ -92,29 +96,47 @@ public class Main : MonoBehaviour {
 		roadmap = m.generateRoadMap (roadNodeAmount, xMinMax, zMinMax, visibleMap);
 
 
-		Grid grid = Instantiate (gridPrefab) as Grid;
+		SimulationGrid grid = Instantiate(gridPrefab) as SimulationGrid;
 		grid.showSplattedDensity = showSplattedDensity;
 		grid.showSplattedVelocity = showSplattedVelocity;
-		grid.cellsPerRow = cellsPerRow;
+		grid.cellSize = cellSize;
 		grid.agentMaxSpeed = agentMaxSpeed;
 		grid.ringDiameter = ringDiameter;
 		grid.usePresetGroupDistances = usePresetGroupDistances;
-		grid.groupDistances = new float[] {p1p2, p2p3, p3p4};
+		grid.groupDistances = new float[] { p1p2, p2p3, p3p4 };
 		grid.mapGen = mapGen;
-		grid.dt = timeStep; 
+		grid.dt = timeStep;
 		grid.neighbourBins = neighbourBins;
 		grid.solver = solver;
 		grid.solverEpsilon = epsilon;
 		grid.solverMaxIterations = solverMaxIterations;
 		grid.colHandler = handleCollision;
 		grid.agentAvoidanceRadius = agentAvoidanceRadius;
-		Grid.instance = grid;
-		Grid.instance.initGrid (xMinMax, zMinMax, alpha, agentAvoidanceRadius);
+		SimulationGrid.instance = grid;
+		SimulationGrid.instance.initGrid(xMinMax, zMinMax, alpha, agentAvoidanceRadius);
 
 		for (int i = 0; i < roadmap.spawns.Count; ++i)
-			roadmap.spawns[i].spawner.InitializeSpawner (ref agentPrefabs, ref groupAgentPrefabs, ref shirtColorPrefab, ref roadmap, 
-											 ref agentList, xMinMax, zMinMax, agentAvoidanceRadius);
-		
+		{
+			roadmap.spawns[i].spawner.InitializeSpawner(roadmap, xMinMax, zMinMax);
+		}
+
+		if(customTimeStep)
+		{
+			Physics.simulationMode = SimulationMode.Script;
+			Debug.Log("Simulation mode set to Script");
+		}
+
+		simulationGrid = SimulationGrid.instance;
+
+		simulationGrid.solver = solver;
+		simulationGrid.solverEpsilon = epsilon;
+		simulationGrid.solverMaxIterations = solverMaxIterations;
+		//flags
+		simulationGrid.showSplattedDensity = showSplattedDensity;
+		simulationGrid.showSplattedVelocity = showSplattedVelocity;
+		simulationGrid.walkBack = walkBack;
+		simulationGrid.skipNodeIfSeeNext = skipNodeIfSeeNext;
+		simulationGrid.smoothTurns = smoothTurns;
 	}
 	
 
@@ -122,38 +144,50 @@ public class Main : MonoBehaviour {
 	 * Main simulation loop which is called every frame
 	**/
 	void Update () {
-		Grid.instance.solver = solver;
-		Grid.instance.solverEpsilon = epsilon;
-		Grid.instance.solverMaxIterations = solverMaxIterations;
+
+		simulationGrid.dt = customTimeStep ? timeStep : Time.deltaTime;
 
 		// Update grid with new density and velocity values
-		Grid.instance.updateCellDensity ();
-		Grid.instance.updateVelocityNodes ();
+		simulationGrid.updateCellDensity ();
+		simulationGrid.updateVelocityNodes ();
 		//Solve linear constraint problem
-		Grid.instance.PsolveRenormPsolve ();
+		simulationGrid.PsolveRenormPsolve ();
 		//Move agents
 		for (int i = agentList.Count - 1; i >= 0; i--)
 		{
 			Agent agent = agentList[i];
+
+			agent.CheckPositionAndRotation();
+
+			// remove agent if it is outside the bounds of the plane
+			if (Mathf.Abs(agent.tr.position.x) > planeSizeX * 5f || Mathf.Abs(agent.tr.position.z) > planeSizeZ * 5f || agent.tr.position.y > 0.5f)
+			{
+				Debug.LogWarning("Agent outside of bounds, removing");
+				agentList.RemoveAt(i);
+				Destroy(agent.gameObject);
+			}
+
 			if (agent.done)
 			{
 				Destroy(agent.gameObject);
 				agentList.RemoveAt(i);
 				continue;
 			}
-			agent.move(ref roadmap);
+			agent.move(roadmap);
+			agent.rbody.velocity = Vector3.zero;
+			agent.rbody.angularVelocity = Vector3.zero;
 		}
 		//Pair-wise collision handling between agents
-		Grid.instance.collisionHandling(ref agentList);
+		simulationGrid.collisionHandling(agentList);
 
-		//flags
-		Grid.instance.showSplattedDensity = showSplattedDensity;
-		Grid.instance.showSplattedVelocity = showSplattedVelocity;
-		Grid.instance.walkBack = walkBack;
-		Grid.instance.skipNodeIfSeeNext = skipNodeIfSeeNext;
-		Grid.instance.smoothTurns = smoothTurns;
+		for (int i = 0; i < roadmap.spawns.Count; ++i)
+			{
+				roadmap.spawns[i].spawner.UpdateSpawner();
+			}
 
-		Grid.instance.dt = customTimeStep ? timeStep : Time.deltaTime;
-
+		if(customTimeStep)
+		{
+			Physics.Simulate(simulationGrid.dt);
+		}
 	}
 }
