@@ -28,10 +28,6 @@ public class Agent : MonoBehaviour {
 	public float currentSpeed;
 	private SimulationGrid grid;
 
-	// Waiting
-	internal bool isWaitingAgent;
-	internal Vector3 waitingSpot;
-
 	internal Transform tr;
 	private float cachedCellSize;
 	private float cachedCellSizeSquared;
@@ -444,37 +440,5 @@ public class Agent : MonoBehaviour {
 		Vector3 pos = tr.position;
 		tr.position = new Vector3(pos.x, 0f, pos.z);
 		tr.rotation = Quaternion.identity;
-	}
-
-	public void setWaitingAgent()
-	{
-		isWaitingAgent = true;
-	}
-
-	public void setWaitingSpot(Vector3 waitingSpot)
-	{
-		this.waitingSpot = waitingSpot;
-	}
-
-	public void teleportAgent(Vector3 newPosition)
-	{
-		newPosition.y = 0.0f;
-		tr.position = newPosition;
-	}
-
-	public void setAnimatorStanding(bool isStanding)
-	{
-		if (animator != null)
-		{
-			animator.SetBool("Standing", isStanding);
-		}
-	}
-
-	public void rotateAgent(Vector3 target)
-	{
-		Vector3 direction = target - tr.position;
-		tr.rotation = Quaternion.LookRotation(direction);
-		rbody.velocity = Vector3.zero;
-		rbody.angularVelocity = Vector3.zero;
 	}
 }

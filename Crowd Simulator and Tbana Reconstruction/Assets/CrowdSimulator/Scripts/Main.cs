@@ -71,7 +71,6 @@ public class Main : MonoBehaviour {
 	public bool smoothTurns = false;
 	public bool handleCollision = false;
 	private SimulationGrid simulationGrid;
-	private WaitingAreaController waitingAreaController;
 
 	void Awake()
 	{
@@ -95,13 +94,6 @@ public class Main : MonoBehaviour {
 		//Creates roadmap / pathfinding for agents based on map
 		MapGen m = Instantiate (mapGen) as MapGen; 
 		roadmap = m.generateRoadMap (roadNodeAmount, xMinMax, zMinMax, visibleMap);
-
-		waitingAreaController = FindObjectOfType<WaitingAreaController>();
-		if(waitingAreaController != null)
-		{
-			waitingAreaController.Initialize();
-		}
-
 
 		SimulationGrid grid = Instantiate(gridPrefab) as SimulationGrid;
 		grid.showSplattedDensity = showSplattedDensity;
@@ -176,15 +168,8 @@ public class Main : MonoBehaviour {
 
 			if (agent.done)
 			{
-				if(agent.isWaitingAgent)
-				{
-					waitingAreaController.putAgentInWaitingArea(agent);
-				}
-				else
-				{
-					Destroy(agent.gameObject);
-					agentList.RemoveAt(i);
-				}
+				Destroy(agent.gameObject);
+				agentList.RemoveAt(i);
 				continue;
 			}
 			agent.move(roadmap);
