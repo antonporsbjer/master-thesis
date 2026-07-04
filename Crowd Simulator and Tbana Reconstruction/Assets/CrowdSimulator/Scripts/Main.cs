@@ -71,6 +71,9 @@ public class Main : MonoBehaviour {
 	public bool smoothTurns = false;
 	public bool handleCollision = false;
 	private SimulationGrid simulationGrid;
+	public ExperimentHUD experimentHUD;
+	private float simulationStartTimer = 0f;
+	private bool simulationStarted = false;
 
 	void Awake()
 	{
@@ -125,6 +128,13 @@ public class Main : MonoBehaviour {
 			Debug.Log("Simulation mode set to Script");
 		}
 
+		experimentHUD = FindObjectOfType<ExperimentHUD>();
+		if (experimentHUD == null)
+		{
+			Debug.LogError("ExperimentHUD not found in scene");
+			return;
+		}
+
 		simulationGrid = SimulationGrid.instance;
 
 		simulationGrid.solver = solver;
@@ -143,6 +153,12 @@ public class Main : MonoBehaviour {
 	 * Main simulation loop which is called every frame
 	**/
 	void Update () {
+
+		if(!simulationStarted)
+		{
+			StartSimulation();
+			return;
+		}
 
 		simulationGrid.dt = customTimeStep ? timeStep : Time.deltaTime;
 		GridParallelBridge.Instance.BatchAndRunFrameRaycasts(agentList, roadmap, simulationGrid);
@@ -191,6 +207,18 @@ public class Main : MonoBehaviour {
 		if(customTimeStep)
 		{
 			Physics.Simulate(simulationGrid.dt);
+		}
+
+		experimentHUD.RegisterSimTick();
+	}
+
+	private void StartSimulation()
+	{
+		simulationStartTimer -= Time.deltaTime;
+		if (simulationStartTimer <= 0f)
+		{
+			simulationStarted = true;
+			experimentHUD.realTimeStart = Time.realtimeSinceStartup;
 		}
 	}
 
