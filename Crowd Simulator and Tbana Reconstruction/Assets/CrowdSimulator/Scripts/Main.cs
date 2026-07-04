@@ -145,10 +145,16 @@ public class Main : MonoBehaviour {
 	void Update () {
 
 		simulationGrid.dt = customTimeStep ? timeStep : Time.deltaTime;
+		GridParallelBridge.Instance.BatchAndRunFrameRaycasts(agentList, roadmap, simulationGrid);
 
 		// Update grid with new density and velocity values
 		simulationGrid.updateCellDensity ();
 		simulationGrid.updateVelocityNodes ();
+
+		GridParallelBridge.Instance.CopyManagedGridToNative(simulationGrid.density, simulationGrid.nCellsX, simulationGrid.nCellsZ);
+		GridParallelBridge.Instance.CalculateAgentDensitiesInParallel(agentList, simulationGrid);
+
+
 		//Solve linear constraint problem
 		simulationGrid.PsolveRenormPsolve ();
 		//Move agents
@@ -177,7 +183,9 @@ public class Main : MonoBehaviour {
 			agent.rbody.angularVelocity = Vector3.zero;
 		}
 		//Pair-wise collision handling between agents
-		simulationGrid.collisionHandling(agentList);
+		//simulationGrid.collisionHandling(agentList);
+
+		GridParallelBridge.Instance.RunParallelCollisionAvoidance(agentList, simulationGrid, xMinMax, zMinMax);
 
 
 		if(customTimeStep)

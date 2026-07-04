@@ -33,11 +33,15 @@ public class Agent : MonoBehaviour {
 	private float cachedCellSizeSquared;
 
 	private static int agentLayerMask = -1;
-	private float colliderRadius;
+	internal float colliderRadius;
 	internal Renderer agentRenderer;
 	private Main mainScript;
 	internal int goal;
 	internal Vector3 targetPoint;
+	internal bool hasCachedCanSeeNext_0 = false;
+	internal bool cachedCanSeeNext_0 = false;
+	internal bool hasCachedCanSeeNext_1 = false;
+	internal bool cachedCanSeeNext_1 = false;
 
 	void Awake()
 	{
@@ -173,6 +177,15 @@ public class Agent : MonoBehaviour {
 
 	internal bool canSeeNext(MapGen.map map, int modifier)
 	{
+		if (modifier == 0 && hasCachedCanSeeNext_0)
+		{
+			return cachedCanSeeNext_0;
+		}
+		if (modifier == 1 && hasCachedCanSeeNext_1)
+		{
+			return cachedCanSeeNext_1;
+		}
+		
 		if (pathIndex + modifier < path.Count && pathIndex + modifier >= 0 && pathIndex + modifier < map.allNodes.Count)
 		{
 			//Can we see next goal?
@@ -187,7 +200,12 @@ public class Agent : MonoBehaviour {
 			}
 			if (!Physics.Raycast(targetPosition, dir.normalized, out RaycastHit hit, dir.magnitude, agentLayerMask))
 			{
+				Debug.DrawLine(targetPosition, endPosition, Color.green);
 				return true;
+			}
+			else
+			{
+				Debug.DrawLine(targetPosition, hit.point, Color.red);
 			}
 		}
 		return false;
