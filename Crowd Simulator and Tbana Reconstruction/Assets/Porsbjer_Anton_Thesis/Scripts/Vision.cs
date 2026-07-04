@@ -157,8 +157,7 @@ public class Vision : MonoBehaviour
                 if (canSeeSign)
                 {
                     isVisible = true; // Mark as visible
-                    // TODO_ANTON: Make it possble to use custom time steps (simulationGrid.dt).
-                    continuousExposureTime += Time.deltaTime; // Increment exposure timer
+                    continuousExposureTime += SimulationGrid.instance.dt; // Increment exposure timer
                     // Debug.Log(agentType + ", ID: " + agentId + ", can see the sign.");
                 }
                 else
