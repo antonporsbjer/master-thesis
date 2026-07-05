@@ -194,8 +194,21 @@ public class BatchSimulationManager : MonoBehaviour
                     dataCollector.dataRecord.global.signComprehensionTime = vca.comprehensionTime;
                 }
 
-                // 5. Let the simulation run for the specified duration (scaled time)
-                yield return new WaitForSeconds(simulationDurationPerRun);
+                // 5. Let the simulation run for the specified duration (simulation time via SimulationGrid.dt)
+                float elapsedSimTime = 0f;
+                while (elapsedSimTime < simulationDurationPerRun)
+                {
+                    if (SimulationGrid.instance != null)
+                    {
+                        elapsedSimTime += SimulationGrid.instance.dt;
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[BatchSimulationManager] No SimulationGrid found. Using Time.deltaTime.");
+                        elapsedSimTime += Time.deltaTime;
+                    }
+                    yield return null;
+                }
 
                 // 6. Save Data
                 dataCollector.SaveRun(runCounter);
@@ -206,7 +219,6 @@ public class BatchSimulationManager : MonoBehaviour
 
         BatchFinished:
         // Cleanup
-        Time.timeScale = 1f;
         isBatching = false;
         Debug.Log($"[BatchSimulationManager] BATCH COMPLETE! Processed {processedRunsCount} runs in total.");
         
