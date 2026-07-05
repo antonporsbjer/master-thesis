@@ -9,14 +9,12 @@ public class BatchSimulationManager : MonoBehaviour
     public float simulationDurationPerRun = 30f; // Seconds to run each scenario Run faster than real-time
     
     [Header("Run Limits")]
-    [Tooltip("If greater than 0, the batch will stop after this many complete runs. Useful for chunking tests overnight.")]
-    public int maxRunsToExecute = 0;
+    [Tooltip("Calculated total runs to execute based on bounds and step size. (Auto-updates)")]
+    [SerializeField]
+    private int runsToExecute = 0;
     
     [Header("Grid Configuration")]
-    public float minX = -5f;
-    public float maxX = 5f;
-    public float minZ = -5f;
-    public float maxZ = 5f;
+    public GameObject signGridBounds;
     public float stepSize = 1f;
     
     [Header("Simulated Sign Orientations (Degrees)")]
@@ -29,11 +27,67 @@ public class BatchSimulationManager : MonoBehaviour
     
     private int runCounter = 1;
     private bool isBatching = false;
+    
+    private float minX = 0f;
+    private float maxX = 0f;
+    private float minZ = 0f;
+    private float maxZ = 0f;
+
+    private void OnValidate()
+    {
+        if (signGridBounds != null && signGridBounds.transform.childCount > 0 && stepSize > 0)
+        {
+            float tMinX = float.MaxValue;
+            float tMaxX = float.MinValue;
+            float tMinZ = float.MaxValue;
+            float tMaxZ = float.MinValue;
+
+            foreach (Transform child in signGridBounds.transform)
+            {
+                Vector3 pos = child.position;
+                if (pos.x < tMinX) tMinX = pos.x;
+                if (pos.x > tMaxX) tMaxX = pos.x;
+                if (pos.z < tMinZ) tMinZ = pos.z;
+                if (pos.z > tMaxZ) tMaxZ = pos.z;
+            }
+
+            int stepsX = Mathf.FloorToInt((tMaxX - tMinX) / stepSize) + 1;
+            int stepsZ = Mathf.FloorToInt((tMaxZ - tMinZ) / stepSize) + 1;
+            runsToExecute = stepsX * stepsZ;
+        }
+    }
 
     void Start()
     {
         if (runBatchSimulation)
         {
+            if (signGridBounds != null && signGridBounds.transform.childCount > 0)
+            {
+                minX = float.MaxValue;
+                maxX = float.MinValue;
+                minZ = float.MaxValue;
+                maxZ = float.MinValue;
+
+                foreach (Transform child in signGridBounds.transform)
+                {
+                    Vector3 pos = child.position;
+                    if (pos.x < minX) minX = pos.x;
+                    if (pos.x > maxX) maxX = pos.x;
+                    if (pos.z < minZ) minZ = pos.z;
+                    if (pos.z > maxZ) maxZ = pos.z;
+                }
+                
+                int stepsX = Mathf.FloorToInt((maxX - minX) / stepSize) + 1;
+                int stepsZ = Mathf.FloorToInt((maxZ - minZ) / stepSize) + 1;
+                runsToExecute = stepsX * stepsZ;
+
+                Debug.Log($"[BatchSimulationManager] Auto-configured Grid Bounds from {signGridBounds.name}'s children: X[{minX}, {maxX}], Z[{minZ}, {maxZ}]. Expected total runs: {runsToExecute}");
+            }
+            else
+            {
+                Debug.LogWarning("[BatchSimulationManager] signGridBounds is not assigned or has no children! Grid bounds will be zero.");
+            }
+
             VisibilityVolume vca = FindObjectOfType<VisibilityVolume>();
             if (vca == null)
             {
@@ -86,9 +140,9 @@ public class BatchSimulationManager : MonoBehaviour
             for (currentX = minX; currentX <= maxX; currentX += stepSize)
             {
                 // Check if we hit the user-specified limit
-                if (maxRunsToExecute > 0 && processedRunsCount >= maxRunsToExecute)
+                if (runsToExecute > 0 && processedRunsCount >= runsToExecute)
                 {
-                    Debug.Log($"[BatchSimulationManager] Reached the maximum run limit of {maxRunsToExecute}. Ending batch early.");
+                    Debug.Log($"[BatchSimulationManager] Reached the maximum run limit of {runsToExecute}. Ending batch early.");
                     goto BatchFinished; // Jump out of all nested loops
                 }
 
