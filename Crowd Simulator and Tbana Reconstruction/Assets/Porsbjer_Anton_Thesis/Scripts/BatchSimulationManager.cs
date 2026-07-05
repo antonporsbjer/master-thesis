@@ -6,8 +6,7 @@ public class BatchSimulationManager : MonoBehaviour
 {
     [Header("Batch Configuration")]
     public bool runBatchSimulation = false;
-    public float simulationDurationPerRun = 30f; // Seconds to run each scenario
-    public float timeScaleMultiplier = 5f; // Run faster than real-time
+    public float simulationDurationPerRun = 30f; // Seconds to run each scenario Run faster than real-time
     
     [Header("Run Limits")]
     [Tooltip("If greater than 0, the batch will stop after this many complete runs. Useful for chunking tests overnight.")]
@@ -71,8 +70,7 @@ public class BatchSimulationManager : MonoBehaviour
     private IEnumerator RunBatch()
     {
         isBatching = true;
-        Time.timeScale = timeScaleMultiplier;
-        Debug.Log($"[BatchSimulationManager] Starting batch simulation at {timeScaleMultiplier}x speed.");
+        Debug.Log($"[BatchSimulationManager] Starting batch simulation.");
 
         float currentX = minX;
         float currentZ = minZ;
