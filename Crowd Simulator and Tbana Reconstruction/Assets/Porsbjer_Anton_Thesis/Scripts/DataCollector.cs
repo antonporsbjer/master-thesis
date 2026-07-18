@@ -151,6 +151,51 @@ public class DataCollector : MonoBehaviour
         }
     }
 
+    // Save a 2D density matrix to a CSV file
+    public void SaveDensityMatrix(float[,] densityMatrix, float[] xCoords, float[] zCoords, int runIndex = -1)
+    {
+        try
+        {
+            string folderPath = Application.persistentDataPath;
+            string timePart = dataRecord.global != null ? dataRecord.global.timestamp.ToString("yyyy-MM-dd_HH.mm.ss") : DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+            string runPart = runIndex > 0 ? $"_run{runIndex}" : "";
+            
+            string csvFileName = $"density_matrix_{timePart}{runPart}.csv";
+            string csvFilePath = Path.Combine(folderPath, csvFileName);
+
+            if (!Directory.Exists(folderPath))
+                Directory.CreateDirectory(folderPath);
+
+            System.Text.StringBuilder csv = new System.Text.StringBuilder();
+
+            // Header Row: Blank for top-left cell, then X coordinates
+            csv.Append("Z_Coord/X_Coord");
+            for (int x = 0; x < xCoords.Length; x++)
+            {
+                csv.Append($",{xCoords[x].ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+            }
+            csv.AppendLine();
+
+            // Data Rows: Z coordinate, then density values
+            for (int z = 0; z < zCoords.Length; z++)
+            {
+                csv.Append(zCoords[z].ToString(System.Globalization.CultureInfo.InvariantCulture));
+                for (int x = 0; x < xCoords.Length; x++)
+                {
+                    csv.Append($",{densityMatrix[z, x].ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+                }
+                csv.AppendLine();
+            }
+
+            File.WriteAllText(csvFilePath, csv.ToString());
+            Debug.Log($"[DataCollector] Density matrix saved to {csvFilePath}");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"[DataCollector] Failed to save density matrix: {ex.Message}");
+        }
+    }
+
     // prepare a fresh record for the next run (keeps scenarioId if present)
     public void ResetForNextRun()
     {

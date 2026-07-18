@@ -261,6 +261,7 @@ public class BatchSimulationManager : MonoBehaviour
 
                 // 6. Save Data
                 dataCollector.SaveRun(runCounter);
+                SaveDensityMatrixData(runCounter);
                 runCounter++;
                 processedRunsCount++;
             }
@@ -299,5 +300,47 @@ public class BatchSimulationManager : MonoBehaviour
         }
         
         // Let one frame pass to ensure objects are destroyed and spawners can reset
+    }
+
+    private void SaveDensityMatrixData(int currentRunIndex)
+    {
+        if (SimulationGrid.instance == null || dataCollector == null) return;
+
+        int nZ = SimulationGrid.instance.nCellsZ;
+        int nX = SimulationGrid.instance.nCellsX;
+
+        int startZ = -1, endZ = -1, startX = -1, endX = -1;
+
+        // Find index bounds based on physical signGrid bounds
+        for (int z = 0; z < nZ; z++) {
+            for (int x = 0; x < nX; x++) {
+                Vector3 pos = SimulationGrid.instance.cellCenters[z, x];
+                if (pos.x >= minX && pos.x <= maxX && pos.z >= minZ && pos.z <= maxZ) {
+                    if (startZ == -1 || z < startZ) startZ = z;
+                    if (endZ == -1 || z > endZ) endZ = z;
+                    if (startX == -1 || x < startX) startX = x;
+                    if (endX == -1 || x > endX) endX = x;
+                }
+            }
+        }
+
+        if (startZ == -1) return; // No cells found in grid bounds
+
+        int rows = endZ - startZ + 1;
+        int cols = endX - startX + 1;
+
+        float[,] croppedDensity = new float[rows, cols];
+        float[] xCoords = new float[cols];
+        float[] zCoords = new float[rows];
+
+        for (int z = 0; z < rows; z++) {
+            zCoords[z] = SimulationGrid.instance.cellCenters[startZ + z, startX].z;
+            for (int x = 0; x < cols; x++) {
+                if (z == 0) xCoords[x] = SimulationGrid.instance.cellCenters[startZ, startX + x].x;
+                croppedDensity[z, x] = SimulationGrid.instance.density[startZ + z, startX + x];
+            }
+        }
+
+        dataCollector.SaveDensityMatrix(croppedDensity, xCoords, zCoords, currentRunIndex);
     }
 }
