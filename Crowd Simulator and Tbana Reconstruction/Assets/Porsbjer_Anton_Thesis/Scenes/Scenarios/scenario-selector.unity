@@ -2363,6 +2363,51 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4000011914076574, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
   m_PrefabInstance: {fileID: 737639375}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &740734586
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 740734588}
+  - component: {fileID: 740734587}
+  m_Layer: 0
+  m_Name: SpawnManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &740734587
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 740734586}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7dedbc96db446a4b88370b5b07721c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  allSpawners: []
+--- !u!4 &740734588
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 740734586}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.6761529, y: -23.891607, z: -11.432412}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &756351425
 GameObject:
   m_ObjectHideFlags: 0
@@ -5170,11 +5215,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   runBatchSimulation: 1
-  simulationDurationPerRun: 15
+  simulationDurationPerRun: 30
   activeScenario: 1
-  runsToExecute: 24
+  rq1DensityProfiles:
+  - uicAlpha: 0.125
+    spawnRate: 0.125
+  - uicAlpha: 0.25
+    spawnRate: 0.25
+  - uicAlpha: 0.5
+    spawnRate: 0.5
+  - uicAlpha: 1
+    spawnRate: 1
+  - uicAlpha: 2
+    spawnRate: 2
+  runsToExecute: 1
   signGridBounds: {fileID: 1910036042}
-  stepSize: 4
+  stepSize: 173
   orientationType: 0
   signObject: {fileID: 1648847951}
   dataCollector: {fileID: 1321634896}
@@ -7686,6 +7742,7 @@ SceneRoots:
   - {fileID: 1321634897}
   - {fileID: 1669032649}
   - {fileID: 1507656050}
+  - {fileID: 740734588}
   - {fileID: 1255543785}
   - {fileID: 1685341944}
   - {fileID: 2080022737}

@@ -8,6 +8,33 @@ public class BatchSimulationManager : MonoBehaviour
     public bool runBatchSimulation = false;
     public float simulationDurationPerRun = 30f; // Seconds to run each scenario Run faster than real-time
     
+    public enum ScenarioType { Motamedi_Scenario_C_Grid, Custom_Density_RQ1 }
+    [Header("Scenario Settings")]
+    public ScenarioType activeScenario = ScenarioType.Motamedi_Scenario_C_Grid;
+
+    [System.Serializable]
+    public struct DensityProfile
+    {
+        public float uicAlpha;
+        public float spawnRate;
+    }
+
+    [Tooltip("Profiles to iterate through when activeScenario is Custom_Density_RQ1")]
+    public DensityProfile[] rq1DensityProfiles = new DensityProfile[]
+    {
+        // Comfortable / Low Density: Agents spawn slowly, maintain large personal space
+        new DensityProfile { uicAlpha = 0.25f, spawnRate = 0.25f },
+        
+        // Normal / Medium Density
+        new DensityProfile { uicAlpha = 0.5f,  spawnRate = 0.5f },
+        
+        // Dense / Rush Hour
+        new DensityProfile { uicAlpha = 1.0f, spawnRate = 1.0f },
+        
+        // Extreme / Crowd Crush: Agents flood in, pack physically shoulder-to-shoulder
+        new DensityProfile { uicAlpha = 2.0f,  spawnRate = 2.0f }
+    };
+    
     [Header("Run Limits")]
     [Tooltip("Calculated total runs to execute based on bounds and step size. (Auto-updates)")]
     [SerializeField]
@@ -130,29 +157,51 @@ public class BatchSimulationManager : MonoBehaviour
         float currentZ = minZ;
         float yaw = (float)orientationType;
 
+        // Density thresholds to test for RQ1
+        DensityProfile[] densityThresholds = activeScenario == ScenarioType.Custom_Density_RQ1 
+            ? rq1DensityProfiles 
+            : new DensityProfile[] { new DensityProfile { uicAlpha = 1.0f, spawnRate = 1.0f } }; // Just default if not doing RQ1
+
         // Iterate Orientations
         int processedRunsCount = 0;
 
-        // Iterate Z
+        foreach (DensityProfile profile in densityThresholds)
+        {
+            // Iterate Z
         for (currentZ = minZ; currentZ <= maxZ; currentZ += stepSize)
         {
             // Iterate X
             for (currentX = minX; currentX <= maxX; currentX += stepSize)
             {
                 // Check if we hit the user-specified limit
-                if (runsToExecute > 0 && processedRunsCount >= runsToExecute)
+                if (runsToExecute > 0 && processedRunsCount >= runsToExecute && activeScenario != ScenarioType.Custom_Density_RQ1)
                 {
                     Debug.Log($"[BatchSimulationManager] Reached the maximum run limit of {runsToExecute}. Ending batch early.");
                     goto BatchFinished; // Jump out of all nested loops
                 }
 
-                Debug.Log($"[BatchSimulationManager] Run {runCounter}: Placing sign at ({currentX}, {currentZ}) Yaw: {yaw}");
+                Debug.Log($"[BatchSimulationManager] Run {runCounter}: Placing sign at ({currentX}, {currentZ}) Yaw: {yaw} Alpha: {profile.uicAlpha} SpawnRate: {profile.spawnRate}");
                 
                 // 1. Reset Global Data
                 dataCollector.ResetForNextRun();
                 
                 // 2. Clear out any existing agents from the previous run
                 ClearExistingAgents();
+
+                // 2.5 Set the grid density (UIC alpha parameter) and Spawn Rate
+                if (SimulationGrid.instance != null)
+                {
+                    SimulationGrid.instance.alpha = profile.uicAlpha;
+                }
+                
+                if (SpawnerManager.instance != null)
+                {
+                    SpawnerManager.instance.SetGlobalSpawnRate(profile.spawnRate);
+                }
+                else
+                {
+                    Debug.LogWarning("[BatchSimulationManager] No SpawnerManager instance found. Spawn rate won't be updated.");
+                }
 
                 // 3. Move the sign
                 Vector3 targetPosition = new Vector3(currentX, signObject.transform.position.y, currentZ);
@@ -216,6 +265,7 @@ public class BatchSimulationManager : MonoBehaviour
                 processedRunsCount++;
             }
         }
+        } // End of Density Loop
 
         BatchFinished:
         // Cleanup
