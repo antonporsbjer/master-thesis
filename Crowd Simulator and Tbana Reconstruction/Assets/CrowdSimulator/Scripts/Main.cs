@@ -160,7 +160,9 @@ public class Main : MonoBehaviour {
 			return;
 		}
 
-		simulationGrid.dt = customTimeStep ? timeStep : Time.deltaTime;
+		// Cap dt at 0.05f (20fps equivalent) to prevent physics explosions and LCP solver breaking if a lag spike occurs
+		float dtRaw = customTimeStep ? timeStep : Time.deltaTime;
+		simulationGrid.dt = Mathf.Min(dtRaw, 0.05f);
 		GridParallelBridge.Instance.BatchAndRunFrameRaycasts(agentList, roadmap, simulationGrid);
 
 		// Update grid with new density and velocity values

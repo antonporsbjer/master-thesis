@@ -66,20 +66,20 @@ public class NewSpawner : MonoBehaviour {
 
 	internal IEnumerator spawnContinously(float continousSpawnRate) {
 		Transform spawnerNode = transform.GetChild(0);
-		if(usePoisson)
-		{
-			float timeBetweenSpawn = CalculateTimeBetweenSpawns();
-			yield return new WaitForSeconds (timeBetweenSpawn);
-			
-		}
-		else
-		{
-			yield return new WaitForSeconds (continousSpawnRate);
+		
+		float timeBetweenSpawn = usePoisson ? CalculateTimeBetweenSpawns() : continousSpawnRate;
+		
+		// Wait using Simulation time instead of Real time!
+		float waitTimer = timeBetweenSpawn;
+		while (waitTimer > 0) {
+			waitTimer -= SimulationGrid.instance != null ? SimulationGrid.instance.dt : Time.deltaTime;
+			yield return null;
 		}
 		
 		if (agentList.Count < mainScript.maxNumberOfAgents) 
-    {
-			Vector3 startPos = new Vector3 (Random.Range (-0.5f, 0.5f), 0f, Random.Range (-0.5f, 0.5f)); 
+		{
+			// Optional: Widen the spawn area slightly to prevent instant overlap
+			Vector3 startPos = new Vector3 (Random.Range (-1.0f, 1.0f), 0f, Random.Range (-1.0f, 1.0f)); 
 			startPos = spawnerNode.TransformPoint (startPos);
 			spawnOneAgent(startPos);
 		}

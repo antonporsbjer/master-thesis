@@ -24,6 +24,8 @@ public class Vision : MonoBehaviour
     private float checkTimer = 0f;
     private float checkInterval = 0.2f; // Evaluate 5 times per second
 
+    private List<VisibilityVolume> activeVCAs = new List<VisibilityVolume>(); // Track which VCAs we are physically inside
+
     void Awake()
     {
         agentId = nextAgentId++;
@@ -103,45 +105,38 @@ public class Vision : MonoBehaviour
         }
 
         checkTimer += Time.deltaTime;
-        bool performCheck = false;
         if (checkTimer >= checkInterval)
         {
-            performCheck = true;
             checkTimer -= checkInterval;
-        }
 
-        float viewDist = BatchSimulationManager.activeSigns[0].ViewingDistance;
-        int searchRadius = Mathf.CeilToInt(viewDist / BatchSimulationManager.gridStepSize);
+            float viewDist = BatchSimulationManager.activeSigns[0].ViewingDistance;
+            int searchRadius = Mathf.CeilToInt(viewDist / BatchSimulationManager.gridStepSize);
 
-        int agentCellX = Mathf.RoundToInt((transform.position.x - BatchSimulationManager.gridMinX) / BatchSimulationManager.gridStepSize);
-        int agentCellZ = Mathf.RoundToInt((transform.position.z - BatchSimulationManager.gridMinZ) / BatchSimulationManager.gridStepSize);
+            int agentCellX = Mathf.RoundToInt((transform.position.x - BatchSimulationManager.gridMinX) / BatchSimulationManager.gridStepSize);
+            int agentCellZ = Mathf.RoundToInt((transform.position.z - BatchSimulationManager.gridMinZ) / BatchSimulationManager.gridStepSize);
 
-        int minCellX = Mathf.Max(0, agentCellX - searchRadius);
-        int maxCellX = Mathf.Min(BatchSimulationManager.gridCols - 1, agentCellX + searchRadius);
-        int minCellZ = Mathf.Max(0, agentCellZ - searchRadius);
-        int maxCellZ = Mathf.Min(BatchSimulationManager.gridRows - 1, agentCellZ + searchRadius);
+            int minCellX = Mathf.Max(0, agentCellX - searchRadius);
+            int maxCellX = Mathf.Min(BatchSimulationManager.gridCols - 1, agentCellX + searchRadius);
+            int minCellZ = Mathf.Max(0, agentCellZ - searchRadius);
+            int maxCellZ = Mathf.Min(BatchSimulationManager.gridRows - 1, agentCellZ + searchRadius);
 
-        // Iterate over nearby signs mathematically mapped (avoids massive CPU spikes)
-        for (int z = minCellZ; z <= maxCellZ; z++)
-        {
-            for (int x = minCellX; x <= maxCellX; x++)
+            // 1. Iterate over nearby signs mathematically mapped (ONLY 5 times a second!)
+            for (int z = minCellZ; z <= maxCellZ; z++)
             {
-                VisibilityVolume vca = BatchSimulationManager.signGrid[z, x];
-                if (vca == null) continue;
-
-                if (!agentData.signTracking.TryGetValue(vca, out AgentSignData signData))
+                for (int x = minCellX; x <= maxCellX; x++)
                 {
-                    continue; 
-                }
+                    VisibilityVolume vca = BatchSimulationManager.signGrid[z, x];
+                    if (vca == null) continue;
 
-                if (performCheck)
-                {
+                    if (!agentData.signTracking.TryGetValue(vca, out AgentSignData signData)) continue;
+
                     bool currentlyInVCA = IsWithinVolume(transform.position, vca);
 
                     if (currentlyInVCA && !signData.isInVCA)
                     {
                         signData.timeStampEnteredVCA = Time.time;
                         signData.isInVCA = true;
+                        activeVCAs.Add(vca);
                     }
 
                     if (currentlyInVCA && signData.isInVCA)
@@ -160,23 +155,39 @@ public class Vision : MonoBehaviour
                                 canSee = IfInVcaAndSignIsVisible(transform.position, vca, signData);
                             }
 
-                            // We temporarily store the canSeeSign status in a new field to integrate time smoothly over non-check frames
                             signData.canSeeSign = canSee;
                         }
                     }
-
-                    if (!currentlyInVCA && signData.isInVCA)
-                    {
-                        float exitTime = Time.time;
-                        signData.isInVCA = false;
-                        signData.timeInVCA += (exitTime - signData.timeStampEnteredVCA);
-                        signData.continuousExposureTime = 0f; 
-                        signData.canSeeSign = false;
-                        signData.timesInVCA++;
-                    }
                 }
+            }
 
-                // Apply continuous exposure smoothly every frame based on the cached check
+            // 2. Check for exits! Must iterate backwards because we might remove items.
+            // We do this loop on activeVCAs so if an agent sprints out of the searchRadius entirely,
+            // they still correctly trigger the exit logic.
+            for (int i = activeVCAs.Count - 1; i >= 0; i--)
+            {
+                VisibilityVolume vca = activeVCAs[i];
+                if (!agentData.signTracking.TryGetValue(vca, out AgentSignData signData)) continue;
+
+                bool currentlyInVCA = IsWithinVolume(transform.position, vca);
+                if (!currentlyInVCA)
+                {
+                    float exitTime = Time.time;
+                    signData.isInVCA = false;
+                    signData.timeInVCA += (exitTime - signData.timeStampEnteredVCA);
+                    signData.continuousExposureTime = 0f; 
+                    signData.canSeeSign = false;
+                    signData.timesInVCA++;
+                    activeVCAs.RemoveAt(i);
+                }
+            }
+        }
+
+        // 3. EVERY FRAME: Apply continuous exposure smoothly ONLY for the 1-2 signs the agent is currently near
+        foreach (var vca in activeVCAs)
+        {
+            if (agentData.signTracking.TryGetValue(vca, out AgentSignData signData))
+            {
                 if (signData.isInVCA && !signData.sawSign)
                 {
                     if (signData.canSeeSign)
