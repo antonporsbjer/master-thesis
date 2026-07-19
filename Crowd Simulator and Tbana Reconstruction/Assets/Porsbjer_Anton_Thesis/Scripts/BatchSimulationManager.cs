@@ -60,6 +60,14 @@ public class BatchSimulationManager : MonoBehaviour
     private float minZ = 0f;
     private float maxZ = 0f;
 
+    public static VisibilityVolume[,] signGrid;
+    public static float gridMinX;
+    public static float gridMinZ;
+    public static float gridStepSize;
+    public static int gridCols;
+    public static int gridRows;
+    public static System.Collections.Generic.List<VisibilityVolume> activeSigns = new System.Collections.Generic.List<VisibilityVolume>();
+
     private void OnValidate()
     {
         if (signGridBounds != null && signGridBounds.transform.childCount > 0 && stepSize > 0)
@@ -153,125 +161,137 @@ public class BatchSimulationManager : MonoBehaviour
         isBatching = true;
         Debug.Log($"[BatchSimulationManager] Starting batch simulation.");
 
-        float currentX = minX;
-        float currentZ = minZ;
         float yaw = (float)orientationType;
+
+        // Hide original sign object so it's not part of the active tracking
+        signObject.SetActive(false);
+        activeSigns.Clear();
+
+        // Instantiate grid of signs ONCE
+        Debug.Log($"[BatchSimulationManager] Instantiating signs across grid...");
+        
+        gridMinX = minX;
+        gridMinZ = minZ;
+        gridStepSize = stepSize;
+        gridCols = Mathf.FloorToInt((maxX - minX) / stepSize) + 1;
+        gridRows = Mathf.FloorToInt((maxZ - minZ) / stepSize) + 1;
+        signGrid = new VisibilityVolume[gridRows, gridCols];
+
+        for (int zIdx = 0; zIdx < gridRows; zIdx++)
+        {
+            float z = minZ + zIdx * stepSize;
+            for (int xIdx = 0; xIdx < gridCols; xIdx++)
+            {
+                float x = minX + xIdx * stepSize;
+                Vector3 targetPosition = new Vector3(x, signObject.transform.position.y, z);
+                Quaternion targetRotation = Quaternion.Euler(0, yaw, 0);
+
+                GameObject clone = Instantiate(signObject, targetPosition, targetRotation);
+                clone.SetActive(true);
+                clone.name = $"Sign_{x}_{z}";
+
+                // Disable MeshRenderers to save rendering performance
+                MeshRenderer[] renderers = clone.GetComponentsInChildren<MeshRenderer>();
+                foreach (var r in renderers) r.enabled = false;
+
+                VisibilityVolume cloneVCA = clone.GetComponent<VisibilityVolume>();
+                if (cloneVCA != null)
+                {
+                    if (cloneVCA.useDiscretization) cloneVCA.GenerateDiscreteNodes();
+                    activeSigns.Add(cloneVCA);
+                    signGrid[zIdx, xIdx] = cloneVCA;
+                }
+            }
+        }
+        Debug.Log($"[BatchSimulationManager] Instantiated {activeSigns.Count} signs simultaneously.");
 
         // Density thresholds to test for RQ1
         DensityProfile[] densityThresholds = activeScenario == ScenarioType.Custom_Density_RQ1 
             ? rq1DensityProfiles 
             : new DensityProfile[] { new DensityProfile { uicAlpha = 1.0f, spawnRate = 1.0f } }; // Just default if not doing RQ1
 
-        // Iterate Orientations
-        int processedRunsCount = 0;
-
         foreach (DensityProfile profile in densityThresholds)
         {
-            // Iterate Z
-        for (currentZ = minZ; currentZ <= maxZ; currentZ += stepSize)
-        {
-            // Iterate X
-            for (currentX = minX; currentX <= maxX; currentX += stepSize)
+            // Check if we hit the user-specified limit
+            if (runsToExecute > 0 && runCounter > runsToExecute && activeScenario != ScenarioType.Custom_Density_RQ1)
             {
-                // Check if we hit the user-specified limit
-                if (runsToExecute > 0 && processedRunsCount >= runsToExecute && activeScenario != ScenarioType.Custom_Density_RQ1)
-                {
-                    Debug.Log($"[BatchSimulationManager] Reached the maximum run limit of {runsToExecute}. Ending batch early.");
-                    goto BatchFinished; // Jump out of all nested loops
-                }
+                Debug.Log($"[BatchSimulationManager] Reached the maximum run limit of {runsToExecute}. Ending batch early.");
+                break;
+            }
 
-                Debug.Log($"[BatchSimulationManager] Run {runCounter}: Placing sign at ({currentX}, {currentZ}) Yaw: {yaw} Alpha: {profile.uicAlpha} SpawnRate: {profile.spawnRate}");
-                
-                // 1. Reset Global Data
-                dataCollector.ResetForNextRun();
-                
-                // 2. Clear out any existing agents from the previous run
-                ClearExistingAgents();
+            Debug.Log($"[BatchSimulationManager] Run {runCounter}: Testing all signs simultaneously. Alpha: {profile.uicAlpha} SpawnRate: {profile.spawnRate}");
+            
+            // 1. Reset Global Data
+            dataCollector.ResetForNextRun();
+            
+            // 2. Clear out any existing agents from the previous run
+            ClearExistingAgents();
 
-                // 2.5 Set the grid density (UIC alpha parameter) and Spawn Rate
+            // 2.5 Set the grid density (UIC alpha parameter) and Spawn Rate
+            if (SimulationGrid.instance != null)
+            {
+                SimulationGrid.instance.alpha = profile.uicAlpha;
+            }
+            
+            if (SpawnerManager.instance != null)
+            {
+                SpawnerManager.instance.SetGlobalSpawnRate(profile.spawnRate);
+            }
+            else
+            {
+                Debug.LogWarning("[BatchSimulationManager] No SpawnerManager instance found. Spawn rate won't be updated.");
+            }
+
+            // 4. Force global data capture
+            VisibilityVolume firstVca = activeSigns.Count > 0 ? activeSigns[0] : null;
+            if (firstVca != null)
+            {
+                dataCollector.dataRecord.global.signHeight = firstVca.transform.position.y;
+                dataCollector.dataRecord.global.signOrientation = yaw;
+                dataCollector.dataRecord.global.vcaDistance = firstVca.ViewingDistance;
+                dataCollector.dataRecord.global.vcaAngle = firstVca.ThetaDegrees;
+                dataCollector.dataRecord.global.signComprehensionTime = firstVca.comprehensionTime;
+                dataCollector.dataRecord.global.signPositionX = 0; // Legacy, per-sign now handles this
+                dataCollector.dataRecord.global.signPositionZ = 0;
+            }
+
+            // 5. Let the simulation run for the specified duration (simulation time via SimulationGrid.dt)
+            float elapsedSimTime = 0f;
+            while (elapsedSimTime < simulationDurationPerRun)
+            {
                 if (SimulationGrid.instance != null)
                 {
-                    SimulationGrid.instance.alpha = profile.uicAlpha;
-                }
-                
-                if (SpawnerManager.instance != null)
-                {
-                    SpawnerManager.instance.SetGlobalSpawnRate(profile.spawnRate);
+                    elapsedSimTime += SimulationGrid.instance.dt;
                 }
                 else
                 {
-                    Debug.LogWarning("[BatchSimulationManager] No SpawnerManager instance found. Spawn rate won't be updated.");
+                    Debug.LogWarning("[BatchSimulationManager] No SimulationGrid found. Using Time.deltaTime.");
+                    elapsedSimTime += Time.deltaTime;
                 }
-
-                // 3. Move the sign
-                Vector3 targetPosition = new Vector3(currentX, signObject.transform.position.y, currentZ);
-                Quaternion targetRotation = Quaternion.Euler(0, yaw, 0);
-
-                // If the sign relies on physics, move its rigidbody directly so it doesn't fight our Transform updates
-                Rigidbody signRb = signObject.GetComponent<Rigidbody>();
-                if (signRb != null)
-                {
-                    signRb.MovePosition(targetPosition);
-                    signRb.MoveRotation(targetRotation);
-                    
-                    // Force it to sleep to kill lingering physics forces
-                    signRb.velocity = Vector3.zero;
-                    signRb.angularVelocity = Vector3.zero;
-                }
-                else
-                {
-                    signObject.transform.position = targetPosition;
-                    signObject.transform.rotation = targetRotation;
-                }
-
-                // 4. Force global data capture for this new sign position
-                VisibilityVolume vca = signObject.GetComponent<VisibilityVolume>();
-                if (vca != null)
-                {
-                    // Update discrete nodes position!
-                    if (vca.useDiscretization)
-                    {
-                        vca.GenerateDiscreteNodes();
-                    }
-
-                    dataCollector.dataRecord.global.signHeight = signObject.transform.position.y;
-                    dataCollector.dataRecord.global.signPositionX = currentX;
-                    dataCollector.dataRecord.global.signPositionZ = currentZ;
-                    dataCollector.dataRecord.global.signOrientation = yaw;
-                    dataCollector.dataRecord.global.vcaDistance = vca.ViewingDistance;
-                    dataCollector.dataRecord.global.vcaAngle = vca.ThetaDegrees;
-                    dataCollector.dataRecord.global.signComprehensionTime = vca.comprehensionTime;
-                }
-
-                // 5. Let the simulation run for the specified duration (simulation time via SimulationGrid.dt)
-                float elapsedSimTime = 0f;
-                while (elapsedSimTime < simulationDurationPerRun)
-                {
-                    if (SimulationGrid.instance != null)
-                    {
-                        elapsedSimTime += SimulationGrid.instance.dt;
-                    }
-                    else
-                    {
-                        Debug.LogWarning("[BatchSimulationManager] No SimulationGrid found. Using Time.deltaTime.");
-                        elapsedSimTime += Time.deltaTime;
-                    }
-                    yield return null;
-                }
-
-                // 6. Save Data
-                dataCollector.SaveRun(runCounter);
-                SaveDensityMatrixData(runCounter);
-                runCounter++;
-                processedRunsCount++;
+                yield return null;
             }
-        }
-        } // End of Density Loop
 
-        BatchFinished:
-        // Cleanup
+            // 6. Output the data!
+            Debug.Log($"[BatchSimulationManager] Saving data for Density Run {runCounter}");
+            dataCollector.SaveRun(runCounter);
+
+            // Also force DataCollector to save the Matrix!
+            SaveDensityMatrixData(runCounter);
+
+            runCounter++;
+        }
+
+        // Cleanup clones
+        foreach (var vca in activeSigns)
+        {
+            if (vca != null) Destroy(vca.gameObject);
+        }
+        activeSigns.Clear();
+        signObject.SetActive(true);
+
+        Debug.Log("[BatchSimulationManager] All batch runs completed successfully.");
         isBatching = false;
-        Debug.Log($"[BatchSimulationManager] BATCH COMPLETE! Processed {processedRunsCount} runs in total.");
+        runBatchSimulation = false;
         
         #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
@@ -302,7 +322,7 @@ public class BatchSimulationManager : MonoBehaviour
         // Let one frame pass to ensure objects are destroyed and spawners can reset
     }
 
-    private void SaveDensityMatrixData(int currentRunIndex)
+    private void SaveDensityMatrixData(int runIndex)
     {
         if (SimulationGrid.instance == null || dataCollector == null) return;
 
@@ -341,6 +361,6 @@ public class BatchSimulationManager : MonoBehaviour
             }
         }
 
-        dataCollector.SaveDensityMatrix(croppedDensity, xCoords, zCoords, currentRunIndex);
+        dataCollector.SaveDensityMatrix(croppedDensity, xCoords, zCoords, runIndex);
     }
 }
