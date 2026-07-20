@@ -67,7 +67,7 @@ public class NewSpawner : MonoBehaviour {
 	internal IEnumerator spawnContinously(float continousSpawnRate) {
 		Transform spawnerNode = transform.GetChild(0);
 		
-		float timeBetweenSpawn = usePoisson ? CalculateTimeBetweenSpawns() : continousSpawnRate;
+		float timeBetweenSpawn = usePoisson ? CalculateTimeBetweenSpawns() : (continousSpawnRate > 0f ? 1f / continousSpawnRate : float.MaxValue);
 		
 		// Wait using Simulation time instead of Real time!
 		float waitTimer = timeBetweenSpawn;

@@ -20,10 +20,13 @@ def main():
 
     print(f"Found {len(csv_files)} files. Reading data...")
     
+    # We only need specific columns for our analysis to save memory with massive files
+    cols_to_use = ['RunIndex', 'TotalAgents', 'SignPositionX', 'SignPositionZ', 'SawSign', 'EyeHeight']
+    
     df_list = []
     for f in csv_files:
         try:
-            temp_df = pd.read_csv(f)
+            temp_df = pd.read_csv(f, usecols=cols_to_use)
             df_list.append(temp_df)
         except Exception as e:
             print(f"Error reading {f}: {e}")
@@ -47,25 +50,22 @@ def main():
     num_runs = len(run_indices)
     print(f"Total unique runs found: {num_runs}")
     
-    if num_runs >= 4:
-        # Since the outer loop is DensityProfile, the runs are split sequentially into 4 chunks
-        chunk_size = num_runs // 4
-        low_runs = run_indices[:chunk_size]
-        med_runs = run_indices[chunk_size:2*chunk_size]
-        high_runs = run_indices[2*chunk_size:3*chunk_size]
-        ext_runs = run_indices[3*chunk_size:]
-        
-        def assign_density(r_idx):
-            if r_idx in low_runs: return 'Low'
-            if r_idx in med_runs: return 'Medium'
-            if r_idx in high_runs: return 'High'
-            return 'Extreme'
+    density_names = ['Very Low', 'Low', 'Medium', 'High', 'Extreme', 'Crush']
+    
+    def assign_density(r_idx):
+        try:
+            idx = run_indices.index(r_idx)
+            if idx < len(density_names):
+                return density_names[idx]
+            else:
+                return f'Density_{idx+1}'
+        except ValueError:
+            return 'Unknown'
             
-        df['DensityGroup'] = df['RunIndex'].apply(assign_density)
-    else:
-        df['DensityGroup'] = 'Unknown'
+    df['DensityGroup'] = df['RunIndex'].apply(assign_density)
         
-    df['DensityGroup'] = pd.Categorical(df['DensityGroup'], categories=['Low', 'Medium', 'High', 'Extreme'], ordered=True)
+    actual_categories = [assign_density(r) for r in run_indices]
+    df['DensityGroup'] = pd.Categorical(df['DensityGroup'], categories=actual_categories, ordered=True)
 
     print("Agent Row Distribution per DensityGroup:")
     print(df['DensityGroup'].value_counts())

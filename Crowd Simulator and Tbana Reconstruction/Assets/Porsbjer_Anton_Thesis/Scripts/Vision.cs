@@ -216,10 +216,10 @@ public class Vision : MonoBehaviour
 
         // Field of View check (120 degrees)
         float fovAngle = 120f; 
-        float halfFov = fovAngle / 2f;
-        float angleToSign = Vector3.Angle(transform.forward, directionToSign);
+        float halfFovRad = fovAngle * 0.5f * Mathf.Deg2Rad;
+        float minCosFov = Mathf.Cos(halfFovRad);
 
-        if (angleToSign > halfFov) return 0f;
+        if (Vector3.Dot(transform.forward, directionToSign) < minCosFov) return 0f;
 
         string[] layerNames = { "Obstacle", "Agent" };
         int mask = LayerMask.GetMask(layerNames);
@@ -231,7 +231,7 @@ public class Vision : MonoBehaviour
         {
             Vector3 directionToNode = (node - origin).normalized;
             
-            if (Vector3.Angle(transform.forward, directionToNode) > halfFov) continue; 
+            if (Vector3.Dot(transform.forward, directionToNode) < minCosFov) continue; 
 
             if (Physics.Raycast(origin, directionToNode, out RaycastHit hit, vca.ViewingDistance, mask))
             {
@@ -255,10 +255,10 @@ public class Vision : MonoBehaviour
         Vector3 directionToSign = (vca.transform.position - origin).normalized;
 
         float fovAngle = 120f; 
-        float halfFov = fovAngle / 2f;
-        float angleToSign = Vector3.Angle(transform.forward, directionToSign);
+        float halfFovRad = fovAngle * 0.5f * Mathf.Deg2Rad;
+        float minCosFov = Mathf.Cos(halfFovRad);
 
-        if (angleToSign > halfFov) return false;
+        if (Vector3.Dot(transform.forward, directionToSign) < minCosFov) return false;
 
         string[] layerNames = { "Obstacle", "Agent" };
         int mask = LayerMask.GetMask(layerNames);
@@ -283,15 +283,17 @@ public class Vision : MonoBehaviour
     {
         if (vca == null) return false;
 
-        float dist = Vector3.Distance(origin, vca.transform.position);
-        if (dist > vca.ViewingDistance) return false;
+        Vector3 diff = origin - vca.transform.position;
+        float sqrDist = diff.sqrMagnitude;
+        if (sqrDist > vca.ViewingDistance * vca.ViewingDistance) return false;
 
-        Vector3 dir = (origin - vca.transform.position).normalized;
+        Vector3 dir = diff.normalized;
         float halfThetaRad = vca.ThetaDegrees * Mathf.Deg2Rad * 0.5f;
-        float angle = Vector3.Angle(vca.transform.forward, dir) * Mathf.Deg2Rad;
-        if (angle <= halfThetaRad) return true;
+        float minCosTheta = Mathf.Cos(halfThetaRad);
+        
+        // Fast dot product checks against both front and back directions
+        if (Mathf.Abs(Vector3.Dot(vca.transform.forward, dir)) >= minCosTheta) return true;
 
-        angle = Vector3.Angle(-vca.transform.forward, dir) * Mathf.Deg2Rad;
-        return angle <= halfThetaRad;
+        return false;
     }
 }
