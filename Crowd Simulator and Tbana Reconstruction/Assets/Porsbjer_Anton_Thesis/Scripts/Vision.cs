@@ -22,7 +22,9 @@ public class Vision : MonoBehaviour
     public Color gizmoColor = Color.cyan;
 
     private float checkTimer = 0f;
-    private float checkInterval = 0.2f; // Evaluate 5 times per second
+    [Header("Evaluation Frequency")]
+    [Tooltip("Time interval in seconds between raycast visibility checks. Lower values increase occlusion accuracy but require more CPU. Set to 0 for per-frame checks.")]
+    public float checkInterval = 0.05f; // Default: 20 Hz (0.05s interval) for high occlusion accuracy
 
     private List<VisibilityVolume> activeVCAs = new List<VisibilityVolume>(); // Track which VCAs we are physically inside
 
@@ -107,7 +109,8 @@ public class Vision : MonoBehaviour
         checkTimer += Time.deltaTime;
         if (checkTimer >= checkInterval)
         {
-            checkTimer -= checkInterval;
+            if (checkInterval > 0f) checkTimer -= checkInterval;
+            else checkTimer = 0f;
 
             float viewDist = BatchSimulationManager.activeSigns[0].ViewingDistance;
             int searchRadius = Mathf.CeilToInt(viewDist / BatchSimulationManager.gridStepSize);

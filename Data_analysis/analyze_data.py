@@ -1,27 +1,29 @@
 import os
 import glob
 import pandas as pd
+import numpy as np
+from scipy.interpolate import griddata
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 def main():
-    data_dir = 'data'
-    output_dir = 'output'
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    data_dir = os.path.join(script_dir, 'data')
+    output_dir = os.path.join(script_dir, 'output')
     
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    print("Looking for CSV files...")
-    csv_files = glob.glob(os.path.join(data_dir, 'visibility_data_*.csv'))
-    
+    # Find all visibility CSV files recursively in data_dir (including 1sec, 2sec, 3sec subfolders)
+    csv_files = glob.glob(os.path.join(data_dir, '**', 'visibility_data_*.csv'), recursive=True)
     if not csv_files:
-        print("No visibility_data CSV files found in the data folder.")
-        return
-
-    print(f"Found {len(csv_files)} files. Reading data...")
+        csv_files = glob.glob(os.path.join(data_dir, 'visibility_data_*.csv'))
     
-    # We only need specific columns for our analysis to save memory with massive files
-    cols_to_use = ['RunIndex', 'TotalAgents', 'SignPositionX', 'SignPositionZ', 'SawSign', 'EyeHeight']
+    csv_files = sorted(csv_files, key=os.path.getmtime)
+    print(f"Found {len(csv_files)} visibility data files.")
+    
+    # Required columns for analysis
+    cols_to_use = ['RunIndex', 'TotalAgents', 'SignPositionX', 'SignPositionZ', 'SawSign', 'EyeHeight', 'TimeInVCA', 'AgentType', 'SignComprehensionTime']
     
     df_list = []
     for f in csv_files:
@@ -43,93 +45,118 @@ def main():
     df['SawSign'] = df['SawSign'].astype(str).str.lower() == 'true'
     df['SawSignNumeric'] = df['SawSign'].astype(int)
     
-    # 1. Infer Density Bins from RunIndex
+    # 1. Infer Density Bins dynamically from RunIndex
     print("Binning Density Groups by RunIndex...")
-    # Get unique RunIndex and sort them
     run_indices = sorted(df['RunIndex'].dropna().unique())
     num_runs = len(run_indices)
     print(f"Total unique runs found: {num_runs}")
     
-    density_names = ['Very Low', 'Low', 'Medium', 'High', 'Extreme', 'Crush']
+    # Map RunIndex to descriptive density names for 6-density setups
+    default_names = {
+        1: 'Density 1 (Very Low)',
+        2: 'Density 2 (Low)',
+        3: 'Density 3 (Medium)',
+        4: 'Density 4 (High)',
+        5: 'Density 5 (Very High)',
+        6: 'Density 6 (Extreme)'
+    }
     
     def assign_density(r_idx):
-        try:
-            idx = run_indices.index(r_idx)
-            if idx < len(density_names):
-                return density_names[idx]
-            else:
-                return f'Density_{idx+1}'
-        except ValueError:
-            return 'Unknown'
+        return default_names.get(int(r_idx), f'Density_{int(r_idx)}')
             
     df['DensityGroup'] = df['RunIndex'].apply(assign_density)
-        
-    actual_categories = [assign_density(r) for r in run_indices]
-    df['DensityGroup'] = pd.Categorical(df['DensityGroup'], categories=actual_categories, ordered=True)
+    
+    density_categories = [assign_density(r) for r in run_indices]
+    df['DensityGroup'] = pd.Categorical(df['DensityGroup'], categories=density_categories, ordered=True)
 
     print("Agent Row Distribution per DensityGroup:")
     print(df['DensityGroup'].value_counts())
     
-    # Also print the median agents per run for each group to verify
     run_totals = df.groupby(['RunIndex', 'DensityGroup'], observed=False)['TotalAgents'].first().reset_index()
     print("Median TotalAgents per Run in each DensityGroup:")
     print(run_totals.groupby('DensityGroup', observed=False)['TotalAgents'].median())
 
-    # 2. Generate Heatmaps
+    # Filter to agents that entered the VCA for fair visibility evaluation
+    vca_df = df[df['TimeInVCA'] > 0].copy()
+
+    # 2. Generate Heatmaps for each Density Group
     print("Generating Heatmaps...")
     for density_group in df['DensityGroup'].dropna().unique():
-        sub_df = df[df['DensityGroup'] == density_group]
+        sub_df = vca_df[vca_df['DensityGroup'] == density_group]
         if sub_df.empty:
             continue
             
-        # Group by SignPositionX, SignPositionZ to get average visibility
-        heatmap_data = sub_df.groupby(['SignPositionZ', 'SignPositionX'])['SawSignNumeric'].mean().reset_index()
+        # Group by SignPositionX, SignPositionZ to get average VCA visibility ratio (%)
+        heatmap_data = sub_df.groupby(['SignPositionX', 'SignPositionZ'])['SawSignNumeric'].mean().reset_index()
+        heatmap_data['VisibilityRatio'] = heatmap_data['SawSignNumeric'] * 100
         
-        # Pivot for seaborn
-        if not heatmap_data.empty:
-            pivot_table = heatmap_data.pivot(index='SignPositionZ', columns='SignPositionX', values='SawSignNumeric')
-            
-            # Sort index to have Z descending
-            pivot_table = pivot_table.sort_index(ascending=False)
-            
+        if len(heatmap_data) >= 3:
+            x = heatmap_data['SignPositionX']
+            y = heatmap_data['SignPositionZ']
+            z = heatmap_data['VisibilityRatio']
+
+            # Create grid for smooth 2D interpolation
+            xi = np.linspace(x.min(), x.max(), 100)
+            yi = np.linspace(y.min(), y.max(), 100)
+            xi, yi = np.meshgrid(xi, yi)
+
+            # Interpolate Z values onto grid (cubic with linear/nearest fallback)
+            zi = griddata((x, y), z, (xi, yi), method='linear')
+            if np.isnan(zi).all():
+                zi = griddata((x, y), z, (xi, yi), method='nearest')
+
             plt.figure(figsize=(10, 8))
-            sns.heatmap(pivot_table, cmap='viridis', annot=False, vmin=0, vmax=1)
+            contour = plt.contourf(xi, yi, zi, levels=20, cmap='viridis', vmin=0, vmax=100)
+            cbar = plt.colorbar(contour)
+            cbar.set_label('VCA Visibility Ratio (%)')
             
-            # Get median agent count for this group specifically
+            # Scatter sampled sign positions
+            plt.scatter(x, y, color='red', alpha=0.5, s=20, label='Sign Positions (336 Grid)')
+            
             median_agents = run_totals[run_totals['DensityGroup'] == density_group]['TotalAgents'].median()
-            plt.title(f'Sign Visibility Heatmap - {density_group} Density\n(Median Total Agents: {median_agents:.0f})')
-            plt.xlabel('Sign Position X')
-            plt.ylabel('Sign Position Z')
+            plt.title(f'Sign Visibility Heatmap - {density_group}\n(Total Agents: {median_agents:.0f})')
+            plt.xlabel('Sign Position X (m)')
+            plt.ylabel('Sign Position Z (m)')
+            plt.legend(loc='upper right')
+            plt.grid(True, linestyle='--', alpha=0.3)
             
-            output_path = os.path.join(output_dir, f'heatmap_density_{density_group.lower()}.png')
+            safe_name = str(density_group).lower().replace(' ', '_').replace('(', '').replace(')', '')
+            output_path = os.path.join(output_dir, f'heatmap_{safe_name}.png')
             plt.savefig(output_path, dpi=300, bbox_inches='tight')
             plt.close()
             print(f"Saved {output_path}")
             
-    # 3. Height Group Analysis
+    # 3. Height Group Line Chart Analysis
     print("Generating Height Group Analysis...")
-    df['EyeHeightRounded'] = df['EyeHeight'].round(2).astype(str) + 'm'
+    vca_df['EyeHeightRounded'] = vca_df['EyeHeight'].round(2).astype(str) + 'm'
     
-    height_group_data = df.groupby(['DensityGroup', 'EyeHeightRounded'], observed=False)['SawSignNumeric'].mean().reset_index()
+    height_group_data = vca_df.groupby(['DensityGroup', 'EyeHeightRounded'], observed=False)['SawSignNumeric'].mean().reset_index()
+    height_group_data['VisibilityPct'] = height_group_data['SawSignNumeric'] * 100
     
-    plt.figure(figsize=(10, 6))
-    ax = sns.lineplot(data=height_group_data, x='DensityGroup', y='SawSignNumeric', hue='EyeHeightRounded', marker='o', linewidth=2, markersize=8)
+    plt.figure(figsize=(12, 6))
+    ax = sns.lineplot(
+        data=height_group_data,
+        x='DensityGroup',
+        y='VisibilityPct',
+        hue='EyeHeightRounded',
+        marker='o',
+        linewidth=2.5,
+        markersize=9
+    )
     
-    # Add text annotations to the points
     for line in ax.lines:
-        for x, y in zip(line.get_xdata(), line.get_ydata()):
-            if pd.notna(y) and not pd.isna(x):
-                # Only annotate the actual data lines (seaborn sometimes adds extra dummy lines for legends)
-                if len(line.get_xdata()) > 0:
-                    ax.annotate(f'{y:.2f}', xy=(x, y), xytext=(0, 8), textcoords='offset points', ha='center', va='bottom', fontsize=9, fontweight='bold')
+        for x_val, y_val in zip(line.get_xdata(), line.get_ydata()):
+            if pd.notna(y_val) and not pd.isna(x_val):
+                ax.annotate(f'{y_val:.1f}%', xy=(x_val, y_val), xytext=(0, 8), textcoords='offset points', ha='center', va='bottom', fontsize=9, fontweight='bold')
 
-    plt.title('Visibility Ratio vs Crowd Density by Agent Eye Height')
-    plt.xlabel('Crowd Density')
-    plt.ylabel('Visibility Ratio')
-    plt.ylim(0, 1)
+    plt.title('VCA Visibility Ratio vs Crowd Density by Demographic Eye Height')
+    plt.xlabel('Crowd Density Level')
+    plt.ylabel('VCA Visibility Ratio (%)')
+    plt.ylim(0, 105)
     plt.grid(True, alpha=0.3)
+    plt.xticks(rotation=15)
     
-    output_path = os.path.join(output_dir, 'visibility_vs_height.png')
+    output_path = os.path.join(output_dir, 'visibility_vs_density_by_demographic.png')
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
     print(f"Saved {output_path}")
