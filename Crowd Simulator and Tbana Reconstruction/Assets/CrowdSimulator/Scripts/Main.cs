@@ -85,12 +85,24 @@ public class Main : MonoBehaviour {
 	 * Then create the Staggered SimulationGrid along with all cells and velocity nodes.
 	**/
 	void OnEnable () {
-		plane.transform.localScale = new Vector3(planeSizeX, 1.0f, planeSizeZ);
-		Vector3 planeLength = plane.getLengths(); //Staggered grid length
-		xMinMax = new Vector2(plane.transform.position.x - planeLength.x / 2,
-							   plane.transform.position.x + planeLength.x / 2);
-		zMinMax = new Vector2(plane.transform.position.z - planeLength.z / 2,
-							  plane.transform.position.z + planeLength.z / 2);
+		if (plane != null)
+		{
+			Vector3 planeLength = plane.getLengths(); // Staggered grid length from Plane mesh/scale
+			planeSizeX = plane.transform.localScale.x;
+			planeSizeZ = plane.transform.localScale.z;
+
+			xMinMax = new Vector2(plane.transform.position.x - planeLength.x / 2f,
+								  plane.transform.position.x + planeLength.x / 2f);
+			zMinMax = new Vector2(plane.transform.position.z - planeLength.z / 2f,
+								  plane.transform.position.z + planeLength.z / 2f);
+		}
+		else
+		{
+			float lengthX = planeSizeX * 10f;
+			float lengthZ = planeSizeZ * 10f;
+			xMinMax = new Vector2(-lengthX / 2f, lengthX / 2f);
+			zMinMax = new Vector2(-lengthZ / 2f, lengthZ / 2f);
+		}
 
 		ringDiameter = agentAvoidanceRadius * 2; //Prefered distance between two agents
 
@@ -119,7 +131,14 @@ public class Main : MonoBehaviour {
 
 		for (int i = 0; i < roadmap.spawns.Count; ++i)
 		{
-			roadmap.spawns[i].spawner.InitializeSpawner(ref roadmap, ref agentList, xMinMax, zMinMax, agentAvoidanceRadius);
+			if (groupAgentPrefabs != null)
+			{
+				roadmap.spawns[i].spawner.InitializeSpawner(ref groupAgentPrefabs, ref roadmap, ref agentList, xMinMax, zMinMax, agentAvoidanceRadius);
+			}
+			else
+			{
+				roadmap.spawns[i].spawner.InitializeSpawner(ref roadmap, ref agentList, xMinMax, zMinMax, agentAvoidanceRadius);
+			}
 		}
 
 		if(customTimeStep)
@@ -131,21 +150,22 @@ public class Main : MonoBehaviour {
 		experimentHUD = FindObjectOfType<ExperimentHUD>();
 		if (experimentHUD == null)
 		{
-			Debug.LogError("ExperimentHUD not found in scene");
-			return;
+			Debug.LogWarning("ExperimentHUD not found in scene");
 		}
 
 		simulationGrid = SimulationGrid.instance;
-
-		simulationGrid.solver = solver;
-		simulationGrid.solverEpsilon = epsilon;
-		simulationGrid.solverMaxIterations = solverMaxIterations;
-		//flags
-		simulationGrid.showSplattedDensity = showSplattedDensity;
-		simulationGrid.showSplattedVelocity = showSplattedVelocity;
-		simulationGrid.walkBack = walkBack;
-		simulationGrid.skipNodeIfSeeNext = skipNodeIfSeeNext;
-		simulationGrid.smoothTurns = smoothTurns;
+		if (simulationGrid != null)
+		{
+			simulationGrid.solver = solver;
+			simulationGrid.solverEpsilon = epsilon;
+			simulationGrid.solverMaxIterations = solverMaxIterations;
+			//flags
+			simulationGrid.showSplattedDensity = showSplattedDensity;
+			simulationGrid.showSplattedVelocity = showSplattedVelocity;
+			simulationGrid.walkBack = walkBack;
+			simulationGrid.skipNodeIfSeeNext = skipNodeIfSeeNext;
+			simulationGrid.smoothTurns = smoothTurns;
+		}
 	}
 	
 
@@ -158,6 +178,12 @@ public class Main : MonoBehaviour {
 		{
 			StartSimulation();
 			return;
+		}
+
+		if (simulationGrid == null)
+		{
+			simulationGrid = SimulationGrid.instance;
+			if (simulationGrid == null) return;
 		}
 
 		// Cap dt at 0.05f (20fps equivalent) to prevent physics explosions and LCP solver breaking if a lag spike occurs
@@ -183,7 +209,10 @@ public class Main : MonoBehaviour {
 			agent.CheckPositionAndRotation();
 
 			// remove agent if it is outside the bounds of the plane
-			if (Mathf.Abs(agent.tr.position.x) > planeSizeX * 5f || Mathf.Abs(agent.tr.position.z) > planeSizeZ * 5f || agent.tr.position.y > 0.5f)
+			float margin = 5f;
+			if (agent.tr.position.x < xMinMax.x - margin || agent.tr.position.x > xMinMax.y + margin ||
+				agent.tr.position.z < zMinMax.x - margin || agent.tr.position.z > zMinMax.y + margin ||
+				agent.tr.position.y > 0.5f)
 			{
 				Debug.LogWarning("Agent outside of bounds, removing");
 				agentList.RemoveAt(i);
@@ -211,7 +240,10 @@ public class Main : MonoBehaviour {
 			Physics.Simulate(simulationGrid.dt);
 		}
 
-		experimentHUD.RegisterSimTick();
+		if (experimentHUD != null)
+		{
+			experimentHUD.RegisterSimTick();
+		}
 	}
 
 	private void StartSimulation()
@@ -220,7 +252,10 @@ public class Main : MonoBehaviour {
 		if (simulationStartTimer <= 0f)
 		{
 			simulationStarted = true;
-			experimentHUD.realTimeStart = Time.realtimeSinceStartup;
+			if (experimentHUD != null)
+			{
+				experimentHUD.realTimeStart = Time.realtimeSinceStartup;
+			}
 		}
 	}
 

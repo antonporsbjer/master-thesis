@@ -74,13 +74,19 @@ public class VisibilityVolume : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        dataCollector.dataRecord.global.signHeight = transform.position.y; // Set the sign height in the global data
-        dataCollector.dataRecord.global.signPositionX = transform.position.x; // Set the sign X position in the global data
-        dataCollector.dataRecord.global.signPositionZ = transform.position.z; // Set the sign Z position in the global data
-        dataCollector.dataRecord.global.signOrientation = transform.rotation.eulerAngles.y; // Set the sign orientation in the global data
-        dataCollector.dataRecord.global.vcaDistance = ViewingDistance; // Set the viewing distance in the global data
-        dataCollector.dataRecord.global.vcaAngle = ThetaDegrees; // Set the viewing angle in the global data
-        dataCollector.dataRecord.global.signComprehensionTime = comprehensionTime; // Set the comprehension time
+        if (dataCollector == null)
+            dataCollector = FindObjectOfType<DataCollector>();
+
+        if (dataCollector != null && dataCollector.dataRecord != null && dataCollector.dataRecord.global != null)
+        {
+            dataCollector.dataRecord.global.signHeight = transform.position.y;
+            dataCollector.dataRecord.global.signPositionX = transform.position.x;
+            dataCollector.dataRecord.global.signPositionZ = transform.position.z;
+            dataCollector.dataRecord.global.signOrientation = transform.rotation.eulerAngles.y;
+            dataCollector.dataRecord.global.vcaDistance = ViewingDistance;
+            dataCollector.dataRecord.global.vcaAngle = ThetaDegrees;
+            dataCollector.dataRecord.global.signComprehensionTime = comprehensionTime;
+        }
 
         // Initialize the volume parameters
         Theta = ThetaDegrees * Mathf.Deg2Rad; // Convert angle to radians

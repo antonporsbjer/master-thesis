@@ -89,39 +89,77 @@ public class Agent : MonoBehaviour {
 			colliderRadius = col.radius;
 		}
 
+		if (grid == null)
+		{
+			grid = SimulationGrid.instance;
+		}
+
 		//Which cell am i in currently?
-		calculateRowAndColumn();
-		if (!grid.colHandler && rbody != null) {
-			Destroy (rbody);
+		if (grid != null) {
+			calculateRowAndColumn();
+			if (!grid.colHandler && rbody != null) {
+				Destroy (rbody);
+			}
 		}
 
 		mainScript = Main.instance;
-		if(this is SubgroupAgent)
+		if(mainScript != null)
 		{
-			walkingSpeed = mainScript.agentMaxSpeed;
+			if(this is SubgroupAgent)
+			{
+				walkingSpeed = mainScript.agentMaxSpeed;
+			}
+			else
+			{
+				walkingSpeed = Random.Range(mainScript.agentMinSpeed, mainScript.agentMaxSpeed);
+			}
 		}
-		else
-		{
-			walkingSpeed = Random.Range(mainScript.agentMinSpeed, mainScript.agentMaxSpeed);
-		}
-		
 	}
 
 	public void InitializeAgent(Vector3 pos, int start, int goal, MapGen.map map)
 	{
 		tr.position = pos;
 		this.goal = goal;
-		path = map.shortestPaths[start][goal];
 
-		pathIndex = 1;
-		targetPoint = map.allNodes[path[pathIndex]].getTargetPoint(pos, gameObject.GetInstanceID());
-		preferredVelocity = (targetPoint - pos).normalized;
+		if (map.shortestPaths != null && start >= 0 && start < map.shortestPaths.Count && goal >= 0 && goal < map.shortestPaths[start].Count)
+		{
+			path = map.shortestPaths[start][goal];
+		}
+		else
+		{
+			path = new List<int>();
+		}
+
+		if (path != null && path.Count > 0)
+		{
+			pathIndex = path.Count > 1 ? 1 : 0;
+			int targetNodeIndex = path[pathIndex];
+			if (map.allNodes != null && targetNodeIndex >= 0 && targetNodeIndex < map.allNodes.Count)
+			{
+				targetPoint = map.allNodes[targetNodeIndex].getTargetPoint(pos, gameObject.GetInstanceID());
+			}
+			else
+			{
+				targetPoint = pos;
+			}
+			preferredVelocity = (targetPoint - pos).normalized;
+		}
+		else
+		{
+			pathIndex = 0;
+			targetPoint = pos;
+			preferredVelocity = Vector3.zero;
+		}
+
 		agentRenderer = GetComponentInChildren<Renderer>();
 
 		grid = SimulationGrid.instance;
 
-		cachedCellSize = SimulationGrid.instance.cellSize;
-    	cachedCellSizeSquared = cachedCellSize * cachedCellSize;
+		if (SimulationGrid.instance != null)
+		{
+			cachedCellSize = SimulationGrid.instance.cellSize;
+			cachedCellSizeSquared = cachedCellSize * cachedCellSize;
+		}
 	}
 
 	public void ApplyMaterials(Material materialColor, ref Dictionary<string, int> skins, Material argMat = null)
@@ -144,6 +182,12 @@ public class Agent : MonoBehaviour {
 
 	internal void calculateRowAndColumn()
 	{
+		if (grid == null)
+		{
+			grid = SimulationGrid.instance;
+		}
+		if (grid == null) return;
+
 		Vector3 pos = tr.position;
 		row = (int)((pos.z - Main.zMinMax.x) / grid.cellSize);
 		column = (int)((pos.x - Main.xMinMax.x) / grid.cellSize);
@@ -151,9 +195,12 @@ public class Agent : MonoBehaviour {
 		row = Mathf.Clamp(row, 0, grid.nCellsZ - 1);
     	column = Mathf.Clamp(column, 0, grid.nCellsX - 1);
 
-		Vector3 cellCenter = grid.cellCenters[row, column];
-		agentRelXPos = pos.x - cellCenter.x;
-		agentRelZPos = pos.z - cellCenter.z;
+		if (grid.cellCenters != null && row < grid.cellCenters.GetLength(0) && column < grid.cellCenters.GetLength(1))
+		{
+			Vector3 cellCenter = grid.cellCenters[row, column];
+			agentRelXPos = pos.x - cellCenter.x;
+			agentRelZPos = pos.z - cellCenter.z;
+		}
 	}
 
 	/**

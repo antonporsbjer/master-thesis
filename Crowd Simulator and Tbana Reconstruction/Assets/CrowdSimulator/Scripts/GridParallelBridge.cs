@@ -14,6 +14,11 @@ public class GridParallelBridge : MonoBehaviour
             if (_instance == null)
             {
                 _instance = FindObjectOfType<GridParallelBridge>();
+                if (_instance == null)
+                {
+                    GameObject go = new GameObject("GridParallelBridge");
+                    _instance = go.AddComponent<GridParallelBridge>();
+                }
             }
             return _instance;
         }

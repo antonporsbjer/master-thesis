@@ -64,9 +64,14 @@ public class Vision : MonoBehaviour
             
             agentData = new AgentData(agentId, agentType, startNode, goalNode, agentHeight, agentEyeHeight);
             
-            // Initialize tracking for all currently active signs
-            foreach (var signVca in BatchSimulationManager.activeSigns)
+            // Initialize tracking for all currently active signs (supports both batch grid and single-run scenes)
+            IEnumerable<VisibilityVolume> targetSigns = (BatchSimulationManager.activeSigns != null && BatchSimulationManager.activeSigns.Count > 0)
+                ? BatchSimulationManager.activeSigns
+                : FindObjectsOfType<VisibilityVolume>();
+
+            foreach (var signVca in targetSigns)
             {
+                if (signVca == null) continue;
                 agentData.signTracking[signVca] = new AgentSignData()
                 {
                     signPositionX = signVca.transform.position.x,
@@ -96,8 +101,7 @@ public class Vision : MonoBehaviour
 
     void Update()
     {        
-        if (agentData == null || BatchSimulationManager.activeSigns == null || BatchSimulationManager.activeSigns.Count == 0) return;
-        if (BatchSimulationManager.signGrid == null) return;
+        if (agentData == null || agentData.signTracking == null || agentData.signTracking.Count == 0) return;
 
         // Trace Path Analytics: Nodes Navigated
         Agent myAgent = transform.parent != null ? transform.parent.GetComponent<Agent>() : null;
@@ -112,65 +116,51 @@ public class Vision : MonoBehaviour
             if (checkInterval > 0f) checkTimer -= checkInterval;
             else checkTimer = 0f;
 
-            float viewDist = BatchSimulationManager.activeSigns[0].ViewingDistance;
-            int searchRadius = Mathf.CeilToInt(viewDist / BatchSimulationManager.gridStepSize);
-
-            int agentCellX = Mathf.RoundToInt((transform.position.x - BatchSimulationManager.gridMinX) / BatchSimulationManager.gridStepSize);
-            int agentCellZ = Mathf.RoundToInt((transform.position.z - BatchSimulationManager.gridMinZ) / BatchSimulationManager.gridStepSize);
-
-            int minCellX = Mathf.Max(0, agentCellX - searchRadius);
-            int maxCellX = Mathf.Min(BatchSimulationManager.gridCols - 1, agentCellX + searchRadius);
-            int minCellZ = Mathf.Max(0, agentCellZ - searchRadius);
-            int maxCellZ = Mathf.Min(BatchSimulationManager.gridRows - 1, agentCellZ + searchRadius);
-
-            // 1. Iterate over nearby signs mathematically mapped (ONLY 5 times a second!)
-            for (int z = minCellZ; z <= maxCellZ; z++)
+            if (BatchSimulationManager.signGrid != null && BatchSimulationManager.activeSigns != null && BatchSimulationManager.activeSigns.Count > 0)
             {
-                for (int x = minCellX; x <= maxCellX; x++)
+                // Batch grid spatial search optimization
+                float viewDist = BatchSimulationManager.activeSigns[0].ViewingDistance;
+                int searchRadius = Mathf.CeilToInt(viewDist / BatchSimulationManager.gridStepSize);
+
+                int agentCellX = Mathf.RoundToInt((transform.position.x - BatchSimulationManager.gridMinX) / BatchSimulationManager.gridStepSize);
+                int agentCellZ = Mathf.RoundToInt((transform.position.z - BatchSimulationManager.gridMinZ) / BatchSimulationManager.gridStepSize);
+
+                int minCellX = Mathf.Max(0, agentCellX - searchRadius);
+                int maxCellX = Mathf.Min(BatchSimulationManager.gridCols - 1, agentCellX + searchRadius);
+                int minCellZ = Mathf.Max(0, agentCellZ - searchRadius);
+                int maxCellZ = Mathf.Min(BatchSimulationManager.gridRows - 1, agentCellZ + searchRadius);
+
+                // Iterate over nearby signs mathematically mapped
+                for (int z = minCellZ; z <= maxCellZ; z++)
                 {
-                    VisibilityVolume vca = BatchSimulationManager.signGrid[z, x];
+                    for (int x = minCellX; x <= maxCellX; x++)
+                    {
+                        VisibilityVolume vca = BatchSimulationManager.signGrid[z, x];
+                        if (vca == null) continue;
+                        EvaluateSignVisibility(vca);
+                    }
+                }
+            }
+            else
+            {
+                // Single run / standard scenario: directly check all signs tracked by this agent
+                foreach (var kvp in agentData.signTracking)
+                {
+                    VisibilityVolume vca = kvp.Key;
                     if (vca == null) continue;
-
-                    if (!agentData.signTracking.TryGetValue(vca, out AgentSignData signData)) continue;
-
-                    bool currentlyInVCA = IsWithinVolume(transform.position, vca);
-
-                    if (currentlyInVCA && !signData.isInVCA)
-                    {
-                        signData.timeStampEnteredVCA = Time.time;
-                        signData.isInVCA = true;
-                        activeVCAs.Add(vca);
-                    }
-
-                    if (currentlyInVCA && signData.isInVCA)
-                    {
-                        if (!signData.sawSign)
-                        {
-                            bool canSee = false;
-                            
-                            if (vca.useDiscretization)
-                            {
-                                float daRatio = CalculateDARatio(transform.position, vca, signData);
-                                if (daRatio >= criticalThreshold) canSee = true;
-                            }
-                            else
-                            {
-                                canSee = IfInVcaAndSignIsVisible(transform.position, vca, signData);
-                            }
-
-                            signData.canSeeSign = canSee;
-                        }
-                    }
+                    EvaluateSignVisibility(vca);
                 }
             }
 
             // 2. Check for exits! Must iterate backwards because we might remove items.
-            // We do this loop on activeVCAs so if an agent sprints out of the searchRadius entirely,
-            // they still correctly trigger the exit logic.
             for (int i = activeVCAs.Count - 1; i >= 0; i--)
             {
                 VisibilityVolume vca = activeVCAs[i];
-                if (!agentData.signTracking.TryGetValue(vca, out AgentSignData signData)) continue;
+                if (vca == null || !agentData.signTracking.TryGetValue(vca, out AgentSignData signData))
+                {
+                    activeVCAs.RemoveAt(i);
+                    continue;
+                }
 
                 bool currentlyInVCA = IsWithinVolume(transform.position, vca);
                 if (!currentlyInVCA)
@@ -186,10 +176,10 @@ public class Vision : MonoBehaviour
             }
         }
 
-        // 3. EVERY FRAME: Apply continuous exposure smoothly ONLY for the 1-2 signs the agent is currently near
+        // 3. EVERY FRAME: Apply continuous exposure smoothly ONLY for the signs the agent is currently inside
         foreach (var vca in activeVCAs)
         {
-            if (agentData.signTracking.TryGetValue(vca, out AgentSignData signData))
+            if (vca != null && agentData.signTracking.TryGetValue(vca, out AgentSignData signData))
             {
                 if (signData.isInVCA && !signData.sawSign)
                 {
@@ -208,6 +198,74 @@ public class Vision : MonoBehaviour
                     }
                 }
             }
+        }
+    }
+
+    private void EvaluateSignVisibility(VisibilityVolume vca)
+    {
+        if (vca == null || !agentData.signTracking.TryGetValue(vca, out AgentSignData signData)) return;
+
+        bool currentlyInVCA = IsWithinVolume(transform.position, vca);
+
+        if (currentlyInVCA && !signData.isInVCA)
+        {
+            signData.timeStampEnteredVCA = Time.time;
+            signData.isInVCA = true;
+            if (!activeVCAs.Contains(vca))
+            {
+                activeVCAs.Add(vca);
+            }
+        }
+
+        if (currentlyInVCA && signData.isInVCA)
+        {
+            if (!signData.sawSign)
+            {
+                bool canSee = false;
+                
+                if (vca.useDiscretization)
+                {
+                    float daRatio = CalculateDARatio(transform.position, vca, signData);
+                    if (daRatio >= criticalThreshold) canSee = true;
+                }
+                else
+                {
+                    canSee = IfInVcaAndSignIsVisible(transform.position, vca, signData);
+                }
+
+                signData.canSeeSign = canSee;
+            }
+        }
+    }
+
+    private void OnDestroy()
+    {
+        FinalizeActiveVCAs();
+    }
+
+    private void OnDisable()
+    {
+        FinalizeActiveVCAs();
+    }
+
+    private void FinalizeActiveVCAs()
+    {
+        if (agentData != null && activeVCAs != null)
+        {
+            float exitTime = Time.time;
+            foreach (var vca in activeVCAs)
+            {
+                if (vca != null && agentData.signTracking.TryGetValue(vca, out AgentSignData signData))
+                {
+                    if (signData.isInVCA)
+                    {
+                        signData.timeInVCA += (exitTime - signData.timeStampEnteredVCA);
+                        signData.isInVCA = false;
+                        signData.timesInVCA++;
+                    }
+                }
+            }
+            activeVCAs.Clear();
         }
     }
 

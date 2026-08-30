@@ -80,17 +80,105 @@ public class DataCollector : MonoBehaviour
 {
     public DataRecord dataRecord;
 
+    [Header("Save Settings")]
+    [Tooltip("If true, automatically saves the collected run data when stopping play mode / quitting the application.")]
+    public bool autoSaveOnStop = true;
+
+    [Tooltip("Optional custom directory path. Leave empty to use Application.persistentDataPath.")]
+    public string customOutputDirectory = "";
+
+    private bool hasSavedCurrentRun = false;
+
+    public string GetOutputDirectory()
+    {
+        if (!string.IsNullOrEmpty(customOutputDirectory))
+        {
+            try
+            {
+                if (!Directory.Exists(customOutputDirectory))
+                    Directory.CreateDirectory(customOutputDirectory);
+                return customOutputDirectory;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[DataCollector] Custom output directory '{customOutputDirectory}' error: {ex.Message}. Using persistentDataPath.");
+            }
+        }
+        return Application.persistentDataPath;
+    }
+
+    [ContextMenu("Save Run Now")]
+    public void SaveRunMenu()
+    {
+        SaveRun();
+    }
+
+    [ContextMenu("Open Save Directory")]
+    public void OpenSaveDirectory()
+    {
+        string path = GetOutputDirectory();
+        if (!Directory.Exists(path))
+            Directory.CreateDirectory(path);
+
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.RevealInFinder(path);
+#else
+        System.Diagnostics.Process.Start(path);
+#endif
+    }
+
     public void SaveRun(int runIndex = -1)
     {
         try
         {
-            // Ensure global counters reflect current agents before saving
-            if (dataRecord != null && dataRecord.global != null)
+            if (dataRecord == null)
             {
-                dataRecord.global.totalAgents = dataRecord.agents != null ? dataRecord.agents.Count : 0;
+                Debug.LogWarning("[DataCollector] No dataRecord to save.");
+                return;
             }
 
-            string folderPath = Application.persistentDataPath;
+            // Ensure global counters and sign properties reflect current state
+            if (dataRecord.global != null)
+            {
+                dataRecord.global.totalAgents = dataRecord.agents != null ? dataRecord.agents.Count : 0;
+
+                // If global sign properties are not set, pull from scene's VisibilityVolume
+                VisibilityVolume fallbackVca = FindObjectOfType<VisibilityVolume>();
+                if (fallbackVca != null)
+                {
+                    if (dataRecord.global.signHeight == 0f) dataRecord.global.signHeight = fallbackVca.transform.position.y;
+                    if (dataRecord.global.signPositionX == 0f) dataRecord.global.signPositionX = fallbackVca.transform.position.x;
+                    if (dataRecord.global.signPositionZ == 0f) dataRecord.global.signPositionZ = fallbackVca.transform.position.z;
+                    if (dataRecord.global.signOrientation == 0f) dataRecord.global.signOrientation = fallbackVca.transform.rotation.eulerAngles.y;
+                    if (dataRecord.global.vcaDistance == 0f) dataRecord.global.vcaDistance = fallbackVca.ViewingDistance;
+                    if (dataRecord.global.vcaAngle == 0f) dataRecord.global.vcaAngle = fallbackVca.ThetaDegrees;
+                    if (dataRecord.global.signComprehensionTime == 0f) dataRecord.global.signComprehensionTime = fallbackVca.comprehensionTime;
+                }
+            }
+
+            // Finalize any in-progress VCA exposure if simulation is ending
+            float stopTime = Time.time;
+            if (dataRecord.agents != null)
+            {
+                foreach (var agent in dataRecord.agents)
+                {
+                    if (agent.signTracking != null)
+                    {
+                        foreach (var signEntry in agent.signTracking)
+                        {
+                            var sData = signEntry.Value;
+                            if (sData.isInVCA)
+                            {
+                                sData.timeInVCA += (stopTime - sData.timeStampEnteredVCA);
+                                sData.isInVCA = false;
+                                sData.timesInVCA++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            string folderPath = GetOutputDirectory();
             string timePart = dataRecord.global != null ? dataRecord.global.timestamp.ToString("yyyy-MM-dd_HH.mm.ss") : DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
             string runPart = runIndex > 0 ? $"_run{runIndex}" : "";
             
@@ -110,47 +198,51 @@ public class DataCollector : MonoBehaviour
                 {
                     foreach (var agent in dataRecord.agents)
                     {
-                        foreach (var signEntry in agent.signTracking)
+                        if (agent.signTracking != null && agent.signTracking.Count > 0)
                         {
-                            var sData = signEntry.Value;
+                            foreach (var signEntry in agent.signTracking)
+                            {
+                                var sData = signEntry.Value;
 
-                            writer.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,
-                                "{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22},{23}",
-                                timePart,
-                                runIndex > 0 ? runIndex.ToString() : "N/A",
-                                dataRecord.global.scenarioId,
-                                dataRecord.global.totalAgents,
-                                0, // VisibleSignCount is deprecated for multi-sign
-                                dataRecord.global.signHeight,
-                                sData.signPositionX,
-                                sData.signPositionZ,
-                                dataRecord.global.signOrientation,
-                                dataRecord.global.vcaAngle,
-                                dataRecord.global.vcaDistance,
-                                dataRecord.global.signComprehensionTime,
-                                agent.agentId,
-                                agent.type,
-                                agent.startNode,
-                                agent.goalNode,
-                                agent.height,
-                                agent.eyeHeight,
-                                sData.timeInVCA,
-                                sData.timesInVCA,
-                                sData.sawSign,
-                                agent.totalNodesNavigated,
-                                agent.nodesWithDetection,
-                                agent.rdEffective
-                            ));
+                                writer.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                                    "{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22},{23}",
+                                    timePart,
+                                    runIndex > 0 ? runIndex.ToString() : "N/A",
+                                    dataRecord.global != null ? dataRecord.global.scenarioId : "default_scenario",
+                                    dataRecord.global != null ? dataRecord.global.totalAgents : dataRecord.agents.Count,
+                                    0, // VisibleSignCount is deprecated for multi-sign
+                                    dataRecord.global != null ? dataRecord.global.signHeight : 0f,
+                                    sData.signPositionX,
+                                    sData.signPositionZ,
+                                    dataRecord.global != null ? dataRecord.global.signOrientation : 0f,
+                                    dataRecord.global != null ? dataRecord.global.vcaAngle : 90f,
+                                    dataRecord.global != null ? dataRecord.global.vcaDistance : 15f,
+                                    dataRecord.global != null ? dataRecord.global.signComprehensionTime : 1f,
+                                    agent.agentId,
+                                    agent.type,
+                                    agent.startNode,
+                                    agent.goalNode,
+                                    agent.height,
+                                    agent.eyeHeight,
+                                    sData.timeInVCA,
+                                    sData.timesInVCA,
+                                    sData.sawSign,
+                                    agent.totalNodesNavigated,
+                                    agent.nodesWithDetection,
+                                    agent.rdEffective
+                                ));
+                            }
                         }
                     }
                 }
             }
 
-            Debug.Log($"[DataCollector] Run saved to {csvFilePath}");
+            hasSavedCurrentRun = true;
+            Debug.Log($"[DataCollector] Run saved successfully to: {csvFilePath}");
         }
         catch (Exception ex)
         {
-            Debug.LogError($"[DataCollector] Failed to save JSON/CSV: {ex.Message}");
+            Debug.LogError($"[DataCollector] Failed to save CSV: {ex.Message}");
         }
     }
 
@@ -159,7 +251,7 @@ public class DataCollector : MonoBehaviour
     {
         try
         {
-            string folderPath = Application.persistentDataPath;
+            string folderPath = GetOutputDirectory();
             string timePart = dataRecord.global != null ? dataRecord.global.timestamp.ToString("yyyy-MM-dd_HH.mm.ss") : DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
             string runPart = runIndex > 0 ? $"_run{runIndex}" : "";
             
@@ -202,6 +294,8 @@ public class DataCollector : MonoBehaviour
     // prepare a fresh record for the next run (keeps scenarioId if present)
     public void ResetForNextRun()
     {
+        hasSavedCurrentRun = false;
+
         // keep the same DataRecord instance so other scripts don't see a suddenly different object reference
         if (dataRecord == null)
             dataRecord = new DataRecord();
@@ -221,5 +315,23 @@ public class DataCollector : MonoBehaviour
             dataRecord.global = new GlobalData();
 
         dataRecord.global.scenarioId = SceneManager.GetActiveScene().name + "_scenario";
+    }
+
+    private void OnApplicationQuit()
+    {
+        if (autoSaveOnStop && !hasSavedCurrentRun && dataRecord != null && dataRecord.agents != null && dataRecord.agents.Count > 0)
+        {
+            Debug.Log("[DataCollector] Auto-saving run data on application quit/stop.");
+            SaveRun();
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (autoSaveOnStop && !hasSavedCurrentRun && dataRecord != null && dataRecord.agents != null && dataRecord.agents.Count > 0)
+        {
+            Debug.Log("[DataCollector] Auto-saving run data on destroy.");
+            SaveRun();
+        }
     }
 }
