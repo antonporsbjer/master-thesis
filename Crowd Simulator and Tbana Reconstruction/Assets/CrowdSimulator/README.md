@@ -1,108 +1,57 @@
-# How to use the simulator
+# Crowd Simulator Core Engine
 
-## Components for simulation
+This folder contains the core Continuum Crowds / Velocity-Obstacle hybrid pedestrian simulation framework. It serves as the base locomotion and navigation engine, completely decoupled from any thesis-specific or application-specific sightline logic.
 
-The scene needs to have a Main object, and at least one Spawner and one Goal.
+---
 
-Nodes are placed in the world to guide agents. They will walk to their goal using the shortest path of nodes.
+## 1. Core Architecture & Architectural Principles
 
-**Custom Node**
+- **Continuum Crowds Formulation**: Solves dynamic potential fields and velocity fields across a staggered spatial grid (`SimulationGrid.cs`).
+- **Locomotion & Path Planning**: Agents navigate using graph-based waypoints (`Node.cs`, `CustomNode.cs`, `LinedNode.cs`) integrated with local collision avoidance.
+- **Strict Decoupling**: The core simulator has **zero dependencies** on `Porsbjer_Anton_Thesis`. Perception, sightline occlusion, and experimental signage logic extend the simulator externally via `Assets/Porsbjer_Anton_Thesis`.
 
-Agents will steer towards the center of the node, which works well for chokepoints like doorways, but might create unrealistic movement since all agents are moving towards the exact same point.
+---
 
-**Custom Node Lined**
+## 2. Advanced Performance & Engine Features
 
-Instead of moving towards the center of the node the agents will move towards the closest point along a line across the nodes diameter. This might make the movement look more realistic. It might look like the agents reach the node before they actually reach the node’s area if they steer towards a point closer to the edge.
+### A. Unity C# Job System Parallelization (`GridParallelBridge.cs`)
+- Offloads continuum density splatting and velocity grid calculations onto worker threads via Unity's C# Job System and `NativeArray` memory buffers.
+- Eliminates CPU bottlenecks during large-scale simulations (e.g., 500+ agents in Senri-Chuo Station).
 
-### Spawner
+### B. Decoupled Rectangular Grid Dimensions (`SimulationGrid.cs`)
+- Supports non-square simulation environments, allowing independent width, length, and cell resolution.
+- Includes dynamic alpha accessibility: `SimulationGrid.alpha` exposes `currentAlpha` to inspect and dynamically modulate crowd packing tightness during runtime density sweeps.
 
-**Agent Editor Container**
-- An empty game object of which the agent objects will be children to not make the editor hierarchy window cluttered.
+### C. Proportional Demographic Spawner (`NewSpawner.cs`)
+- Supports both standard uniform agent instantiation and custom demographic cohort weighting (`useCustomDemographics = true`).
+- Configurable `demographicWeights` array allows arbitrary cohort proportions (e.g., exact 75% standing adults / 25% wheelchair users) with deterministic or pseudo-random selection.
 
-**Custom Goal**
-- The goal node of the agents of this spawner. If no custom goal is set the agents will have the goal at index 0 as their goal.
+### D. Boundary Safety & Spatial Hashing
+- Robust out-of-bounds guards prevent grid index out-of-range exceptions near concourse perimeters and station walls.
+- Optimized neighbor bin spatial hashing accelerates local agent-to-agent avoidance checks.
 
-#### Spawn Method
+### E. Experiment HUD
+- Runtime performance overlay displaying active agent count, real-time FPS, solver iteration counts, and current alpha density parameters.
 
-**Uniform Spawn**
-- The given number of agents will spawn spread out uniformly over the plane area.
+---
 
-**Circle Spawn**
-- Agents will spawn in a circle with the given radius and walk towards the center.
+## 3. Key Components & Inspector Parameters
 
-**Disc Spawn**
-- Agents will spawn in a disc with the given radius and number of rows and walk towards the center.
+### Main Simulation Controller (`Main.cs`)
+- **Max Number Of Agents**: Capacity limit for continuously spawned agents.
+- **Plane Size**: Dimensions of the simulation plane.
+- **Cells Per Row**: Staggered grid resolution; controls discretization granularity.
+- **Neighbor Bins**: Spatial hash bins used for local collision avoidance.
+- **Alpha ($\alpha$)**: Continuum packing parameter ($\alpha \in [0, 1]$). Higher values permit tighter agent packing and elevated crowd congestion.
+- **Solver**: Selection of iterative solver (PSOR recommended for numerical stability and performance).
+- **Solver Max Iterations / Epsilon**: Convergence tolerance criteria.
 
-**Continuous Spawn**
-- Agents will spawn continuously with the given spawn rate and walk towards their goal. A lower spawn rate means less time between spawns.
+### Spawner (`NewSpawner.cs`)
+- **Agent Editor Container**: Target hierarchy parent to keep editor scene clean.
+- **Custom Goal**: Destination node assigned to spawned pedestrians.
+- **Spawn Method**: Uniform, Continuous, Circle, Disc, or Area spawning.
+- **Use Custom Demographics**: When enabled, spawns agent models according to normalized percentages in `Demographic Weights`.
 
-**Area Spawn**
-- Agents will spawn in an area with the given dimensions an walk towards their goal.
-
-### Main
-This setup should work regarding the prefabs needed in the Main.cs component:
-
-![mainscript](https://github.com/user-attachments/assets/813cd83d-ed6d-4eea-b43d-3ec1086ceaeb)
-
-**Max Number Of Agents**
-- The maximum number of agents that can be active at any time when spawning agents continuously.
-
-**Plane Size**
-- Length of the side of the square plane. The plane should be big enough to cover the area where the agents will walk.
-
-**Road Node Amount**
-- Number of extra nodes to be placed automatically. Extra nodes can be placed automatically which might make it easier for agents to move around obstacles and might make their movement look more realistic.
-
-**Cells Per Row**
-- Number of cells per row in the staggered grid. A higher number allows for a more detailed representation of agent movement but at a higher computation cost.
-
-**Neighbor bins**
-- The number of neighbor bins used to calculate collision avoidance for agents. More bins allows for more realistic simulation at the expense of computational cost.
-
-**Agent Max Speed, Agent Min Speed**
-- Each agent’s walk speed will be a randomized number within this interval.
-
-**Custom Time Step**
-- Set this to true to use a custom time step. If it’s false Unity’s Time.deltaTime will be used.
-
-**Time Step**
-- The custom time step if custom time step is used.
-
-**Alpha**
-- A higher alpha value (closer to 1) allows for more perfect packing of agents and denser crowds, a lower value gives a sparser crowd.
-
-**Solver**
-- PSOR seems to be faster and more stable than the other two.
-
-**Solver Max Iterations**
-- A higher number gives more accurate simulation but takes more time.
-
-**Epsilon**
-- A lower value gives more accurate simulations but takes more time.
-
-**Show Splatted Density**
-- Visualizes the crowd density.
-
-**Show Splatted Velocity**
-- Visualizes the crowd velocity.
-
-**Visible Map**
-- True will show the nodes when playing and false will hide them.
-
-**Walk back**
-- If this option is checked agents will walk back to their previous target node if they loose sight of the next one. This might be good if agents get stuck, but it might look unrealistic in some scenarios.
-
-**Skip Node If See Next**
-- If this option is checked agents will start moving to the next node in their path as soon as it’s in their line of sight, otherwise they have to reach each node before proceeding to the next.
-
-**Smooth Turns**
-- This option makes agents turn more smoothly which might make their movement look more realistic.
-
-**Handle Collision**
-- Doesn’t seem to do anything. 🤷
-
-**Agent Avoidance Radius**
-- The preferred distance between two agents. 0.5 appears to be a good value.
-
-**Use Preset Group Distances**
-- When this option is true preset distances between agents for different group sizes are used. When it is false the same distance is used regardless of group size.
+### Guidance Nodes (`CustomNode.cs`, `LinedNode.cs`)
+- **Custom Node**: Point-based attraction node; optimal for doorways and turnstiles.
+- **Custom Node Lined**: Dispersed line-segment attraction node; creates natural, wide-front pedestrian corridors across platforms and station concourses.

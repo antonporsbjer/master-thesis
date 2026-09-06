@@ -64,16 +64,16 @@ public class Vision : MonoBehaviour
             
             agentData = new AgentData(agentId, agentType, startNode, goalNode, agentHeight, agentEyeHeight);
             
-            // Initialize tracking for all currently active signs (supports both batch grid and single-run scenes)
-            IEnumerable<VisibilityVolume> targetSigns = (BatchSimulationManager.activeSigns != null && BatchSimulationManager.activeSigns.Count > 0)
-                ? BatchSimulationManager.activeSigns
-                : FindObjectsOfType<VisibilityVolume>();
+            // Initialize tracking for all active signs in the scene
+            VisibilityVolume[] targetSigns = FindObjectsOfType<VisibilityVolume>();
 
             foreach (var signVca in targetSigns)
             {
                 if (signVca == null) continue;
                 agentData.signTracking[signVca] = new AgentSignData()
                 {
+                    signName = !string.IsNullOrEmpty(signVca.signName) ? signVca.signName : signVca.gameObject.name,
+                    isTargetAudience = signVca.IsTargetAudience(startNode),
                     signPositionX = signVca.transform.position.x,
                     signPositionZ = signVca.transform.position.z,
                     timeInVCA = 0f,
@@ -116,40 +116,12 @@ public class Vision : MonoBehaviour
             if (checkInterval > 0f) checkTimer -= checkInterval;
             else checkTimer = 0f;
 
-            if (BatchSimulationManager.signGrid != null && BatchSimulationManager.activeSigns != null && BatchSimulationManager.activeSigns.Count > 0)
+            // Evaluate all active signs tracked by this agent
+            foreach (var kvp in agentData.signTracking)
             {
-                // Batch grid spatial search optimization
-                float viewDist = BatchSimulationManager.activeSigns[0].ViewingDistance;
-                int searchRadius = Mathf.CeilToInt(viewDist / BatchSimulationManager.gridStepSize);
-
-                int agentCellX = Mathf.RoundToInt((transform.position.x - BatchSimulationManager.gridMinX) / BatchSimulationManager.gridStepSize);
-                int agentCellZ = Mathf.RoundToInt((transform.position.z - BatchSimulationManager.gridMinZ) / BatchSimulationManager.gridStepSize);
-
-                int minCellX = Mathf.Max(0, agentCellX - searchRadius);
-                int maxCellX = Mathf.Min(BatchSimulationManager.gridCols - 1, agentCellX + searchRadius);
-                int minCellZ = Mathf.Max(0, agentCellZ - searchRadius);
-                int maxCellZ = Mathf.Min(BatchSimulationManager.gridRows - 1, agentCellZ + searchRadius);
-
-                // Iterate over nearby signs mathematically mapped
-                for (int z = minCellZ; z <= maxCellZ; z++)
-                {
-                    for (int x = minCellX; x <= maxCellX; x++)
-                    {
-                        VisibilityVolume vca = BatchSimulationManager.signGrid[z, x];
-                        if (vca == null) continue;
-                        EvaluateSignVisibility(vca);
-                    }
-                }
-            }
-            else
-            {
-                // Single run / standard scenario: directly check all signs tracked by this agent
-                foreach (var kvp in agentData.signTracking)
-                {
-                    VisibilityVolume vca = kvp.Key;
-                    if (vca == null) continue;
-                    EvaluateSignVisibility(vca);
-                }
+                VisibilityVolume vca = kvp.Key;
+                if (vca == null) continue;
+                EvaluateSignVisibility(vca);
             }
 
             // 2. Check for exits! Must iterate backwards because we might remove items.

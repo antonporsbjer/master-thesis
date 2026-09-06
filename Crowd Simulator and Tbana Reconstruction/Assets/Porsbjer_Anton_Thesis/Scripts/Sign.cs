@@ -5,20 +5,17 @@ using UnityEngine;
 // Visibility Area (VCA)
 public class VisibilityVolume : MonoBehaviour
 {
-    //[Range(0, 180)]
+    [Header("Sign Identification")]
+    public string signName = "Sign_Main";
+
+    [Header("Visibility Parameters")]
     public float ThetaDegrees = 90f; // Angle in degrees
     private float Theta; // Angle in radians
     public float ViewingDistance = 15.0f; // View distance (in meters)
-    public bool RandomPosition = false; // If true, the sign will be placed at a random position within the volume
-    private DataCollector dataCollector; // Reference to the DataCollector
 
-    // Range parameters for random sign placement (set these in the Inspector)
-    public float signMinX = -5f;
-    public float signMaxX = 5f;
-    public float signMinZ = -5f;
-    public float signMaxZ = 5f;
-    public float randomYawMin = 0f;
-    public float randomYawMax = 90f;
+    [Header("Target Audience Filtering")]
+    [Tooltip("Allowed start nodes for target audience (e.g. 2, 4, 6 for Sign_Main). Leave empty if all agents are target audience.")]
+    public List<int> targetStartNodes = new List<int>();
 
     // Discretization parameters
     [Header("Signage Discretization")]
@@ -32,43 +29,23 @@ public class VisibilityVolume : MonoBehaviour
     [HideInInspector]
     public List<Vector3> discreteNodes = new List<Vector3>();
 
+    private DataCollector dataCollector; // Reference to the DataCollector
+
+    public bool IsTargetAudience(int startNode)
+    {
+        if (targetStartNodes == null || targetStartNodes.Count == 0) return true;
+        return targetStartNodes.Contains(startNode);
+    }
+
     void Awake()
     {
+        if (string.IsNullOrEmpty(signName))
+        {
+            signName = gameObject.name;
+        }
+
         // Find the DataCollector in the scene
         dataCollector = FindObjectOfType<DataCollector>();
-
-        // perform initial randomization (if enabled)
-        RandomizePosition();
-    }
-
-    // Helper to snap a value to a given step size (centered around 0 or snapped to nearest interval)
-    private float SnapToGrid(float value, float step)
-    {
-        if (step <= 0f) return value;
-        return Mathf.Round(value / step) * step;
-    }
-
-    // public helper to (re)randomize sign position & yaw
-    public void RandomizePosition()
-    {
-        if (!RandomPosition) return;
-
-        // pick only 0 or 90 degrees
-        float yaw = (Random.value < 0.5f) ? 0f : 90f;
-
-        // random position within bounds
-        float randomX = Random.Range(signMinX, signMaxX);
-        float randomZ = Random.Range(signMinZ, signMaxZ);
-
-        // Snap to grid if discretization is enabled
-        float x = useDiscretization ? SnapToGrid(randomX, gridStep) : randomX;
-        float z = useDiscretization ? SnapToGrid(randomZ, gridStep) : randomZ;
-
-        // Ensure snapped values stay within bounds (just in case)
-        x = Mathf.Clamp(x, signMinX, signMaxX);
-        z = Mathf.Clamp(z, signMinZ, signMaxZ);
-
-        transform.SetPositionAndRotation(new Vector3(x, transform.position.y, z), Quaternion.Euler(0f, yaw, 0f));
     }
 
     // Start is called before the first frame update

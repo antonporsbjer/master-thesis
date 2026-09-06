@@ -10,6 +10,7 @@ public class GlobalData
     public readonly DateTime timestamp;
     public int totalAgents;
     public string scenarioId;
+    public float crowdDensityAlpha;
     public int inVcaCount;
     public int visibleSignCount;
     public float signHeight;
@@ -25,11 +26,14 @@ public class GlobalData
         timestamp = DateTime.Now;
         totalAgents = 0;
         scenarioId = "default_scenario";
+        crowdDensityAlpha = 1.0f;
     }
 }
 
 public class AgentSignData
 {
+    public string signName = "Sign";
+    public bool isTargetAudience = true;
     public float signPositionX;
     public float signPositionZ;
     public float timeInVCA;
@@ -142,6 +146,11 @@ public class DataCollector : MonoBehaviour
             {
                 dataRecord.global.totalAgents = dataRecord.agents != null ? dataRecord.agents.Count : 0;
 
+                if (SimulationGrid.instance != null)
+                {
+                    dataRecord.global.crowdDensityAlpha = SimulationGrid.instance.alpha;
+                }
+
                 // If global sign properties are not set, pull from scene's VisibilityVolume
                 VisibilityVolume fallbackVca = FindObjectOfType<VisibilityVolume>();
                 if (fallbackVca != null)
@@ -192,7 +201,7 @@ public class DataCollector : MonoBehaviour
             using (StreamWriter writer = new StreamWriter(csvFilePath))
             {
                 // Header
-                writer.WriteLine("Timestamp,RunIndex,ScenarioID,TotalAgents,VisibleSignCount,SignHeight,SignPositionX,SignPositionZ,SignOrientation,VcaAngle,VcaDistance,SignComprehensionTime,AgentID,AgentType,StartNode,GoalNode,Height,EyeHeight,TimeInVCA,TimesInVCA,SawSign,TotalNodesNavigated,NodesWithDetection,RDEffective");
+                writer.WriteLine("Timestamp,RunIndex,ScenarioID,CrowdDensityAlpha,TotalAgents,SignName,IsTargetAudience,SignHeight,SignPositionX,SignPositionZ,SignOrientation,VcaAngle,VcaDistance,SignComprehensionTime,AgentID,AgentType,StartNode,GoalNode,Height,EyeHeight,TimeInVCA,TimesInVCA,SawSign,TotalNodesNavigated,NodesWithDetection,RDEffective");
                 
                 if (dataRecord.agents != null)
                 {
@@ -203,21 +212,33 @@ public class DataCollector : MonoBehaviour
                             foreach (var signEntry in agent.signTracking)
                             {
                                 var sData = signEntry.Value;
+                                var signVca = signEntry.Key;
+
+                                string sName = !string.IsNullOrEmpty(sData.signName) 
+                                    ? sData.signName 
+                                    : (signVca != null ? signVca.signName : "Sign");
+                                float sHeight = signVca != null ? signVca.transform.position.y : (dataRecord.global != null ? dataRecord.global.signHeight : 0f);
+                                float sRotY = signVca != null ? signVca.transform.rotation.eulerAngles.y : (dataRecord.global != null ? dataRecord.global.signOrientation : 0f);
+                                float sAngle = signVca != null ? signVca.ThetaDegrees : (dataRecord.global != null ? dataRecord.global.vcaAngle : 90f);
+                                float sDist = signVca != null ? signVca.ViewingDistance : (dataRecord.global != null ? dataRecord.global.vcaDistance : 15f);
+                                float sComp = signVca != null ? signVca.comprehensionTime : (dataRecord.global != null ? dataRecord.global.signComprehensionTime : 1f);
 
                                 writer.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,
-                                    "{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22},{23}",
+                                    "{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22},{23},{24},{25}",
                                     timePart,
                                     runIndex > 0 ? runIndex.ToString() : "N/A",
                                     dataRecord.global != null ? dataRecord.global.scenarioId : "default_scenario",
+                                    dataRecord.global != null ? dataRecord.global.crowdDensityAlpha : 1.0f,
                                     dataRecord.global != null ? dataRecord.global.totalAgents : dataRecord.agents.Count,
-                                    0, // VisibleSignCount is deprecated for multi-sign
-                                    dataRecord.global != null ? dataRecord.global.signHeight : 0f,
+                                    sName,
+                                    sData.isTargetAudience,
+                                    sHeight,
                                     sData.signPositionX,
                                     sData.signPositionZ,
-                                    dataRecord.global != null ? dataRecord.global.signOrientation : 0f,
-                                    dataRecord.global != null ? dataRecord.global.vcaAngle : 90f,
-                                    dataRecord.global != null ? dataRecord.global.vcaDistance : 15f,
-                                    dataRecord.global != null ? dataRecord.global.signComprehensionTime : 1f,
+                                    sRotY,
+                                    sAngle,
+                                    sDist,
+                                    sComp,
                                     agent.agentId,
                                     agent.type,
                                     agent.startNode,
@@ -243,51 +264,6 @@ public class DataCollector : MonoBehaviour
         catch (Exception ex)
         {
             Debug.LogError($"[DataCollector] Failed to save CSV: {ex.Message}");
-        }
-    }
-
-    // Save a 2D density matrix to a CSV file
-    public void SaveDensityMatrix(float[,] densityMatrix, float[] xCoords, float[] zCoords, int runIndex = -1)
-    {
-        try
-        {
-            string folderPath = GetOutputDirectory();
-            string timePart = dataRecord.global != null ? dataRecord.global.timestamp.ToString("yyyy-MM-dd_HH.mm.ss") : DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
-            string runPart = runIndex > 0 ? $"_run{runIndex}" : "";
-            
-            string csvFileName = $"density_matrix_{timePart}{runPart}.csv";
-            string csvFilePath = Path.Combine(folderPath, csvFileName);
-
-            if (!Directory.Exists(folderPath))
-                Directory.CreateDirectory(folderPath);
-
-            System.Text.StringBuilder csv = new System.Text.StringBuilder();
-
-            // Header Row: Blank for top-left cell, then X coordinates
-            csv.Append("Z_Coord/X_Coord");
-            for (int x = 0; x < xCoords.Length; x++)
-            {
-                csv.Append($",{xCoords[x].ToString(System.Globalization.CultureInfo.InvariantCulture)}");
-            }
-            csv.AppendLine();
-
-            // Data Rows: Z coordinate, then density values
-            for (int z = 0; z < zCoords.Length; z++)
-            {
-                csv.Append(zCoords[z].ToString(System.Globalization.CultureInfo.InvariantCulture));
-                for (int x = 0; x < xCoords.Length; x++)
-                {
-                    csv.Append($",{densityMatrix[z, x].ToString(System.Globalization.CultureInfo.InvariantCulture)}");
-                }
-                csv.AppendLine();
-            }
-
-            File.WriteAllText(csvFilePath, csv.ToString());
-            Debug.Log($"[DataCollector] Density matrix saved to {csvFilePath}");
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError($"[DataCollector] Failed to save density matrix: {ex.Message}");
         }
     }
 

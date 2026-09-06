@@ -66,11 +66,9 @@ public class RunManager : MonoBehaviour
             // allow a frame for reload
             yield return null;
 
-            // wait for the VisibilityArea (sign) to be created and re-randomize it
-            yield return new WaitUntil(() => FindObjectOfType<VisibilityVolume>() != null);
-            var vca = FindObjectOfType<VisibilityVolume>();
-            if (vca != null)
-                vca.RandomizePosition();
+            // wait for the scene and data collector to be ready for the next run
+            yield return new WaitUntil(() => FindObjectOfType<DataCollector>() != null);
+            dataCollector = FindObjectOfType<DataCollector>();
 
             // after reload the coroutine will continue in the surviving RunManager instance
             yield return null;

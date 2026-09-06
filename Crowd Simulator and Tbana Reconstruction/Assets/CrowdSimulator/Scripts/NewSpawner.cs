@@ -52,6 +52,11 @@ public class NewSpawner : MonoBehaviour {
 	public bool usePoisson = false;
     public GameObject agentPrefab;
 
+	[Header("Demographic Distribution Ratios")]
+	[Tooltip("Optional custom weighting across agentPrefab children (e.g. for Scenario A-2: 0.25 wheelchair, 0.375 female, 0.375 male)")]
+	public bool useCustomDemographics = false;
+	public float[] demographicWeights;
+
 	// Set the node index for this spawner's node
 	public void SetNode(int node)
 	{
@@ -320,7 +325,35 @@ public class NewSpawner : MonoBehaviour {
 		{
 			if (agentPrefab.transform.childCount > 0)
 			{
-				agent = Instantiate(agentPrefab.transform.GetChild(Random.Range(0, agentPrefab.transform.childCount)).GetComponent<Agent>());
+				int selectedChild = 0;
+				if (useCustomDemographics && demographicWeights != null && demographicWeights.Length == agentPrefab.transform.childCount)
+				{
+					float totalWeight = 0f;
+					foreach (float w in demographicWeights) totalWeight += Mathf.Max(0f, w);
+					if (totalWeight > 0f)
+					{
+						float r = Random.value * totalWeight;
+						float cumulative = 0f;
+						for (int i = 0; i < demographicWeights.Length; i++)
+						{
+							cumulative += Mathf.Max(0f, demographicWeights[i]);
+							if (r <= cumulative)
+							{
+								selectedChild = i;
+								break;
+							}
+						}
+					}
+					else
+					{
+						selectedChild = Random.Range(0, agentPrefab.transform.childCount);
+					}
+				}
+				else
+				{
+					selectedChild = Random.Range(0, agentPrefab.transform.childCount);
+				}
+				agent = Instantiate(agentPrefab.transform.GetChild(selectedChild).GetComponent<Agent>());
 			}
 			else
 			{

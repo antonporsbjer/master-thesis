@@ -12,8 +12,11 @@ public class SimulationGrid : MonoBehaviour {
 	internal static SimulationGrid instance; //Alive instance of this grid (should only be one)
 
 	internal static float maxDensity; 
+	internal float currentAlpha = 1f;
 	public float alpha {
+		get { return currentAlpha; }
 		set {
+			currentAlpha = value;
 			maxDensity = 2f * value / (Mathf.Sqrt(3f) * Mathf.Pow(agentAvoidanceRadius, 2));
 		}
 	} 

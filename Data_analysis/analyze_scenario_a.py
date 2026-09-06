@@ -63,6 +63,40 @@ def clean_agent_type(name):
     return clean
 
 
+def export_latex_table(df, filepath):
+    """Exports a dataframe to LaTeX table, gracefully handling missing optional dependencies."""
+    try:
+        latex_str = df.to_latex(index=False)
+    except Exception:
+        col_align = 'l' * len(df.columns)
+        headers = " & ".join([str(c).replace('_', r'\_').replace('%', r'\%') for c in df.columns]) + r" \\ \hline"
+        rows = []
+        for _, row in df.iterrows():
+            formatted_vals = [str(v).replace('_', r'\_').replace('%', r'\%') for v in row.values]
+            rows.append(" & ".join(formatted_vals) + r" \\")
+        body = "\n".join(rows)
+        latex_str = f"\\begin{{tabular}}{{{col_align}}}\n\\hline\n{headers}\n{body}\n\\hline\n\\end{{tabular}}\n"
+    with open(filepath, 'w', encoding='utf-8') as f:
+        f.write(latex_str)
+
+
+def df_to_markdown(df, index=False):
+    """Converts DataFrame to GitHub-flavored markdown table without tabulate dependency."""
+    try:
+        return df.to_markdown(index=index)
+    except Exception:
+        cols = [str(c) for c in df.columns]
+        header = "| " + " | ".join(cols) + " |"
+        sep = "| " + " | ".join(["---"] * len(cols)) + " |"
+        rows = []
+        for _, row in df.iterrows():
+            formatted = [str(v) if pd.notnull(v) else "" for v in row.values]
+            rows.append("| " + " | ".join(formatted) + " |")
+        return "\n".join([header, sep] + rows)
+
+
+
+
 def analyze_visibility_data(df, output_dir, run_name="Scenario_A"):
     """Performs deep analysis on the visibility dataframe and generates reports + plots."""
     os.makedirs(output_dir, exist_ok=True)
@@ -77,6 +111,16 @@ def analyze_visibility_data(df, output_dir, run_name="Scenario_A"):
     df['CleanAgentType'] = df['AgentType'].apply(clean_agent_type)
     df['InVCA'] = df['TimeInVCA'] > 0
     df['Route'] = df['StartNode'].astype(str) + ' -> ' + df['GoalNode'].astype(str)
+
+    if 'SignName' not in df.columns:
+        df['SignName'] = 'Sign_0'
+    else:
+        df['SignName'] = df['SignName'].fillna('Sign_0')
+
+    if 'IsTargetAudience' in df.columns:
+        df['IsTargetAudience'] = df['IsTargetAudience'].astype(str).str.lower().isin(['true', '1'])
+    else:
+        df['IsTargetAudience'] = True
 
     total_agents = len(df)
     vca_df = df[df['InVCA']].copy()
@@ -167,7 +211,47 @@ def analyze_visibility_data(df, output_dir, run_name="Scenario_A"):
     stat_df = pd.DataFrame(stat_test_results)
 
     # -------------------------------------------------------------
-    # 4. Exposure Analysis (TimeInVCA vs SawSign)
+    # 4. Multi-Sign Analysis (when multiple signs are present)
+    # -------------------------------------------------------------
+    sign_df = pd.DataFrame()
+    if df['SignName'].nunique() > 1:
+        sign_records = []
+        for sname in sorted(df['SignName'].unique()):
+            sdf = df[df['SignName'] == sname]
+            svca = sdf[sdf['InVCA']]
+            sn_all = len(sdf)
+            sn_vca = len(svca)
+            ssaw_all = sdf['SawSign'].sum()
+            ssaw_vca = svca['SawSign'].sum()
+            sr_all = (ssaw_all / sn_all * 100) if sn_all > 0 else 0.0
+            sr_vca = (ssaw_vca / sn_vca * 100) if sn_vca > 0 else 0.0
+            
+            m_vca = svca[svca['CleanAgentType'] == 'Adult Male']
+            f_vca = svca[svca['CleanAgentType'] == 'Adult Female']
+            w_vca = svca[svca['CleanAgentType'] == 'Wheelchair']
+            
+            sr_male = (m_vca['SawSign'].mean() * 100) if len(m_vca) > 0 else 0.0
+            sr_female = (f_vca['SawSign'].mean() * 100) if len(f_vca) > 0 else 0.0
+            sr_wheel = (w_vca['SawSign'].mean() * 100) if len(w_vca) > 0 else 0.0
+            
+            sign_records.append({
+                'Sign': sname,
+                'Total Agents': sn_all,
+                'Agents in VCA': sn_vca,
+                'VCA Penetration (%)': (sn_vca / sn_all * 100) if sn_all > 0 else 0.0,
+                'Overall Visibility (%)': sr_all,
+                'VCA Visibility (%)': sr_vca,
+                'Male VCA Vis (%)': sr_male,
+                'Female VCA Vis (%)': sr_female,
+                'Wheelchair VCA Vis (%)': sr_wheel,
+                'Gender Inequity (M - F)': sr_male - sr_female
+            })
+        sign_df = pd.DataFrame(sign_records)
+        sign_df.to_csv(os.path.join(output_dir, f"{run_name}_sign_comparison.csv"), index=False)
+        export_latex_table(sign_df, os.path.join(output_dir, f"{run_name}_sign_comparison.tex"))
+
+    # -------------------------------------------------------------
+    # 5. Exposure Analysis (TimeInVCA vs SawSign)
     # -------------------------------------------------------------
     exposure_summary = vca_df.groupby(['CleanAgentType', 'SawSign'])['TimeInVCA'].agg(
         Count='count',
@@ -180,7 +264,7 @@ def analyze_visibility_data(df, output_dir, run_name="Scenario_A"):
     ).reset_index()
     
     # -------------------------------------------------------------
-    # 5. Route Analysis
+    # 6. Route Analysis
     # -------------------------------------------------------------
     route_summary = vca_df.groupby('Route').agg(
         TotalInVCA=('SawSign', 'count'),
@@ -190,28 +274,28 @@ def analyze_visibility_data(df, output_dir, run_name="Scenario_A"):
     ).sort_values(by='TotalInVCA', ascending=False).reset_index()
 
     # -------------------------------------------------------------
-    # 6. Save Tables to CSV and LaTeX for Thesis
+    # 7. Save Tables to CSV and LaTeX for Thesis
     # -------------------------------------------------------------
     demo_df.to_csv(os.path.join(output_dir, f"{run_name}_demographics.csv"), index=False)
-    demo_df.to_latex(os.path.join(output_dir, f"{run_name}_demographics.tex"), index=False)
+    export_latex_table(demo_df, os.path.join(output_dir, f"{run_name}_demographics.tex"))
     
     if not stat_df.empty:
         stat_df.to_csv(os.path.join(output_dir, f"{run_name}_statistical_tests.csv"), index=False)
-        stat_df.to_latex(os.path.join(output_dir, f"{run_name}_statistical_tests.tex"), index=False)
+        export_latex_table(stat_df, os.path.join(output_dir, f"{run_name}_statistical_tests.tex"))
         
     exposure_summary.to_csv(os.path.join(output_dir, f"{run_name}_exposure_stats.csv"), index=False)
     route_summary.to_csv(os.path.join(output_dir, f"{run_name}_route_analysis.csv"), index=False)
-    route_summary.head(10).to_latex(os.path.join(output_dir, f"{run_name}_route_analysis_top10.tex"), index=False)
+    export_latex_table(route_summary.head(10), os.path.join(output_dir, f"{run_name}_route_analysis_top10.tex"))
 
     # -------------------------------------------------------------
-    # 7. Generate Visualizations
+    # 8. Generate Visualizations
     # -------------------------------------------------------------
-    generate_visualizations(df, vca_df, demo_df, route_summary, output_dir, run_name)
+    generate_visualizations(df, vca_df, demo_df, route_summary, sign_df, output_dir, run_name)
 
     # -------------------------------------------------------------
-    # 8. Generate Markdown & Text Report
+    # 9. Generate Markdown & Text Report
     # -------------------------------------------------------------
-    report_content = generate_text_report(df, vca_df, demo_df, stat_df, exposure_summary, route_summary, 
+    report_content = generate_text_report(df, vca_df, demo_df, stat_df, sign_df, exposure_summary, route_summary, 
                                           total_agents, total_in_vca, total_ratio_all, total_ratio_vca, 
                                           all_ci_low, all_ci_high, vca_ci_low, vca_ci_high, vca_penetration_rate,
                                           run_name)
@@ -227,7 +311,7 @@ def analyze_visibility_data(df, output_dir, run_name="Scenario_A"):
     return report_content
 
 
-def generate_visualizations(df, vca_df, demo_df, route_summary, output_dir, run_name):
+def generate_visualizations(df, vca_df, demo_df, route_summary, sign_df, output_dir, run_name):
     """Produces publication-ready charts."""
     palette = {'Adult Female': '#e74c3c', 'Adult Male': '#3498db', 'Wheelchair': '#2ecc71'}
     
@@ -344,8 +428,29 @@ def generate_visualizations(df, vca_df, demo_df, route_summary, output_dir, run_
     plt.savefig(os.path.join(output_dir, f"{run_name}_detection_probability_curve.png"))
     plt.close()
 
+    # --- Figure 5: Multi-Sign Visibility Comparison (if applicable) ---
+    if not sign_df.empty:
+        fig, ax = plt.subplots(figsize=(10, 5))
+        signs = sign_df['Sign'].tolist()
+        x_idx = np.arange(len(signs))
+        w = 0.25
+        
+        ax.bar(x_idx - w, sign_df['Male VCA Vis (%)'], w, label='Adult Male', color='#3498db', edgecolor='black')
+        ax.bar(x_idx, sign_df['Female VCA Vis (%)'], w, label='Adult Female', color='#e74c3c', edgecolor='black')
+        ax.bar(x_idx + w, sign_df['Wheelchair VCA Vis (%)'], w, label='Wheelchair', color='#2ecc71', edgecolor='black')
+        
+        ax.set_ylabel('VCA Visibility Ratio (%)')
+        ax.set_title(f'Multi-Sign Demographic Visibility Comparison - {run_name}', fontweight='bold')
+        ax.set_xticks(x_idx)
+        ax.set_xticklabels(signs)
+        ax.set_ylim(0, 100)
+        ax.legend(frameon=True)
+        plt.tight_layout()
+        plt.savefig(os.path.join(output_dir, f"{run_name}_multi_sign_comparison.png"))
+        plt.close()
 
-def generate_text_report(df, vca_df, demo_df, stat_df, exposure_summary, route_summary, 
+
+def generate_text_report(df, vca_df, demo_df, stat_df, sign_df, exposure_summary, route_summary, 
                          total_agents, total_in_vca, total_ratio_all, total_ratio_vca, 
                          all_ci_low, all_ci_high, vca_ci_low, vca_ci_high, vca_penetration_rate,
                          run_name):
@@ -377,27 +482,33 @@ def generate_text_report(df, vca_df, demo_df, stat_df, exposure_summary, route_s
 
     # Demographics
     md.append("## 3. Demographic & Agent Type Disparities")
-    md.append(demo_df.to_markdown(index=False))
+    md.append(df_to_markdown(demo_df, index=False))
     md.append("\n")
 
     # Statistical significance
     if not stat_df.empty:
         md.append("### Statistical Significance of Demographic Disparities")
-        md.append(stat_df.to_markdown(index=False))
+        md.append(df_to_markdown(stat_df, index=False))
+        md.append("\n")
+
+    # Multi-Sign Performance
+    if not sign_df.empty:
+        md.append("## 4. Multi-Sign Performance & Placement Comparison")
+        md.append(df_to_markdown(sign_df, index=False))
         md.append("\n")
         
     # Temporal & Exposure
-    md.append("## 4. Exposure & Dwell Time Analysis (Time in VCA)")
-    md.append(exposure_summary.to_markdown(index=False))
+    md.append("## 5. Exposure & Dwell Time Analysis (Time in VCA)")
+    md.append(df_to_markdown(exposure_summary, index=False))
     md.append("\n")
     
     # Routes
-    md.append("## 5. Corridors & Navigation Routes")
-    md.append(route_summary.head(10).to_markdown(index=False))
+    md.append("## 6. Corridors & Navigation Routes")
+    md.append(df_to_markdown(route_summary.head(10), index=False))
     md.append("\n")
     
     # Thesis Insights
-    md.append("## 6. Key Research Takeaways for Thesis")
+    md.append("## 7. Key Research Takeaways for Thesis")
     
     # Determine male vs female disparity
     if 'Adult Female' in demo_df['Agent Type'].values and 'Adult Male' in demo_df['Agent Type'].values:
