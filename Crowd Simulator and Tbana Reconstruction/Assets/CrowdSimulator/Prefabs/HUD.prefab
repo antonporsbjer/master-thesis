@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5591027348349879503}
-  - component: {fileID: 8305144971628293065}
+  - component: {fileID: 630662660387054736}
   m_Layer: 0
   m_Name: HUD
   m_TagString: Untagged
@@ -33,7 +33,7 @@ Transform:
   - {fileID: 5140011846305799754}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8305144971628293065
+--- !u!114 &630662660387054736
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -42,7 +42,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 308660706937409222}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ac15f5d36ea9cf9408c04cf90540702b, type: 3}
+  m_Script: {fileID: 11500000, guid: 5ed9fb30609a9324d9b395c6c2e64973, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   hudText: {fileID: 3636306776052032580}
