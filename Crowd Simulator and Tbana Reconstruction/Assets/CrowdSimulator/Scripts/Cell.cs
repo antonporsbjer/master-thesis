@@ -36,7 +36,7 @@ public class Cell : MonoBehaviour {
 
 		for (int i = 0; i < gridCellSize; ++i) {
 			for (int j = 0; j < gridCellSize; ++j) {
-				if (Physics.Raycast (new Vector3 (start.x, 100, start.z), new Vector3 (0, -10, 0), 150f)) {
+				if (Physics.Raycast (new Vector3 (start.x, 2.5f, start.z), Vector3.down, 3.0f)) {
 					counter += 1;
 				}
 				start.x += 1;

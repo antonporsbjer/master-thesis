@@ -153,10 +153,10 @@ public class NewSpawner : MonoBehaviour {
 		SetGoal();
 
 		for (int i = 0; i < numberOfAgents; ++i) {
-			Vector3 pos = new Vector3(Random.Range(X.x, X.y), 10.0f, Random.Range(Z.x, Z.y));
+			Vector3 pos = new Vector3(Random.Range(X.x, X.y), 2.5f, Random.Range(Z.x, Z.y));
 			int maxTries = 50;
 			int tries = 0;
-			while (Physics.Raycast(pos, new Vector3(0.0f, -1.0f, 0.0f), 20f) && tries < maxTries) {
+			while (Physics.Raycast(pos, Vector3.down, 3.0f) && tries < maxTries) {
 				pos.x = Random.Range(X.x, X.y);
 				pos.z = Random.Range(Z.x, Z.y);
 				tries++;

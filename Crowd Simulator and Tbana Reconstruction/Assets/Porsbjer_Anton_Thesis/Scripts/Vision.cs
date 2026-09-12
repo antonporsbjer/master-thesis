@@ -57,8 +57,9 @@ public class Vision : MonoBehaviour
 
         if (dataCollector != null)
         {
-            int startNode = transform.parent != null && transform.parent.GetComponent<Agent>() != null ? transform.parent.GetComponent<Agent>().path[0] : 0;
-            int goalNode = transform.parent != null && transform.parent.GetComponent<Agent>() != null ? transform.parent.GetComponent<Agent>().path[^1] : 0;
+            Agent parentAgent = transform.parent != null ? transform.parent.GetComponent<Agent>() : null;
+            int startNode = (parentAgent != null && parentAgent.path != null && parentAgent.path.Count > 0) ? parentAgent.path[0] : 0;
+            int goalNode = (parentAgent != null && parentAgent.path != null && parentAgent.path.Count > 0) ? parentAgent.path[^1] : 0;
             float agentHeight = transform.parent != null && transform.parent.GetComponent<CapsuleCollider>() != null ? transform.parent.GetComponent<CapsuleCollider>().height : 1.8f;
             float agentEyeHeight = transform.transform.position.y;
             

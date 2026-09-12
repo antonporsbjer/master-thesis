@@ -52,7 +52,7 @@ public class MapGen : MonoBehaviour {
 	}
 
 	public bool isFree(Vector3 p) {
-		return !Physics.Raycast(new Vector3 (p.x, 100, p.z), new Vector3 (0, -10, 0), 150f);
+		return !Physics.Raycast(new Vector3 (p.x, 2.5f, p.z), Vector3.down, 3.0f);
 	}
 
 	private Vector3 getClosestPoint(ref List<Vector3> li, Vector3 point) {
@@ -77,7 +77,7 @@ public class MapGen : MonoBehaviour {
 		if (startPoint.z - zMinMax.x < dis) {
 			dis = startPoint.z - zMinMax.x;
 			borderPoint.x = startPoint.x; borderPoint.z = zMinMax.x;
-		}
+		} 
 		if (zMinMax.y - startPoint.z < dis) {
 			dis = zMinMax.y - startPoint.z;
 			borderPoint.x = startPoint.x; borderPoint.z = zMinMax.y;
@@ -85,11 +85,16 @@ public class MapGen : MonoBehaviour {
 		Vector3 closestObsPoint = Vector3.zero;
 		if (!isFree(startPoint)) {
 			//on obstacle
-			closestObsPoint = getClosestPoint(ref f, startPoint);
+			closestObsPoint = f.Count > 0 ? getClosestPoint(ref f, startPoint) : startPoint;
 		} else {
 			//free area
 			//Can opt this call..
-			closestObsPoint = getClosestPoint(ref f, getClosestPoint(ref b, startPoint));
+			if (b.Count > 0) {
+				Vector3 closestB = getClosestPoint(ref b, startPoint);
+				closestObsPoint = f.Count > 0 ? getClosestPoint(ref f, closestB) : startPoint;
+			} else {
+				closestObsPoint = startPoint;
+			}
 		}
 		if ((closestObsPoint - startPoint).magnitude < dis) {
 			borderPoint = closestObsPoint;
@@ -144,7 +149,14 @@ public class MapGen : MonoBehaviour {
 		 * If not free, find the closest free point
 		 * If free, add to the list
 		 * */
+		int maxTries = Mathf.Max(nodes * 50, 500);
+		int tries = 0;
 		for(int i = 0; i < nodes; ++i) {
+			tries++;
+			if (tries > maxTries) {
+				Debug.LogWarning($"[MapGen] Exceeded maximum attempts ({maxTries}) to place road nodes. Placed {i} of {nodes} nodes.");
+				break;
+			}
 			Vector3 p = new Vector3 (Random.Range (xMinMax.x, xMinMax.y), 0.0f, Random.Range (zMinMax.x, zMinMax.y));
 			Vector3 s = p;
 			bool free = isFree (p);
