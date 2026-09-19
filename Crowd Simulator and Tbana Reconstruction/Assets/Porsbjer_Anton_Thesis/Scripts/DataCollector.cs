@@ -22,6 +22,7 @@ public class GlobalData
     public float signComprehensionTime;
     public float measuredAverageDensity;
     public float measuredPeakDensity;
+    public float signTiltAngle;
 
     public GlobalData()
     {
@@ -31,6 +32,7 @@ public class GlobalData
         crowdDensityAlpha = 1.0f;
         measuredAverageDensity = 0f;
         measuredPeakDensity = 0f;
+        signTiltAngle = 0f;
     }
 }
 
@@ -233,7 +235,7 @@ public class DataCollector : MonoBehaviour
             using (StreamWriter writer = new StreamWriter(csvFilePath))
             {
                 // Header
-                writer.WriteLine("Timestamp,RunIndex,ScenarioID,CrowdDensityAlpha,TotalAgents,SignName,IsTargetAudience,SignHeight,SignPositionX,SignPositionZ,SignOrientation,VcaAngle,VcaDistance,SignComprehensionTime,AgentID,AgentType,StartNode,GoalNode,Height,EyeHeight,TimeInVCA,TimesInVCA,SawSign,TotalNodesNavigated,NodesWithDetection,RDEffective,MeasuredAverageDensity,MeasuredPeakDensity");
+                writer.WriteLine("Timestamp,RunIndex,ScenarioID,CrowdDensityAlpha,TotalAgents,SignName,IsTargetAudience,SignHeight,SignPositionX,SignPositionZ,SignOrientation,VcaAngle,VcaDistance,SignComprehensionTime,AgentID,AgentType,StartNode,GoalNode,Height,EyeHeight,TimeInVCA,TimesInVCA,SawSign,TotalNodesNavigated,NodesWithDetection,RDEffective,MeasuredAverageDensity,MeasuredPeakDensity,SignTiltAngle");
                 
                 if (dataRecord.agents != null)
                 {
@@ -251,12 +253,13 @@ public class DataCollector : MonoBehaviour
                                     : (signVca != null ? signVca.signName : "Sign");
                                 float sHeight = signVca != null ? signVca.transform.position.y : (dataRecord.global != null ? dataRecord.global.signHeight : 0f);
                                 float sRotY = signVca != null ? signVca.transform.rotation.eulerAngles.y : (dataRecord.global != null ? dataRecord.global.signOrientation : 0f);
+                                float sTilt = signVca != null ? signVca.tiltAngle : (dataRecord.global != null ? dataRecord.global.signTiltAngle : 0f);
                                 float sAngle = signVca != null ? signVca.ThetaDegrees : (dataRecord.global != null ? dataRecord.global.vcaAngle : 90f);
                                 float sDist = signVca != null ? signVca.ViewingDistance : (dataRecord.global != null ? dataRecord.global.vcaDistance : 15f);
                                 float sComp = signVca != null ? signVca.comprehensionTime : (dataRecord.global != null ? dataRecord.global.signComprehensionTime : 1f);
 
                                 writer.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,
-                                    "{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22},{23},{24},{25},{26},{27}",
+                                    "{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22},{23},{24},{25},{26},{27},{28}",
                                     timePart,
                                     runIndex > 0 ? runIndex.ToString() : "N/A",
                                     dataRecord.global != null ? dataRecord.global.scenarioId : "default_scenario",
@@ -284,7 +287,8 @@ public class DataCollector : MonoBehaviour
                                     agent.nodesWithDetection,
                                     agent.rdEffective,
                                     dataRecord.global != null ? dataRecord.global.measuredAverageDensity : 0f,
-                                    dataRecord.global != null ? dataRecord.global.measuredPeakDensity : 0f
+                                    dataRecord.global != null ? dataRecord.global.measuredPeakDensity : 0f,
+                                    sTilt
                                 ));
                             }
                         }

@@ -789,6 +789,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 4909905871076182431, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
+      propertyPath: isDoubleSided
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4909905871076182431, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
       propertyPath: RandomPosition
       value: 0
       objectReference: {fileID: 0}
@@ -1292,6 +1296,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 4909905871076182431, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
+      propertyPath: isDoubleSided
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4909905871076182431, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
       propertyPath: RandomPosition
       value: 0
       objectReference: {fileID: 0}
@@ -1403,6 +1411,9 @@ MonoBehaviour:
       vcaAngle: 0
       vcaDistance: 0
       signComprehensionTime: 0
+      measuredAverageDensity: 0
+      measuredPeakDensity: 0
+      signTiltAngle: 0
     agents: []
   autoSaveOnStop: 1
   customOutputDirectory: 
@@ -2385,6 +2396,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 4909905871076182431, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
+      propertyPath: isDoubleSided
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4909905871076182431, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
       propertyPath: RandomPosition
       value: 0
       objectReference: {fileID: 0}
@@ -2510,6 +2525,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 4909905871076182431, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
+      propertyPath: isDoubleSided
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4909905871076182431, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
       propertyPath: RandomPosition
       value: 0
       objectReference: {fileID: 0}
@@ -2633,6 +2652,10 @@ PrefabInstance:
     - target: {fileID: 4909905871076182431, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
       propertyPath: dataCollector
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 4909905871076182431, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
+      propertyPath: isDoubleSided
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4909905871076182431, guid: 36c9b063c59857d429a0825337d793e8, type: 3}
       propertyPath: RandomPosition

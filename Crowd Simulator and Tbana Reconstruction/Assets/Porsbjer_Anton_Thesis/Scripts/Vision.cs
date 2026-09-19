@@ -244,7 +244,23 @@ public class Vision : MonoBehaviour
 
     public float CalculateDARatio(Vector3 origin, VisibilityVolume vca, AgentSignData signData)
     {
-        if (vca == null || vca.discreteNodes == null || vca.discreteNodes.Count == 0) return 0f;
+        if (vca == null) return 0f;
+
+        List<Vector3> targetNodes;
+        if (vca.isDoubleSided)
+        {
+            Vector3 diff = origin - vca.transform.position;
+            bool isFrontSide = Vector3.Dot(vca.GetFrontNormal(), diff) >= 0f;
+            targetNodes = isFrontSide ? vca.frontDiscreteNodes : vca.backDiscreteNodes;
+            if (targetNodes == null || targetNodes.Count == 0)
+                targetNodes = vca.discreteNodes;
+        }
+        else
+        {
+            targetNodes = vca.discreteNodes;
+        }
+
+        if (targetNodes == null || targetNodes.Count == 0) return 0f;
 
         Vector3 directionToSign = (vca.transform.position - origin).normalized;
 
@@ -258,10 +274,10 @@ public class Vision : MonoBehaviour
         string[] layerNames = { "Obstacle", "Agent" };
         int mask = LayerMask.GetMask(layerNames);
 
-        int totalNodes = vca.discreteNodes.Count;
+        int totalNodes = targetNodes.Count;
         int visibleNodes = 0;
 
-        foreach (var node in vca.discreteNodes)
+        foreach (var node in targetNodes)
         {
             Vector3 directionToNode = (node - origin).normalized;
             
@@ -322,12 +338,67 @@ public class Vision : MonoBehaviour
         if (sqrDist > vca.ViewingDistance * vca.ViewingDistance) return false;
 
         Vector3 dir = diff.normalized;
-        float halfThetaRad = vca.ThetaDegrees * Mathf.Deg2Rad * 0.5f;
-        float minCosTheta = Mathf.Cos(halfThetaRad);
-        
-        // Fast dot product checks against both front and back directions
-        if (Mathf.Abs(Vector3.Dot(vca.transform.forward, dir)) >= minCosTheta) return true;
 
-        return false;
+        if (vca.ThetaVerticalDegrees > 0f)
+        {
+            float halfHorizRad = vca.ThetaDegrees * 0.5f * Mathf.Deg2Rad;
+            float halfVertRad = vca.ThetaVerticalDegrees * 0.5f * Mathf.Deg2Rad;
+
+            // 1. Check front VCA aperture
+            Vector3 nFront = vca.GetFrontNormal();
+            Vector3 uFront = vca.GetFrontRight();
+            Vector3 vFront = vca.GetFrontUp();
+
+            float zFront = Vector3.Dot(nFront, dir);
+            if (zFront > 0.0001f)
+            {
+                float xFront = Vector3.Dot(uFront, dir);
+                float yFront = Vector3.Dot(vFront, dir);
+                float horizAngle = Mathf.Atan2(Mathf.Abs(xFront), zFront);
+                float vertAngle = Mathf.Atan2(Mathf.Abs(yFront), zFront);
+                if (horizAngle <= halfHorizRad && vertAngle <= halfVertRad)
+                    return true;
+            }
+
+            // 2. If double sided, check reflected back VCA aperture (also tilts down towards crowd)
+            if (vca.isDoubleSided)
+            {
+                Vector3 nBack = vca.GetBackNormal();
+                Vector3 uBack = vca.GetBackRight();
+                Vector3 vBack = vca.GetBackUp();
+
+                float zBack = Vector3.Dot(nBack, dir);
+                if (zBack > 0.0001f)
+                {
+                    float xBack = Vector3.Dot(uBack, dir);
+                    float yBack = Vector3.Dot(vBack, dir);
+                    float horizAngle = Mathf.Atan2(Mathf.Abs(xBack), zBack);
+                    float vertAngle = Mathf.Atan2(Mathf.Abs(yBack), zBack);
+                    if (horizAngle <= halfHorizRad && vertAngle <= halfVertRad)
+                        return true;
+                }
+            }
+
+            return false;
+        }
+        else
+        {
+            // Standard conical VCA
+            float halfThetaRad = vca.ThetaDegrees * Mathf.Deg2Rad * 0.5f;
+            float minCosTheta = Mathf.Cos(halfThetaRad);
+
+            // Front cone (tilts down towards oncoming crowd)
+            float dotFront = Vector3.Dot(vca.GetFrontNormal(), dir);
+            if (dotFront >= minCosTheta) return true;
+
+            // Reflected back cone if double-sided (also tilts down towards oncoming crowd)
+            if (vca.isDoubleSided)
+            {
+                float dotBack = Vector3.Dot(vca.GetBackNormal(), dir);
+                if (dotBack >= minCosTheta) return true;
+            }
+
+            return false;
+        }
     }
 }
