@@ -4,6 +4,7 @@ using System.Collections.Generic;
 public class SpawnerManager : MonoBehaviour
 {
     public static SpawnerManager instance;
+    public float globalSpawnRate = 1.0f;
 
     [Tooltip("Automatically finds all NewSpawner components in the scene on Start.")]
     public List<NewSpawner> allSpawners = new List<NewSpawner>();
@@ -20,6 +21,8 @@ public class SpawnerManager : MonoBehaviour
         {
             allSpawners = new List<NewSpawner>(FindObjectsOfType<NewSpawner>());
         }
+
+        SetGlobalSpawnRate(globalSpawnRate); // Set a default spawn rate
     }
 
     /// <summary>

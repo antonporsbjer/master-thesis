@@ -172,11 +172,16 @@ def perform_two_way_anova(df, factor_a_col='CrowdDensityAlpha', factor_b_col='Cl
     return pd.DataFrame(records)
 
 
-def analyze_scenario_c(df, output_dir, run_name="Scenario_C"):
+def analyze_scenario_c(df, output_dir, run_name="Scenario_C", target_sign="Sign_Hotel"):
     """Executes full RQ1 density sweep analysis."""
     os.makedirs(output_dir, exist_ok=True)
     
     df = df.copy()
+    if target_sign and target_sign.lower() != 'all' and 'SignName' in df.columns:
+        if (df['SignName'] == target_sign).any():
+            df = df[df['SignName'] == target_sign].copy()
+            print(f"Filtered analysis specifically for '{target_sign}' ({len(df)} rows).")
+
     if 'SawSign' in df.columns:
         df['SawSign'] = df['SawSign'].astype(str).str.lower().isin(['true', '1'])
     else:
@@ -186,11 +191,23 @@ def analyze_scenario_c(df, output_dir, run_name="Scenario_C"):
     df['CleanAgentType'] = df['AgentType'].apply(clean_agent_type)
     df['InVCA'] = df['TimeInVCA'] > 0
 
-    if 'CrowdDensityAlpha' not in df.columns:
-        # Fallback or extract from ScenarioID or default to 0.2
-        df['CrowdDensityAlpha'] = 0.2
+    # Detect whether to use empirical MeasuredAverageDensity or UIC CrowdDensityAlpha
+    has_measured = 'MeasuredAverageDensity' in df.columns and (pd.to_numeric(df['MeasuredAverageDensity'], errors='coerce') > 0).any()
+    if has_measured:
+        raw_density = pd.to_numeric(df['MeasuredAverageDensity'], errors='coerce').fillna(0.0)
+        density_label = r'Measured Mean Density ($\mathrm{ped/m^2}$)'
     else:
-        df['CrowdDensityAlpha'] = pd.to_numeric(df['CrowdDensityAlpha'], errors='coerce').fillna(0.2)
+        raw_density = pd.to_numeric(df['CrowdDensityAlpha'] if 'CrowdDensityAlpha' in df.columns else 0.2, errors='coerce').fillna(0.2)
+        density_label = r'Crowd Density Factor ($\alpha \in [0.2, 1.0]$)'
+
+    df['RawDensity'] = raw_density
+
+    # If density has many continuous unique values, cluster into rounded tiers for discrete ANOVA & sweep summaries
+    unique_vals = sorted(raw_density.unique())
+    if len(unique_vals) > 8:
+        df['CrowdDensityAlpha'] = np.round(raw_density, 1)
+    else:
+        df['CrowdDensityAlpha'] = raw_density
 
     vca_df = df[df['InVCA']].copy()
 
@@ -245,9 +262,10 @@ def analyze_scenario_c(df, output_dir, run_name="Scenario_C"):
     export_latex_table(anova_df, os.path.join(output_dir, f"{run_name}_two_way_anova.tex"))
 
     # -------------------------------------------------------------
+    # -------------------------------------------------------------
     # 3. Publication Visualizations
     # -------------------------------------------------------------
-    generate_c_visualizations(df, vca_df, density_df, alphas, agent_types, output_dir, run_name)
+    generate_c_visualizations(df, vca_df, density_df, alphas, agent_types, output_dir, run_name, density_label=density_label)
 
     # -------------------------------------------------------------
     # 4. Markdown Report
@@ -263,7 +281,7 @@ def analyze_scenario_c(df, output_dir, run_name="Scenario_C"):
     return report_content
 
 
-def generate_c_visualizations(df, vca_df, density_df, alphas, agent_types, output_dir, run_name):
+def generate_c_visualizations(df, vca_df, density_df, alphas, agent_types, output_dir, run_name, density_label=r'Crowd Density Factor ($\alpha$)'):
     """Produces publication figures for Research Question 1."""
     palette = {'Adult Female': '#e74c3c', 'Adult Male': '#3498db', 'Wheelchair': '#2ecc71'}
     markers = {'Adult Female': 's', 'Adult Male': 'o', 'Wheelchair': '^'}
@@ -276,7 +294,7 @@ def generate_c_visualizations(df, vca_df, density_df, alphas, agent_types, outpu
             ax.plot(density_df['Density (alpha)'], density_df[col_vis],
                     label=atype, color=palette.get(atype, '#333333'),
                     marker=markers.get(atype, 'o'), linewidth=2.2, markersize=7)
-    ax.set_xlabel(r'Crowd Density Factor ($\alpha \in [0.2, 1.0]$)')
+    ax.set_xlabel(density_label)
     ax.set_ylabel('In-VCA Visibility Ratio (%)')
     ax.set_title(f'Visibility Degradation Under Congestion (RQ1) - {run_name}', fontweight='bold')
     ax.set_ylim(0, 105)
@@ -294,7 +312,7 @@ def generate_c_visualizations(df, vca_df, density_df, alphas, agent_types, outpu
     if 'Delta V (Male - Wheelchair)' in density_df.columns and not density_df['Delta V (Male - Wheelchair)'].isna().all():
         ax.plot(density_df['Density (alpha)'], density_df['Delta V (Male - Wheelchair)'],
                 label=r'$\Delta V_{\mathrm{wheelchair}}$ (Male $-$ Wheelchair)', color='#d35400', marker='v', linewidth=2.0)
-    ax.set_xlabel(r'Crowd Density Factor ($\alpha$)')
+    ax.set_xlabel(density_label)
     ax.set_ylabel('Demographic Inequity Gap (% Visibility Difference)')
     ax.set_title(f'Demographic Perception Inequity vs Crowd Density - {run_name}', fontweight='bold')
     ax.legend(frameon=True)
@@ -306,7 +324,7 @@ def generate_c_visualizations(df, vca_df, density_df, alphas, agent_types, outpu
     fig, ax = plt.subplots(figsize=(8, 5))
     sns.boxplot(data=vca_df, x='CrowdDensityAlpha', y='TimeInVCA', hue='CleanAgentType',
                 palette=palette, ax=ax, showfliers=False)
-    ax.set_xlabel(r'Crowd Density Factor ($\alpha$)')
+    ax.set_xlabel(density_label)
     ax.set_ylabel('Time in VCA (seconds)')
     ax.set_title(f'Dwell Time Distribution Across Density Sweeps - {run_name}', fontweight='bold')
     ax.legend(title='Cohort', frameon=True)
@@ -351,6 +369,7 @@ def main():
     parser.add_argument('--file', type=str, help="Path to specific visibility CSV file.")
     parser.add_argument('--dir', type=str, help="Directory containing visibility CSV files.")
     parser.add_argument('--output', type=str, default='output/scenario_C_results', help="Directory to save figures and reports.")
+    parser.add_argument('--sign', type=str, default='Sign_Hotel', help="Sign to analyze (default: Sign_Hotel). Pass 'all' to include all signs.")
     args = parser.parse_args()
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -372,7 +391,7 @@ def main():
     if len(target_files) == 1:
         df = pd.read_csv(target_files[0])
         base_name = os.path.splitext(os.path.basename(target_files[0]))[0]
-        analyze_scenario_c(df, args.output, run_name=base_name)
+        analyze_scenario_c(df, args.output, run_name=base_name, target_sign=args.sign)
     else:
         dfs = []
         for f in target_files:
@@ -384,7 +403,7 @@ def main():
                 print(f"Warning: Failed to load {f}: {e}")
         if dfs:
             combined = pd.concat(dfs, ignore_index=True)
-            analyze_scenario_c(combined, args.output, run_name="Scenario_C_Combined")
+            analyze_scenario_c(combined, args.output, run_name="Scenario_C_Combined", target_sign=args.sign)
 
 
 if __name__ == '__main__':

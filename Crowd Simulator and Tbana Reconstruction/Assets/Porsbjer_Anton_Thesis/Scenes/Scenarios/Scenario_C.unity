@@ -1919,6 +1919,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
+      propertyPath: alpha
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: plane
       value: 
       objectReference: {fileID: 2135039682}
@@ -2391,6 +2395,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7dedbc96db446a4b88370b5b07721c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  globalSpawnRate: 2
   allSpawners: []
 --- !u!4 &740734588
 Transform:
@@ -4471,6 +4476,8 @@ MonoBehaviour:
       vcaAngle: 0
       vcaDistance: 0
       signComprehensionTime: 0
+      measuredAverageDensity: 0
+      measuredPeakDensity: 0
     agents: []
   autoSaveOnStop: 1
   customOutputDirectory: 

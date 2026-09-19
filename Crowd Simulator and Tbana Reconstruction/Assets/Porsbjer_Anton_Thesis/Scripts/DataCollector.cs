@@ -20,6 +20,8 @@ public class GlobalData
     public float vcaAngle;
     public float vcaDistance;
     public float signComprehensionTime;
+    public float measuredAverageDensity;
+    public float measuredPeakDensity;
 
     public GlobalData()
     {
@@ -27,6 +29,8 @@ public class GlobalData
         totalAgents = 0;
         scenarioId = "default_scenario";
         crowdDensityAlpha = 1.0f;
+        measuredAverageDensity = 0f;
+        measuredPeakDensity = 0f;
     }
 }
 
@@ -146,10 +150,38 @@ public class DataCollector : MonoBehaviour
             {
                 dataRecord.global.totalAgents = dataRecord.agents != null ? dataRecord.agents.Count : 0;
 
-                if (SimulationGrid.instance != null)
+                // Query SignAreaDensityTracker if present in the scene
+                SignAreaDensityTracker densityTracker = FindObjectOfType<SignAreaDensityTracker>();
+                if (densityTracker != null)
+                {
+                    dataRecord.global.measuredAverageDensity = densityTracker.AverageDensity;
+                    dataRecord.global.measuredPeakDensity = densityTracker.PeakDensity;
+                    dataRecord.global.crowdDensityAlpha = densityTracker.AverageDensity;
+                }
+                else if (SimulationGrid.instance != null)
                 {
                     dataRecord.global.crowdDensityAlpha = SimulationGrid.instance.alpha;
                 }
+
+                // Compute aggregate metrics
+                int vcaCount = 0;
+                int sawCount = 0;
+                if (dataRecord.agents != null)
+                {
+                    foreach (var ag in dataRecord.agents)
+                    {
+                        if (ag.signTracking != null)
+                        {
+                            foreach (var st in ag.signTracking.Values)
+                            {
+                                if (st.timeInVCA > 0f || st.timesInVCA > 0 || st.isInVCA) vcaCount++;
+                                if (st.sawSign) sawCount++;
+                            }
+                        }
+                    }
+                }
+                dataRecord.global.inVcaCount = vcaCount;
+                dataRecord.global.visibleSignCount = sawCount;
 
                 // If global sign properties are not set, pull from scene's VisibilityVolume
                 VisibilityVolume fallbackVca = FindObjectOfType<VisibilityVolume>();
@@ -201,7 +233,7 @@ public class DataCollector : MonoBehaviour
             using (StreamWriter writer = new StreamWriter(csvFilePath))
             {
                 // Header
-                writer.WriteLine("Timestamp,RunIndex,ScenarioID,CrowdDensityAlpha,TotalAgents,SignName,IsTargetAudience,SignHeight,SignPositionX,SignPositionZ,SignOrientation,VcaAngle,VcaDistance,SignComprehensionTime,AgentID,AgentType,StartNode,GoalNode,Height,EyeHeight,TimeInVCA,TimesInVCA,SawSign,TotalNodesNavigated,NodesWithDetection,RDEffective");
+                writer.WriteLine("Timestamp,RunIndex,ScenarioID,CrowdDensityAlpha,TotalAgents,SignName,IsTargetAudience,SignHeight,SignPositionX,SignPositionZ,SignOrientation,VcaAngle,VcaDistance,SignComprehensionTime,AgentID,AgentType,StartNode,GoalNode,Height,EyeHeight,TimeInVCA,TimesInVCA,SawSign,TotalNodesNavigated,NodesWithDetection,RDEffective,MeasuredAverageDensity,MeasuredPeakDensity");
                 
                 if (dataRecord.agents != null)
                 {
@@ -224,7 +256,7 @@ public class DataCollector : MonoBehaviour
                                 float sComp = signVca != null ? signVca.comprehensionTime : (dataRecord.global != null ? dataRecord.global.signComprehensionTime : 1f);
 
                                 writer.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,
-                                    "{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22},{23},{24},{25}",
+                                    "{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22},{23},{24},{25},{26},{27}",
                                     timePart,
                                     runIndex > 0 ? runIndex.ToString() : "N/A",
                                     dataRecord.global != null ? dataRecord.global.scenarioId : "default_scenario",
@@ -250,7 +282,9 @@ public class DataCollector : MonoBehaviour
                                     sData.sawSign,
                                     agent.totalNodesNavigated,
                                     agent.nodesWithDetection,
-                                    agent.rdEffective
+                                    agent.rdEffective,
+                                    dataRecord.global != null ? dataRecord.global.measuredAverageDensity : 0f,
+                                    dataRecord.global != null ? dataRecord.global.measuredPeakDensity : 0f
                                 ));
                             }
                         }
@@ -281,6 +315,13 @@ public class DataCollector : MonoBehaviour
         // clear agent list and reset globals
         dataRecord.agents.Clear();
         dataRecord.global = new GlobalData { scenarioId = scenario };
+
+        // Reset density tracker if present
+        SignAreaDensityTracker tracker = FindObjectOfType<SignAreaDensityTracker>();
+        if (tracker != null)
+        {
+            tracker.ResetMetrics();
+        }
     }
     
     private void Awake()
@@ -291,6 +332,17 @@ public class DataCollector : MonoBehaviour
             dataRecord.global = new GlobalData();
 
         dataRecord.global.scenarioId = SceneManager.GetActiveScene().name + "_scenario";
+    }
+
+    private void Start()
+    {
+        // Auto-ensure a SignAreaDensityTracker is active in the scene if none exists
+        if (FindObjectOfType<SignAreaDensityTracker>() == null)
+        {
+            GameObject trackerGo = new GameObject("Auto_SignAreaDensityTracker");
+            trackerGo.AddComponent<SignAreaDensityTracker>();
+            Debug.Log("[DataCollector] Automatically initialized SignAreaDensityTracker for continuous crowd density tracking.");
+        }
     }
 
     private void OnApplicationQuit()
