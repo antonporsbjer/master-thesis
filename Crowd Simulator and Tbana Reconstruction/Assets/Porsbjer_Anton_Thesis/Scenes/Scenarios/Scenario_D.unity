@@ -122,17 +122,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!114 &9015622 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3636306776052032580, guid: 01e2bcaaf82cbb0438b669427c88809b, type: 3}
-  m_PrefabInstance: {fileID: 1685341944}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &46754787
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1537,24 +1526,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 677361117}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &599538940 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 308660706937409222, guid: 01e2bcaaf82cbb0438b669427c88809b, type: 3}
-  m_PrefabInstance: {fileID: 1685341944}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &599538943
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 599538940}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5ed9fb30609a9324d9b395c6c2e64973, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  hudText: {fileID: 9015622}
 --- !u!1001 &600148159
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1932,7 +1903,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: maxNumberOfAgents
-      value: 1600
+      value: 5000
       objectReference: {fileID: 0}
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: skipNodeIfSeeNext
@@ -5900,7 +5871,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1669032648
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5908,15 +5879,24 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1669032647}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6ccf3a484255ace48a2dff8a02383d1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  totalRuns: 20
-  agentsPerRun: 200
-  extraWaitAfterSpawnSeconds: 5
-  dataCollector: {fileID: 1321634896}
+  simulationTimePerRun: 30
+  runs:
+  - signHeight: 0
+    signTilt: 15
+    crowdDensity: 0.5
+  - signHeight: 1
+    signTilt: 30
+    crowdDensity: 1
+  - signHeight: 2
+    signTilt: 45
+    crowdDensity: 2
+  targetSign: {fileID: 0}
+  targetSignName: 
 --- !u!4 &1669032649
 Transform:
   m_ObjectHideFlags: 0
@@ -5987,10 +5967,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 308660706937409222, guid: 01e2bcaaf82cbb0438b669427c88809b, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 599538943}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 01e2bcaaf82cbb0438b669427c88809b, type: 3}
 --- !u!1 &1685496932
 GameObject:

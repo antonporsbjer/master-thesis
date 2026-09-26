@@ -240,6 +240,10 @@ public class Main : MonoBehaviour {
 			Physics.Simulate(simulationGrid.dt);
 		}
 
+		if (experimentHUD == null)
+		{
+			experimentHUD = FindObjectOfType<ExperimentHUD>();
+		}
 		if (experimentHUD != null)
 		{
 			experimentHUD.RegisterSimTick();
@@ -252,6 +256,10 @@ public class Main : MonoBehaviour {
 		if (simulationStartTimer <= 0f)
 		{
 			simulationStarted = true;
+			if (experimentHUD == null)
+			{
+				experimentHUD = FindObjectOfType<ExperimentHUD>();
+			}
 			if (experimentHUD != null)
 			{
 				experimentHUD.realTimeStart = Time.realtimeSinceStartup;

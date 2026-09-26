@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5591027348349879503}
-  - component: {fileID: 630662660387054736}
+  - component: {fileID: 6048807535147113261}
   m_Layer: 0
   m_Name: HUD
   m_TagString: Untagged
@@ -33,7 +33,7 @@ Transform:
   - {fileID: 5140011846305799754}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &630662660387054736
+--- !u!114 &6048807535147113261
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -46,6 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hudText: {fileID: 3636306776052032580}
+  simulationTime: 0
 --- !u!1 &1578774558872355990
 GameObject:
   m_ObjectHideFlags: 0
