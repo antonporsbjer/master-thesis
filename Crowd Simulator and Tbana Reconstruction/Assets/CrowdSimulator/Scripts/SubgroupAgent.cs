@@ -59,15 +59,14 @@ public class SubgroupAgent : Agent {
 		}
 	}
 
-	~SubgroupAgent() {
-		if (c.slots != null && c.slots.Count > 0) { //Instansiation check on struct value
+	void OnDestroy() {
+		if (c.comp != null) {
 			if (isLeader) {
 				c.noLeader = true;
 			}
-			c.comp.RemoveAt(groupMemberNumber);
+			c.comp.Remove(this);
 			c.leaderNumber = c.comp.Count > 0 ? 0 : -1;
 		}
-
 	}
 	internal int number;
 	internal int groupMemberNumber;
