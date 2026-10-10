@@ -118,6 +118,22 @@ public class NewSpawner : MonoBehaviour {
 	void Start()
 	{
 		mainScript = FindObjectOfType<Main>();
+		if (agentList == null && mainScript != null)
+		{
+			if (mainScript.agentList == null)
+				mainScript.agentList = new List<Agent>();
+			agentList = mainScript.agentList;
+		}
+		if (agentList == null)
+		{
+			agentList = new List<Agent>();
+		}
+		if (agentAvoidanceRadius <= 0f)
+		{
+			if (mainScript != null) agentAvoidanceRadius = mainScript.agentAvoidanceRadius;
+			else if (SimulationGrid.instance != null) agentAvoidanceRadius = SimulationGrid.instance.agentAvoidanceRadius;
+			else agentAvoidanceRadius = 1f;
+		}
 
 		switch (spawnMethod) {
 		case Method.uniformSpawn:
@@ -139,8 +155,6 @@ public class NewSpawner : MonoBehaviour {
 			continousSpawn(); 
 			break;
 		default:
-			if (agentList == null)
-				agentList = new List<Agent>(); 
 			break;
 		}
 	}
@@ -223,26 +237,41 @@ public class NewSpawner : MonoBehaviour {
 	internal List<Agent> circleSpawn(int numberOfAgents, float r, float planeScaleX, float planeScaleZ){
 		Vector3 agentPos = new Vector3(0f, 0f, 0f);
 		float planeScale = Mathf.Min(planeScaleX, planeScaleZ);
+		if (planeScale <= 0f) planeScale = 20f;
 		if (r > planeScale * 5 - agentAvoidanceRadius) 
 		{
 			r = planeScale * 5 - agentAvoidanceRadius;
 		}
 
-		agentPos.Set(r, 0.5f, 0f);
+		agentPos.Set(r, 0.0f, 0f);
 		float phi = 360f / (float)numberOfAgents;
 		List<Agent> li = new List<Agent>();
 		for (int n = 0; n < numberOfAgents; n++) {
 			Agent a = null;
 			if (agentPrefab != null)
 			{
-				a = Instantiate(agentPrefab.GetComponent<Agent>());
+				if (agentPrefab.transform.childCount > 0)
+					a = Instantiate(agentPrefab.transform.GetChild(GetSelectedAgentChildIndex()).GetComponent<Agent>());
+				else
+					a = Instantiate(agentPrefab.GetComponent<Agent>());
 			}
 			if (a == null) continue;
 
 			a.transform.position = agentPos;
 			a.transform.RotateAround(new Vector3(0f, 0f, 0f), new Vector3(0f, 1f, 0f), n * phi);
 			a.noMap = true;
-			a.noMapGoal = new Vector3(-a.transform.position.x, a.transform.position.y, -a.transform.position.z);
+			a.noMapGoal = new Vector3(-a.transform.position.x, 0.0f, -a.transform.position.z);
+			Vector3 dirToGoal = (a.noMapGoal - a.transform.position).normalized;
+			a.transform.forward = dirToGoal;
+			if (mainScript != null)
+				a.walkingSpeed = Random.Range(mainScript.agentMinSpeed, mainScript.agentMaxSpeed);
+			else
+				a.walkingSpeed = 1.3f;
+			a.preferredVelocity = dirToGoal * a.walkingSpeed;
+
+			if (agentEditorContainer != null)
+				a.transform.parent = agentEditorContainer.transform;
+
 			li.Add(a);
 		}
 		return li;
