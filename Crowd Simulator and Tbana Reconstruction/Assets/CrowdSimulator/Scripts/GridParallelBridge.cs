@@ -171,8 +171,6 @@ public class GridParallelBridge : MonoBehaviour
     // 1. Allocate Temporary frame memory arrays
     NativeArray<float3> positions = new NativeArray<float3>(agentCount, Allocator.TempJob);
     NativeArray<float3> preferredVels = new NativeArray<float3>(agentCount, Allocator.TempJob);
-    NativeArray<bool> isWaitingFlags = new NativeArray<bool>(agentCount, Allocator.TempJob);
-    NativeArray<bool> isPreparingFlags = new NativeArray<bool>(agentCount, Allocator.TempJob);
     NativeArray<bool> doneFlags = new NativeArray<bool>(agentCount, Allocator.TempJob);
     NativeArray<float> walkingSpeeds = new NativeArray<float>(agentCount, Allocator.TempJob);
     NativeArray<float3> collisionForces = new NativeArray<float3>(agentCount, Allocator.TempJob);
@@ -227,8 +225,6 @@ public class GridParallelBridge : MonoBehaviour
     // 6. Dispose of temporary arrays
     positions.Dispose();
     preferredVels.Dispose();
-    isWaitingFlags.Dispose();
-    isPreparingFlags.Dispose();
     doneFlags.Dispose();
     walkingSpeeds.Dispose();
     collisionForces.Dispose();
