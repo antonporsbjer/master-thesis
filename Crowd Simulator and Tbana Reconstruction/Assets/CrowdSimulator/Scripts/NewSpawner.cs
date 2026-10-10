@@ -167,7 +167,7 @@ public class NewSpawner : MonoBehaviour {
 			if (agentPrefab != null)
 			{
 				if (agentPrefab.transform.childCount > 0)
-					a = Instantiate(agentPrefab.transform.GetChild(Random.Range(0, agentPrefab.transform.childCount)).GetComponent<Agent>());
+					a = Instantiate(agentPrefab.transform.GetChild(GetSelectedAgentChildIndex()).GetComponent<Agent>());
 				else
 					a = Instantiate(agentPrefab.GetComponent<Agent>());
 			}
@@ -334,34 +334,7 @@ public class NewSpawner : MonoBehaviour {
 		{
 			if (agentPrefab.transform.childCount > 0)
 			{
-				int selectedChild = 0;
-				if (useCustomDemographics && demographicWeights != null && demographicWeights.Length == agentPrefab.transform.childCount)
-				{
-					float totalWeight = 0f;
-					foreach (float w in demographicWeights) totalWeight += Mathf.Max(0f, w);
-					if (totalWeight > 0f)
-					{
-						float r = Random.value * totalWeight;
-						float cumulative = 0f;
-						for (int i = 0; i < demographicWeights.Length; i++)
-						{
-							cumulative += Mathf.Max(0f, demographicWeights[i]);
-							if (r <= cumulative)
-							{
-								selectedChild = i;
-								break;
-							}
-						}
-					}
-					else
-					{
-						selectedChild = Random.Range(0, agentPrefab.transform.childCount);
-					}
-				}
-				else
-				{
-					selectedChild = Random.Range(0, agentPrefab.transform.childCount);
-				}
+				int selectedChild = GetSelectedAgentChildIndex();
 				agent = Instantiate(agentPrefab.transform.GetChild(selectedChild).GetComponent<Agent>());
 			}
 			else
@@ -383,6 +356,28 @@ public class NewSpawner : MonoBehaviour {
 
 		if (agentList != null)
 			agentList.Add(agent);
+	}
+
+	private int GetSelectedAgentChildIndex()
+	{
+		int count = agentPrefab.transform.childCount;
+		if (count <= 1) return 0;
+		if (useCustomDemographics && demographicWeights != null && demographicWeights.Length == count)
+		{
+			float totalWeight = 0f;
+			foreach (float w in demographicWeights) totalWeight += Mathf.Max(0f, w);
+			if (totalWeight > 0f)
+			{
+				float r = Random.value * totalWeight;
+				float cumulative = 0f;
+				for (int i = 0; i < count; i++)
+				{
+					cumulative += Mathf.Max(0f, demographicWeights[i]);
+					if (r <= cumulative) return i;
+				}
+			}
+		}
+		return Random.Range(0, count);
 	}
 
 	// GROUPS
