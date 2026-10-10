@@ -100,6 +100,8 @@ public class Agent : MonoBehaviour {
 			if (!grid.colHandler && rbody != null) {
 				Destroy (rbody);
 			}
+			cachedCellSize = grid.cellSize;
+			cachedCellSizeSquared = cachedCellSize * cachedCellSize;
 		}
 
 		mainScript = Main.instance;
@@ -463,6 +465,13 @@ public class Agent : MonoBehaviour {
 	 **/
 	public void setWeights()
 	{
+		if (cachedCellSizeSquared <= 0f)
+		{
+			cachedCellSize = grid != null ? grid.cellSize : (SimulationGrid.instance != null ? SimulationGrid.instance.cellSize : 1.0f);
+			if (cachedCellSize <= 0f) cachedCellSize = 1.0f;
+			cachedCellSizeSquared = cachedCellSize * cachedCellSize;
+		}
+
 		//An area the size of a cell is surrounded by each point.
 		//AgentRelXPos: Side length of supposed area, outside current cell of agent - x direction
 		//AgentRelZPos: Side length of supposed area, outside current cell of agent - z direction
@@ -498,14 +507,25 @@ public class Agent : MonoBehaviour {
 
 	internal void Reset()
 	{
-		rbody.velocity = Vector3.zero;
-		rbody.angularVelocity = Vector3.zero;
+		if (rbody != null)
+		{
+			rbody.velocity = Vector3.zero;
+			rbody.angularVelocity = Vector3.zero;
+		}
 		velocity = Vector3.zero;
 		preferredVelocity = Vector3.zero;
 		continuumVelocity = Vector3.zero;
 		collisionAvoidanceVelocity = Vector3.zero;
 		Vector3 pos = tr.position;
 		tr.position = new Vector3(pos.x, 0f, pos.z);
-		tr.rotation = Quaternion.identity;
+		if (noMap)
+		{
+			Vector3 dir = (noMapGoal - tr.position).normalized;
+			if (dir != Vector3.zero) tr.forward = dir;
+		}
+		else
+		{
+			tr.rotation = Quaternion.identity;
+		}
 	}
 }
