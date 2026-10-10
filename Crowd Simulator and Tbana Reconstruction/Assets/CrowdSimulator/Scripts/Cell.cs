@@ -116,8 +116,8 @@ public class Cell : MonoBehaviour {
 	 * Have an agent add their eulerian density contribution to this cell
 	 **/ 
 	internal void addDensity(Agent agent){
-		int xNeighbour = (int)(column + agent.neighbourXWeight/Mathf.Abs(agent.neighbourXWeight));	//Column for the neighbour which the agent contributes to
-		int zNeighbour = (int)(row + agent.neighbourZWeight/Mathf.Abs(agent.neighbourZWeight));		//Row for the neighbour which the agent contributes to 
+		int xNeighbour = column + (agent.neighbourXWeight >= 0f ? 1 : -1);	//Column for the neighbour which the agent contributes to
+		int zNeighbour = row + (agent.neighbourZWeight >= 0f ? 1 : -1);		//Row for the neighbour which the agent contributes to 
 
 		currentDensity += Mathf.Abs(agent.selfWeight);
 
@@ -136,8 +136,8 @@ public class Cell : MonoBehaviour {
 	 * Have an agent add their density and velocity to this cells velocitynodes, as well as neighbouring ones
 	 **/ 
 	internal void addVelocity(Agent agent){
-		int xNeighbour = (int)(column + agent.neighbourXWeight/Mathf.Abs(agent.neighbourXWeight));	//Column for the neighbour which the agent contributes to
-		int zNeighbour = (int)(row + agent.neighbourZWeight/Mathf.Abs(agent.neighbourZWeight));		//Row for the neighbour which the agent contributes to
+		int xNeighbour = column + (agent.neighbourXWeight >= 0f ? 1 : -1);	//Column for the neighbour which the agent contributes to
+		int zNeighbour = row + (agent.neighbourZWeight >= 0f ? 1 : -1);		//Row for the neighbour which the agent contributes to
 		Vector3 vel = agent.velocity;
 		// Sides in current cell
 		leftVelocityNode.tempVelocity += vel * agent.selfLeftVelocityWeight;
