@@ -295,7 +295,7 @@ public class MapGen : MonoBehaviour {
 		for (int i = 0; i < shortestPaths.Count; ++i) {
 			for (int j = 0; j < shortestPaths.Count; ++j) {
 				shortestPaths[i][j] = path (ref next, i, j);
-				if (roadmap != null && roadmap.allNodes != null && j < roadmap.allNodes.Count && roadmap.allNodes[j] != null && roadmap.allNodes[j].CompareTag("InsideTrainNode"))
+				if (roadmap.allNodes != null && j < roadmap.allNodes.Count && roadmap.allNodes[j] != null && roadmap.allNodes[j].CompareTag("InsideTrainNode"))
 				{
 					if (shortestPaths[i][j].Count >= 2)
 					{
