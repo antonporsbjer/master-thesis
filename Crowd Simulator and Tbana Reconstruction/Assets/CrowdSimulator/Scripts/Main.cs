@@ -227,8 +227,11 @@ public class Main : MonoBehaviour {
 				continue;
 			}
 			agent.move(roadmap);
-			agent.rbody.velocity = Vector3.zero;
-			agent.rbody.angularVelocity = Vector3.zero;
+			if (agent.rbody != null)
+			{
+				agent.rbody.velocity = Vector3.zero;
+				agent.rbody.angularVelocity = Vector3.zero;
+			}
 		}
 		//Pair-wise collision handling between agents
 		//simulationGrid.collisionHandling(agentList);
