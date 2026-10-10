@@ -165,7 +165,7 @@ public class DataCollector : MonoBehaviour
                     dataRecord.global.crowdDensityAlpha = SimulationGrid.instance.alpha;
                 }
 
-                // Compute aggregate metrics
+                // Compute aggregate metrics for unique agents
                 int vcaCount = 0;
                 int sawCount = 0;
                 if (dataRecord.agents != null)
@@ -174,28 +174,33 @@ public class DataCollector : MonoBehaviour
                     {
                         if (ag.signTracking != null)
                         {
+                            bool agentInVca = false;
+                            bool agentSawSign = false;
                             foreach (var st in ag.signTracking.Values)
                             {
-                                if (st.timeInVCA > 0f || st.timesInVCA > 0 || st.isInVCA) vcaCount++;
-                                if (st.sawSign) sawCount++;
+                                if (st.timeInVCA > 0f || st.timesInVCA > 0 || st.isInVCA) agentInVca = true;
+                                if (st.sawSign) agentSawSign = true;
                             }
+                            if (agentInVca) vcaCount++;
+                            if (agentSawSign) sawCount++;
                         }
                     }
                 }
                 dataRecord.global.inVcaCount = vcaCount;
                 dataRecord.global.visibleSignCount = sawCount;
 
-                // If global sign properties are not set, pull from scene's VisibilityVolume
-                VisibilityVolume fallbackVca = FindObjectOfType<VisibilityVolume>();
-                if (fallbackVca != null)
+                // If global sign properties are not set, pull from scene's VisibilityVolume if single sign
+                VisibilityVolume[] allSigns = FindObjectsOfType<VisibilityVolume>();
+                if (allSigns != null && allSigns.Length == 1)
                 {
-                    if (dataRecord.global.signHeight == 0f) dataRecord.global.signHeight = fallbackVca.transform.position.y;
-                    if (dataRecord.global.signPositionX == 0f) dataRecord.global.signPositionX = fallbackVca.transform.position.x;
-                    if (dataRecord.global.signPositionZ == 0f) dataRecord.global.signPositionZ = fallbackVca.transform.position.z;
-                    if (dataRecord.global.signOrientation == 0f) dataRecord.global.signOrientation = fallbackVca.transform.rotation.eulerAngles.y;
-                    if (dataRecord.global.vcaDistance == 0f) dataRecord.global.vcaDistance = fallbackVca.ViewingDistance;
-                    if (dataRecord.global.vcaAngle == 0f) dataRecord.global.vcaAngle = fallbackVca.ThetaDegrees;
-                    if (dataRecord.global.signComprehensionTime == 0f) dataRecord.global.signComprehensionTime = fallbackVca.comprehensionTime;
+                    VisibilityVolume singleSign = allSigns[0];
+                    if (dataRecord.global.signHeight == 0f) dataRecord.global.signHeight = singleSign.transform.position.y;
+                    if (dataRecord.global.signPositionX == 0f) dataRecord.global.signPositionX = singleSign.transform.position.x;
+                    if (dataRecord.global.signPositionZ == 0f) dataRecord.global.signPositionZ = singleSign.transform.position.z;
+                    if (dataRecord.global.signOrientation == 0f) dataRecord.global.signOrientation = singleSign.transform.rotation.eulerAngles.y;
+                    if (dataRecord.global.vcaDistance == 0f) dataRecord.global.vcaDistance = singleSign.ViewingDistance;
+                    if (dataRecord.global.vcaAngle == 0f) dataRecord.global.vcaAngle = singleSign.ThetaDegrees;
+                    if (dataRecord.global.signComprehensionTime == 0f) dataRecord.global.signComprehensionTime = singleSign.comprehensionTime;
                 }
             }
 

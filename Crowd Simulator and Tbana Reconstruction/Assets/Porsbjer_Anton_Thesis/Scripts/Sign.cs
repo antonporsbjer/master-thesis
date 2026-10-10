@@ -160,14 +160,18 @@ public class VisibilityVolume : MonoBehaviour
 
         if (dataCollector != null && dataCollector.dataRecord != null && dataCollector.dataRecord.global != null)
         {
-            dataCollector.dataRecord.global.signHeight = transform.position.y;
-            dataCollector.dataRecord.global.signPositionX = transform.position.x;
-            dataCollector.dataRecord.global.signPositionZ = transform.position.z;
-            dataCollector.dataRecord.global.signOrientation = transform.rotation.eulerAngles.y;
-            dataCollector.dataRecord.global.signTiltAngle = tiltAngle;
-            dataCollector.dataRecord.global.vcaDistance = ViewingDistance;
-            dataCollector.dataRecord.global.vcaAngle = ThetaDegrees;
-            dataCollector.dataRecord.global.signComprehensionTime = comprehensionTime;
+            VisibilityVolume[] allSigns = FindObjectsOfType<VisibilityVolume>();
+            if (allSigns.Length <= 1 || dataCollector.dataRecord.global.signHeight == 0f)
+            {
+                dataCollector.dataRecord.global.signHeight = transform.position.y;
+                dataCollector.dataRecord.global.signPositionX = transform.position.x;
+                dataCollector.dataRecord.global.signPositionZ = transform.position.z;
+                dataCollector.dataRecord.global.signOrientation = transform.rotation.eulerAngles.y;
+                dataCollector.dataRecord.global.signTiltAngle = tiltAngle;
+                dataCollector.dataRecord.global.vcaDistance = ViewingDistance;
+                dataCollector.dataRecord.global.vcaAngle = ThetaDegrees;
+                dataCollector.dataRecord.global.signComprehensionTime = comprehensionTime;
+            }
         }
 
         // Initialize the volume parameters
