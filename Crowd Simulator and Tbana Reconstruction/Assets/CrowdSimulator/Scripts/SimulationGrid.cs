@@ -33,9 +33,6 @@ public class SimulationGrid : MonoBehaviour {
     internal int nCellsZ;
 
 	internal Main.LCPSolutioner solver;
-	internal LCPSolver mprgpSolver; //LCP solver instance
-	internal LCPSolverMIC mprgpmicSolver;
-	internal LCPSolverProj psorSolver;
 	internal int solverMaxIterations;
 	internal double solverEpsilon;
 
@@ -50,9 +47,7 @@ public class SimulationGrid : MonoBehaviour {
 	public float[,] xMeanVelocity;
 	public float[,] zMeanVelocity;
 
-	public double[,] matrixArray; //Helping array to create A of LCP
-	public double[] xArray, lArray, bArray; //LCP arrays
-	public List<List<LCPSolver.denseMatrixNode>> AArray; //Actual sparse matrix carrier of A
+	public double[] xArray; //LCP solution array
 	internal List<int>[,] neighMatrix; //Neighbourhood grid for pair-wise collision
 	internal int neighbourBins; //Length of neighMatrix
 	internal float lenOfBin; //Length of each "bin" in neighMatrix
@@ -76,7 +71,6 @@ public class SimulationGrid : MonoBehaviour {
 
 	public Vector3[,] cellCenters;
 
-	private double cachedCellSizeSquared;
 
 	public void initGrid(Vector2 xMinMax, Vector2 zMinMax, float alpha, float agentAvoidanceRadius) {
 		
@@ -99,13 +93,7 @@ public class SimulationGrid : MonoBehaviour {
 		xMeanVelocity = new float[nCellsZ, nCellsX];
 		zMeanVelocity = new float[nCellsZ, nCellsX];
 
-		AArray = new List<List<LCPSolver.denseMatrixNode>> ();
-		for (int i = 0; i < totalCells; ++i) {
-			AArray.Add (new List<LCPSolver.denseMatrixNode> ());
-		}
 		xArray = new double[totalCells];
-		bArray = new double[totalCells];
-		lArray = new double[totalCells];
 
 		Vector3 startPos = new Vector3(xMinMax.x + 0.5f*cellSize, 0.01f, zMinMax.x + 0.5f*cellSize);
 		for (int i = 0; i < nCellsZ; ++i) {
@@ -133,9 +121,6 @@ public class SimulationGrid : MonoBehaviour {
 				
 		}
 
-		mprgpSolver = new LCPSolver (); 
-		mprgpmicSolver = new LCPSolverMIC();
-		psorSolver = new LCPSolverProj ();
 
 		cellCenters = new Vector3[nCellsZ, nCellsX];
 		for (int z = 0; z < nCellsZ; z++)
@@ -147,7 +132,6 @@ public class SimulationGrid : MonoBehaviour {
         		
 		}	
 
-		cachedCellSizeSquared = cellSize * cellSize;
 
 		GridParallelBridge.Instance.InitializeGridData(nCellsX, nCellsZ);
 		GridParallelBridge.Instance.CopyAvailableAreaToNative(this);
@@ -283,67 +267,6 @@ public class SimulationGrid : MonoBehaviour {
 		bridge.CopyNativeSolutionToManaged(this);
 	}
 
-	/**
-	 * Construct the b-matrix index at n m with values optionally clamped to non-negative values
-	 **/ 
-	internal void constructB(int n, int m, bool clamped){
-		double temp = (double)(cellMatrix [n, m].availableArea * maxDensity - density [n, m] 
-				+ ((xEdgeDensity[n, m+1]*xEdgeVelocity[n,m+1]
-				+ zEdgeDensity[n+1, m]*zEdgeVelocity[n+1, m]
-				- xEdgeDensity[n, m]*xEdgeVelocity[n, m]
-				- zEdgeDensity[n, m]*zEdgeVelocity[n, m])/cellSize)*dt);
-
-		if (clamped && temp < 0) temp = 0; 
-		bArray [n * nCellsX + m] = temp;
-	}
-		
-
-
-	/**
-	 * Construct the A-matrix index at i j. Do this for one puppet-matrix and one sparse matrix (same cost).
-	 **/ 
-	internal void constructA(int i, int j) {
-		int startIndex = i * nCellsX + j;
-		int currentRow = startIndex;
-
-		//Coeff for P_{i-1,j}
-		if (i > 0) {
-			matrixArray[currentRow, startIndex - nCellsX] = (double)-(dt*zEdgeDensity[i,j]/cachedCellSizeSquared);
-			LCPSolver.denseMatrixNode node = new LCPSolver.denseMatrixNode ();
-			node.value = matrixArray [currentRow, startIndex - nCellsX]; node.colIndex = startIndex - nCellsX;
-			AArray [currentRow].Add (node);
-		} 
-
-		//Coeff for P_{i,j-1}
-		if (j > 0) {
-			matrixArray[currentRow, startIndex - 1] = (double)-(dt*xEdgeDensity[i,j]/cachedCellSizeSquared); 
-			LCPSolver.denseMatrixNode node = new LCPSolver.denseMatrixNode ();
-			node.value = matrixArray [currentRow, startIndex - 1]; node.colIndex = startIndex - 1;
-			AArray [currentRow].Add (node);
-		} 
-
-		//Coeff for P_{i,j}
-		matrixArray[currentRow, startIndex] = (double)(dt*(xEdgeDensity[i,j] + xEdgeDensity[i,j+1] + zEdgeDensity[i,j] + zEdgeDensity[i+1,j]))/cachedCellSizeSquared;
-		LCPSolver.denseMatrixNode nn = new LCPSolver.denseMatrixNode ();
-		nn.value = matrixArray [currentRow, startIndex]; nn.colIndex = startIndex;
-		AArray [currentRow].Add (nn);
-
-		//Coeff for P_{i+1,j}
-		if (i < nCellsZ - 1) {
-			matrixArray[currentRow, startIndex + nCellsX] = (double)-(dt*zEdgeDensity[i+1,j]/cachedCellSizeSquared);
-			LCPSolver.denseMatrixNode node = new LCPSolver.denseMatrixNode ();
-			node.value = matrixArray [currentRow, startIndex + nCellsX]; node.colIndex = startIndex + nCellsX;
-			AArray [currentRow].Add (node);
-		}
-
-		//Coeff for P_{i,j+1}
-		if (j < nCellsX - 1) {
-			matrixArray[currentRow, startIndex + 1] = (double)-(dt*xEdgeDensity[i,j+1]/cachedCellSizeSquared);
-			LCPSolver.denseMatrixNode node = new LCPSolver.denseMatrixNode ();
-			node.value = matrixArray [currentRow, startIndex + 1]; node.colIndex = startIndex + 1;
-			AArray [currentRow].Add (node);
-		}
-	}
 
 	/**
 	 * Perform solution of LCP.
