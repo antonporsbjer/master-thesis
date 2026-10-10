@@ -179,18 +179,19 @@ public class RunManager : MonoBehaviour
         SpawnerManager spawnerManager = FindObjectOfType<SpawnerManager>();
         if (spawnerManager != null)
         {
-            spawnerManager.globalSpawnRate = param.crowdDensity;
-            spawnerManager.SetGlobalSpawnRate(param.crowdDensity);
+            spawnerManager.ApplyCrowdDensity(param.crowdDensity);
         }
-
-        foreach (NewSpawner spawner in FindObjectsOfType<NewSpawner>())
+        else
         {
-            if (spawner == null) continue;
-            spawner.spawnRate = param.crowdDensity;
-            if (spawner.spawnMethod == NewSpawner.Method.continuousSpawn)
+            foreach (NewSpawner spawner in FindObjectsOfType<NewSpawner>())
             {
-                spawner.StopAllCoroutines();
-                spawner.continousSpawn();
+                if (spawner == null) continue;
+                spawner.spawnRate = param.crowdDensity;
+                if (spawner.spawnMethod == NewSpawner.Method.continuousSpawn)
+                {
+                    spawner.StopAllCoroutines();
+                    spawner.continousSpawn();
+                }
             }
         }
 

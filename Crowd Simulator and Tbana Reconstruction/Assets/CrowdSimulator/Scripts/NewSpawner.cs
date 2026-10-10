@@ -272,16 +272,25 @@ public class NewSpawner : MonoBehaviour {
 
 	internal IEnumerator spawnContinously(float continousSpawnRate) {
 		Transform spawnerNode = transform.childCount > 0 ? transform.GetChild(0) : transform;
-		
-		float timeBetweenSpawn = usePoisson ? CalculateTimeBetweenSpawns() : (continousSpawnRate > 0f ? 1f / continousSpawnRate : float.MaxValue);
+
+		while (!enabled || spawnRate <= 0f) {
+			yield return null;
+		}
+
+		float currentRate = spawnRate > 0f ? spawnRate : continousSpawnRate;
+		float timeBetweenSpawn = usePoisson ? CalculateTimeBetweenSpawns() : (currentRate > 0f ? 1f / currentRate : 1f);
 		
 		float waitTimer = timeBetweenSpawn;
-		while (waitTimer > 0) {
+		while (waitTimer > 0f) {
+			if (!enabled || spawnRate <= 0f) {
+				yield return null;
+				continue;
+			}
 			waitTimer -= SimulationGrid.instance != null ? SimulationGrid.instance.dt : Time.deltaTime;
 			yield return null;
 		}
 		
-		if (agentList != null && mainScript != null && agentList.Count < mainScript.maxNumberOfAgents) 
+		if (agentList != null && mainScript != null && agentList.Count < mainScript.maxNumberOfAgents && enabled && spawnRate > 0f) 
 		{
 			Vector3 startPos = new Vector3(Random.Range(-1.0f, 1.0f), 0f, Random.Range(-1.0f, 1.0f)); 
 			startPos = spawnerNode.TransformPoint(startPos);
@@ -305,7 +314,7 @@ public class NewSpawner : MonoBehaviour {
 			}
 		}
 		
-		StartCoroutine(spawnContinously(continousSpawnRate));
+		StartCoroutine(spawnContinously(spawnRate));
 	}
 
 	// BURST SPAWN
