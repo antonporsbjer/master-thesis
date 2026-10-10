@@ -217,6 +217,7 @@ public class Main : MonoBehaviour {
 				Debug.LogWarning("Agent outside of bounds, removing");
 				agentList.RemoveAt(i);
 				Destroy(agent.gameObject);
+				continue;
 			}
 
 			if (agent.done)
