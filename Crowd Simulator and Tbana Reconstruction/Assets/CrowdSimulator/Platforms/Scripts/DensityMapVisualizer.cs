@@ -56,6 +56,7 @@ public class DensityMapVisualizer : MonoBehaviour
 
     private Texture2D _heatmapTexture;
     private Coroutine _updateCoroutine;
+    private Color[] _pixelColorsBuffer;
 
     // Internal variables to store the actual world dimensions in meters
     private float _actualPlaneWorldSizeX;
@@ -172,6 +173,7 @@ public class DensityMapVisualizer : MonoBehaviour
         _heatmapTexture = new Texture2D(resolutionX, resolutionY, TextureFormat.RGB24, false);
         _heatmapTexture.filterMode = FilterMode.Bilinear; // For smoother appearance
         _heatmapTexture.wrapMode = TextureWrapMode.Clamp; // Prevent tiling
+        _pixelColorsBuffer = new Color[resolutionX * resolutionY];
         Debug.Log($"DensityMapVisualizer: Created Texture2D with resolution {resolutionX}x{resolutionY}.");
 
         // Ensure the heatmapQuad has a Renderer and a Material
@@ -245,23 +247,25 @@ public class DensityMapVisualizer : MonoBehaviour
     /// </summary>
     private void CalculateAndApplyDensityMap()
     {
+        if (_pixelColorsBuffer == null || _pixelColorsBuffer.Length != resolutionX * resolutionY)
+        {
+            _pixelColorsBuffer = new Color[resolutionX * resolutionY];
+        }
+
         List<Agent> agents = mainScript.agentList;
 
         if (agents == null || agents.Count == 0)
         {
-            Color[] emptyColors = new Color[resolutionX * resolutionY];
-            for (int i = 0; i < emptyColors.Length; i++) {
-                emptyColors[i] = Color.clear; // Or Color.black;
+            for (int i = 0; i < _pixelColorsBuffer.Length; i++) {
+                _pixelColorsBuffer[i] = Color.clear; // Or Color.black;
             }
-            _heatmapTexture.SetPixels(emptyColors);
+            _heatmapTexture.SetPixels(_pixelColorsBuffer);
             _heatmapTexture.Apply();
             return; // Exit early if no agents
         }
 
         // Step 1: Populate the spatial grid with current agent positions
         PopulateAgentGrid();
-
-        Color[] pixelColors = new Color[resolutionX * resolutionY];
 
         // Use the actual world sizes for coordinate mapping
         float invPlaneSizeX = 1.0f / _actualPlaneWorldSizeX;
@@ -320,13 +324,13 @@ public class DensityMapVisualizer : MonoBehaviour
                 }
 
                 float normalizedDensityForGradient = Mathf.Clamp01(currentDensity / maxLosDensity);
-                pixelColors[y * resolutionX + x] = losGradient.Evaluate(normalizedDensityForGradient);
+                _pixelColorsBuffer[y * resolutionX + x] = losGradient.Evaluate(normalizedDensityForGradient);
 
             }
         }
         isFirstUpdate = false;
 
-        _heatmapTexture.SetPixels(pixelColors);
+        _heatmapTexture.SetPixels(_pixelColorsBuffer);
         _heatmapTexture.Apply();
     }
 
