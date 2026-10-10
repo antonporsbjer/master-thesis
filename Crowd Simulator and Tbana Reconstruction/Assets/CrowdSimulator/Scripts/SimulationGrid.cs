@@ -83,8 +83,6 @@ public class SimulationGrid : MonoBehaviour {
         nCellsX = Mathf.CeilToInt((xMinMax.y - xMinMax.x) / cellSize);
         nCellsZ = Mathf.CeilToInt((zMinMax.y - zMinMax.x) / cellSize);
         int totalCells = nCellsX * nCellsZ;
-
-		matrixArray = new double[totalCells, totalCells];
 		maxDensity = 2f*alpha/(Mathf.Sqrt(3f)*Mathf.Pow(agentAvoidanceRadius, 2));
 	
 		float cellScale = showSplattedDensity ? cellSize : 0f;
