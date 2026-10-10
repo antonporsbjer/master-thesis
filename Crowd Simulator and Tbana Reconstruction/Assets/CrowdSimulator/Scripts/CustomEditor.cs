@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+#if UNITY_EDITOR
+using UnityEditor;
 
 [CustomEditor(typeof(Main)), CanEditMultipleObjects]
 public class PropertyHolderEditor : Editor {
@@ -103,3 +104,4 @@ public class PropertyHolderEditor : Editor {
 		serializedObject.ApplyModifiedProperties ();
 	}
 }
+#endif

@@ -23,9 +23,11 @@ public class AgentCounter : MonoBehaviour
         {
             return;
         }
+#if UNITY_EDITOR
         int nAgents = main.agentList.Count;
 		UnityEditor.Handles.color = Color.red;
 		UnityEditor.Handles.Label(transform.position + Vector3.up * 0.5f, nAgents.ToString());
+#endif
 		
 	}
 }
