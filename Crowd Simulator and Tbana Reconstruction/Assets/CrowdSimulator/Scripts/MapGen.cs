@@ -116,7 +116,8 @@ public class MapGen : MonoBehaviour {
 		m.allNodes = new List<CustomNode> ();
 		m.spawns = new List<spawnNode> (); 
 		m.goals = new List<int> ();
-		GameObject graph = new GameObject (); //Empty stub
+		GameObject graph = new GameObject ("RoadmapGraph");
+		graph.transform.parent = transform;
 		foreach(CustomNode c in Object.FindObjectsOfType<CustomNode> ()) {
 			map.Add (c.transform.position);
 			m.allNodes.Add (c); //Assume a circle threshold
