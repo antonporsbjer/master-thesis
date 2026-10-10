@@ -233,11 +233,13 @@ public class Agent : MonoBehaviour {
 			return cachedCanSeeNext_1;
 		}
 		
-		if (pathIndex + modifier < path.Count && pathIndex + modifier >= 0 && pathIndex + modifier < map.allNodes.Count)
+		int targetPathIndex = pathIndex + modifier;
+		if (targetPathIndex >= 0 && targetPathIndex < path.Count && map.allNodes != null &&
+			path[targetPathIndex] >= 0 && path[targetPathIndex] < map.allNodes.Count)
 		{
 			//Can we see next goal?
 			Vector3 pos = tr.position;
-			Vector3 next = map.allNodes[path[pathIndex + modifier]].getTargetPoint(pos, gameObject.GetInstanceID());
+			Vector3 next = map.allNodes[path[targetPathIndex]].getTargetPoint(pos, gameObject.GetInstanceID());
 			Vector3 targetPosition = pos - tr.forward * colliderRadius;
 			Vector3 dir = next - targetPosition;
 			Vector3 endPosition = targetPosition + (dir.normalized * dir.magnitude);
