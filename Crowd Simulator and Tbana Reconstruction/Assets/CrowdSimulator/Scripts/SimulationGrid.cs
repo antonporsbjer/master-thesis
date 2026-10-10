@@ -47,7 +47,7 @@ public class SimulationGrid : MonoBehaviour {
 	public float[,] xMeanVelocity;
 	public float[,] zMeanVelocity;
 
-	public double[] xArray; //LCP solution array
+	public double[] xArray, lArray; //LCP arrays
 	internal List<int>[,] neighMatrix; //Neighbourhood grid for pair-wise collision
 	internal int neighbourBins; //Length of neighMatrix
 	internal float lenOfBin; //Length of each "bin" in neighMatrix
@@ -94,6 +94,7 @@ public class SimulationGrid : MonoBehaviour {
 		zMeanVelocity = new float[nCellsZ, nCellsX];
 
 		xArray = new double[totalCells];
+		lArray = new double[totalCells];
 
 		Vector3 startPos = new Vector3(xMinMax.x + 0.5f*cellSize, 0.01f, zMinMax.x + 0.5f*cellSize);
 		for (int i = 0; i < nCellsZ; ++i) {
