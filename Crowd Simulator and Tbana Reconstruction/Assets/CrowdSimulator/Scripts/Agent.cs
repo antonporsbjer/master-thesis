@@ -372,7 +372,7 @@ public class Agent : MonoBehaviour {
 
 	void Animate(Vector3 previousPosition)
 	{
-		float realSpeed = Vector3.Distance (tr.position, previousPosition) / Mathf.Max(grid.dt, grid.dt);
+		float realSpeed = Vector3.Distance (tr.position, previousPosition) / Mathf.Max(grid.dt, 0.0001f);
 		if (animator != null) {
 	
 			if (realSpeed < 0.05f) {
