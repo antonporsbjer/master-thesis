@@ -64,6 +64,11 @@ public class RunManager : MonoBehaviour
             targetSignName = targetSign.signName;
         }
 
+        ExperimentHUD.RunInfoProvider = () => string.Format("Run: {0}/{1}\nTarget Sim Time: {2:F0}s\n",
+            CurrentRunNumber,
+            TotalRunsCount,
+            simulationTimePerRun);
+
         StartCoroutine(RunLoop());
     }
 
@@ -201,6 +206,14 @@ public class RunManager : MonoBehaviour
             dataCollector.dataRecord.global.signHeight = param.signHeight;
             dataCollector.dataRecord.global.signTiltAngle = param.signTilt;
             dataCollector.dataRecord.global.crowdDensityAlpha = param.crowdDensity;
+        }
+    }
+
+    void OnDestroy()
+    {
+        if (instance == this)
+        {
+            ExperimentHUD.RunInfoProvider = null;
         }
     }
 }

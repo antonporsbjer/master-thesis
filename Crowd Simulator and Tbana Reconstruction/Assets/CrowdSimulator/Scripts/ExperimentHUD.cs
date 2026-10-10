@@ -12,6 +12,8 @@ public class ExperimentHUD : MonoBehaviour
     internal float smoothedFPS = 60f;
     private bool tickedThisFrame = false;
 
+    public static System.Func<string> RunInfoProvider;
+
     void Awake()
     {
         if (hudText == null)
@@ -62,14 +64,7 @@ public class ExperimentHUD : MonoBehaviour
         float fps = Time.unscaledDeltaTime > 0f ? 1.0f / Time.unscaledDeltaTime : 0f;
         smoothedFPS = Mathf.Lerp(smoothedFPS, fps, 0.05f);
 
-        string runInfo = "";
-        if (RunManager.instance != null)
-        {
-            runInfo = string.Format("Run: {0}/{1}\nTarget Sim Time: {2:F0}s\n",
-                RunManager.instance.CurrentRunNumber,
-                RunManager.instance.TotalRunsCount,
-                RunManager.instance.simulationTimePerRun);
-        }
+        string runInfo = RunInfoProvider != null ? RunInfoProvider() : "";
 
         hudText.text = string.Format(
             "{0}" +
