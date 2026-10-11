@@ -91,7 +91,7 @@ public class Vision : MonoBehaviour
         }
         else
         {
-            Debug.LogError("DataCollector not found in the scene!");
+            Debug.LogWarning("DataCollector not found in the scene!");
         }
 
         if (transform.parent != null)

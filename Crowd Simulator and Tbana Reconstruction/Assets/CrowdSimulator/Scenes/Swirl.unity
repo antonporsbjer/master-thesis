@@ -204,7 +204,7 @@ PrefabInstance:
       objectReference: {fileID: 1222309363}
     - target: {fileID: 6087752598800942581, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
       propertyPath: spawnMethod
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 6087752598800942581, guid: 431ca676e53a5da4ea94cd30188ba2a9, type: 3}
       propertyPath: circleRadius
@@ -721,6 +721,10 @@ PrefabInstance:
     - target: {fileID: 4000012987795916, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
+      propertyPath: agentAvoidanceRadius
+      value: 0.4
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
