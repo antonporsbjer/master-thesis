@@ -85,6 +85,8 @@ public class RunManager : MonoBehaviour
         {
             yield return new WaitUntil(() => FindObjectOfType<DataCollector>() != null);
             dataCollector = FindObjectOfType<DataCollector>();
+            if (dataCollector != null)
+                dataCollector.runIndex = currentRun + 1;
 
             RunParameters param = GetParametersForRun(currentRun);
             ApplyParameters(param);

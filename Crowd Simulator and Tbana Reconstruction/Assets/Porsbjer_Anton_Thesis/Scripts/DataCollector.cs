@@ -91,6 +91,9 @@ public class DataCollector : MonoBehaviour
     public DataRecord dataRecord;
 
     [Header("Save Settings")]
+    [Tooltip("The run index recorded in the CSV. Defaults to 1 and is automatically synchronized with RunManager if present.")]
+    public int runIndex = 1;
+
     [Tooltip("If true, automatically saves the collected run data when stopping play mode / quitting the application.")]
     public bool autoSaveOnStop = true;
 
@@ -146,6 +149,19 @@ public class DataCollector : MonoBehaviour
                 Debug.LogWarning("[DataCollector] No dataRecord to save.");
                 return;
             }
+
+            if (runIndex <= 0)
+            {
+                if (RunManager.instance != null)
+                    runIndex = RunManager.instance.CurrentRunNumber;
+                else
+                {
+                    RunManager rm = FindObjectOfType<RunManager>();
+                    runIndex = rm != null ? rm.CurrentRunNumber : this.runIndex;
+                }
+            }
+            if (runIndex <= 0) runIndex = 1;
+            this.runIndex = runIndex;
 
             // Ensure global counters and sign properties reflect current state
             if (dataRecord.global != null)
@@ -228,7 +244,7 @@ public class DataCollector : MonoBehaviour
 
             string folderPath = GetOutputDirectory();
             string timePart = dataRecord.global != null ? dataRecord.global.timestamp.ToString("yyyy-MM-dd_HH.mm.ss") : DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
-            string runPart = runIndex > 0 ? $"_run{runIndex}" : "";
+            string runPart = $"_run{runIndex}";
             
             // File names
             string csvFileName  = $"visibility_data_{timePart}{runPart}.csv";
@@ -266,7 +282,7 @@ public class DataCollector : MonoBehaviour
                                 writer.WriteLine(string.Format(System.Globalization.CultureInfo.InvariantCulture,
                                     "{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21},{22},{23},{24},{25},{26},{27},{28}",
                                     timePart,
-                                    runIndex > 0 ? runIndex.ToString() : "N/A",
+                                    runIndex.ToString(),
                                     dataRecord.global != null ? dataRecord.global.scenarioId : "default_scenario",
                                     dataRecord.global != null ? dataRecord.global.crowdDensityAlpha : 1.0f,
                                     dataRecord.global != null ? dataRecord.global.totalAgents : dataRecord.agents.Count,
@@ -314,6 +330,7 @@ public class DataCollector : MonoBehaviour
     public void ResetForNextRun()
     {
         hasSavedCurrentRun = false;
+        runIndex++;
 
         // keep the same DataRecord instance so other scripts don't see a suddenly different object reference
         if (dataRecord == null)
