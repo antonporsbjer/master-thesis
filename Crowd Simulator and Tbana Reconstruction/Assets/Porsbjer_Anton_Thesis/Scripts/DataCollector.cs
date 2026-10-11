@@ -243,11 +243,18 @@ public class DataCollector : MonoBehaviour
             }
 
             string folderPath = GetOutputDirectory();
+            string scenarioPart = (dataRecord.global != null && !string.IsNullOrWhiteSpace(dataRecord.global.scenarioId))
+                ? dataRecord.global.scenarioId.Trim()
+                : "default_scenario";
+            foreach (char c in Path.GetInvalidFileNameChars())
+            {
+                scenarioPart = scenarioPart.Replace(c, '_');
+            }
             string timePart = dataRecord.global != null ? dataRecord.global.timestamp.ToString("yyyy-MM-dd_HH.mm.ss") : DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
-            string runPart = $"_run{runIndex}";
+            string runPart = $"run{runIndex}";
             
             // File names
-            string csvFileName  = $"visibility_data_{timePart}{runPart}.csv";
+            string csvFileName  = $"visibility_data_{timePart}_{scenarioPart}_{runPart}.csv";
             string csvFilePath  = Path.Combine(folderPath, csvFileName);
 
             if (!Directory.Exists(folderPath))
@@ -357,7 +364,7 @@ public class DataCollector : MonoBehaviour
         if (dataRecord.global == null)
             dataRecord.global = new GlobalData();
 
-        dataRecord.global.scenarioId = SceneManager.GetActiveScene().name + "_scenario";
+        dataRecord.global.scenarioId = SceneManager.GetActiveScene().name;
     }
 
     private void Start()
