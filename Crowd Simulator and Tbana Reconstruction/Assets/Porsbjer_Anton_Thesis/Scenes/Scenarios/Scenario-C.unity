@@ -1831,7 +1831,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: maxNumberOfAgents
-      value: 10000
+      value: 5000
       objectReference: {fileID: 0}
     - target: {fileID: 114000011453258514, guid: ead6e50105b8a264ab4274d310eab2f7, type: 3}
       propertyPath: skipNodeIfSeeNext
@@ -4378,6 +4378,7 @@ MonoBehaviour:
       measuredPeakDensity: 0
       signTiltAngle: 0
     agents: []
+  runIndex: 1
   autoSaveOnStop: 1
   customOutputDirectory: 
 --- !u!4 &1321634897
@@ -5815,7 +5816,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ccf3a484255ace48a2dff8a02383d1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  simulationTimePerRun: 10
+  simulationTimePerRun: 600
   runs:
   - signHeight: 2.4
     signTilt: 0
